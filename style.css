@@ -1,0 +1,46 @@
+
+
+h1 {
+    text-align: center;    
+}    
+
+
+#content {
+    margin-top: 10%;
+    margin-left: 100px;
+    /* background-color: lightskyblue; */
+    /* float: right; */
+    height: 100%;
+    width: 100%;
+    /* display: inline; */
+    padding: 6%;
+    font-size: 12pt;
+}
+
+#navpanel {
+    
+    float:         left;
+    position:      absolute;
+    width:         100px;
+    height:        100%;
+
+    display:       inline;
+    margin:        0;
+    padding:       0;
+    margin-right:  6px;
+
+    background-color: #C5E5F1;
+}    
+
+
+#navpanel ul {
+    list-style-type: disc;
+    margin-left: -20px;
+}    
+
+#navpanel li a:hover {
+    background-color: #555;
+    color: cyan;
+    
+}    
+                     

@@ -1,0 +1,36 @@
+#+TITLE:  Zhserver - Haskell Web Server for Zotero Database 
+#+AUTHOR: Caio Rodrigues 
+#+EMAIL:  <caiorss.rodrigues@gmail.com>
+
+* Documentation 
+** Overview 
+
+Zhserver is an application server that provides a json REST API to
+interface Zotero database and allows multiple users and third party
+apps to search documents by collections, tags, author and so on. 
+
+Basic functionality:
+
+ - Query the database by
+   - Collection
+   - Tag
+   - Author
+   - Document ID
+   - Download Zotero files. 
+
+** REST API doc
+
+The API has the following scheme:
+
+| URL Route               | Description                                       |   |
+|-------------------------+---------------------------------------------------+---|
+| =/api=                  | Display the API documentation                     |   |
+| =/api/colls=            | Returns all collections names and collections IDs |   |
+| =/api/coll?id=20=       | Returns all items from collection which ID is 20  |   |
+| =/api/item?id=10=       | Return the item which ID is 10                    |   |
+| =/api/attachment?id=20= | Return a link to file of item  which ID is 10     |   |
+|                         |                                                   |   |
+
+
+
+
