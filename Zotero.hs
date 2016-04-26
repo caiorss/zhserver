@@ -1,4 +1,7 @@
-{-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
+
+{- # LANGUAGE DeriveDataTypeable #-}
 
 module Zotero
        (
@@ -8,20 +11,24 @@ module Zotero
          ,collectionItems
          ,itemTagsData
          ,itemTags
+         ,itemData
          ,itemAttachmentData
          ,itemAttachmentFile
          ,itemAuthors
          ,sqlQuery
          ,sqlQueryAll
          ,sqlQueryColumn
-         ,main          
          ,database
          ,storagePath
          ,dbConnection
 
-         ,getCollectionItemsJSON
+         ,getZoteroItem
          ,getZoteroItemJSON
          ,getZoteroItemsJSON
+         ,getCollectionItemsJSON
+
+         ,joinStrings
+         ,strip
 
        ) where
 
@@ -37,20 +44,17 @@ import Control.Monad
 import qualified System.FilePath as SF
 
 import qualified Data.Text as T 
-import qualified System.Process as P
 
-import Text.Read (readMaybe)
-import Text.Printf (printf)
 
 import Data.Int -- Int64 
 
-import System.Exit  (exitSuccess)
+
 
 import System.Directory (copyFile, createDirectoryIfMissing)
 
-import Text.JSON.Generic 
-
-
+-- import Text.JSON.Generic
+import Data.Aeson 
+import GHC.Generics
 
 
 type SQLQuery =  [(String, HDBC.SqlValue)] 
@@ -62,17 +66,69 @@ data ZoteroItem =
                 , zoteroItemData        :: [(String, String)]                                           
                 , zoteroItemTags        :: [(Int, String)] -- (tagID, tag)
                 , zoteroItemCollections :: [(Int, String)] -- (collID, collection)
-             
+                                           
                 , zoteroItemFile        :: Maybe String    -- File attachment
                 , zoteroItemMime        :: Maybe String    -- Mime Type                                                                           
-             } deriving (Eq, Show, Read, Data, Typeable)
-            
+             } deriving (Eq, Show, Read,  Generic)
 
+
+instance FromJSON ZoteroItem
+
+instance ToJSON ZoteroItem where
+  toJSON (ZoteroItem itemID itemData itemTags
+          itemColls itemFile itemMime) = object
+    [
+       "id"    .= itemID
+      ,"data"  .= itemData
+      ,"tags"  .= itemTags
+      ,"colls" .= itemColls
+      ,"file"  .= itemFile
+      ,"mime"  .= itemMime
+    ]
+    
+
+data ZoteroTag =
+  ZoteroTag {   zoteroTagID   :: Int
+              , zoteroTagName :: String
+                                 
+            } deriving (Eq, Show, Read, Generic)
+  
+
+instance ToJSON ZoteroTag where
+  toJSON  (ZoteroTag tagID name) = object
+    [   "id"    .= tagID
+        ,"name" .= name
+    ]
+
+
+
+
+
+
+-- instance ToJSON ZoteroItem 
  
 
 database =  "/home/archmaster/zotero.sqlite"
 
 storagePath = "/home/archmaster/.mozilla/firefox/mwad0hks.zotero/zotero/storage"
+
+
+
+getZoteroItem conn itemID = do
+  
+  itemData    <- itemData conn itemID
+  itemTags    <- return []
+  itemColls   <- return []
+  
+  itemFile    <- itemAttachmentFile conn itemID
+  itemMime    <- return Nothing
+
+  return $ ZoteroItem itemID
+                      itemData 
+                      itemTags 
+                      itemColls 
+                      itemFile
+                      itemMime
 
 
 splitOn delim text =  
@@ -206,8 +262,12 @@ itemTagsData conn itemID = do
     projection xs = (fromSqlToInt (xs !! 0), fromSqlToString (xs !! 1))
 
 
+-- tagsAll :: HDBC.IConnection conn => conn -> Int ->
+
+
 itemTags conn itemID =
   map snd <$> itemTagsData conn itemID 
+
 
 itemAttachmentData :: HDBC.IConnection conn => conn -> Int -> IO (Maybe [String])
 itemAttachmentData conn itemID =
@@ -232,8 +292,8 @@ itemAttachmentData conn itemID =
     projection = map fromSqlToString
 
 
-itemAttachmentFile :: HDBC.IConnection conn => conn -> FilePath -> Int -> IO (Maybe FilePath)
-itemAttachmentFile conn storagePath itemID = do
+itemAttachmentFile :: HDBC.IConnection conn => conn ->  Int -> IO (Maybe FilePath)
+itemAttachmentFile conn itemID = do
   
   attachmentData <-itemAttachmentData conn itemID
 
@@ -249,7 +309,7 @@ itemAttachmentFile conn storagePath itemID = do
       let path = splitOn ":" (attachdata !! 0) !! 1
       let key  = attachdata !! 1 
           
-      return $ SF.joinPath [storagePath, key, path]
+      return $ SF.joinPath [ key, path]
 
   
 
@@ -294,43 +354,7 @@ itemAuthors conn itemID =
 
 
 
-getZoteroItem conn itemID = do
-  
-  itemData    <- itemData conn itemID
-  itemTags    <- return []
-  itemColls   <- return []
-  
-  itemFile    <- itemAttachmentFile conn storagePath  itemID
-  itemMime    <- return Nothing
 
-  return $ ZoteroItem itemID
-                      itemData 
-                      itemTags 
-                      itemColls 
-                      itemFile
-                      itemMime
-
-  
-getZoteroItemJSON conn itemID =
-  encodeJSON <$> getZoteroItem conn itemID 
-
-getZoteroItemsJSON conn itemIDs =
-  encodeJSON <$> mapM (getZoteroItem conn) itemIDs 
-
-
-getCollectionItemsJSON conn collID =
-  collectionItems conn collID >>= getZoteroItemsJSON conn
-
-{- Last name comes first than first name in 
-   order to make easier to locate the author.
--}   
-printItemAuthor conn itemID = do
-
-  authorData <- itemAuthors conn itemID
-  mapM_ printRow authorData
-
-  where
-    printRow row = printf "%s: %s, %s\n" (row !! 2) (row !! 1) (row !! 0)
 
 
 ignore :: IO a -> IO ()
@@ -338,52 +362,11 @@ ignore ioValue = do
   a <- ioValue
   return ()
 
-printItem conn itemID = do
-  
-  itemdata <- itemData conn itemID
-
-  path <- itemAttachmentFile conn storagePath itemID
-
-  tags <- itemTags conn itemID
-  
-
-  let  printField label field = do        
-         
-         mapM_ (\value -> do
-                           putStr label
-                           putStr value
-                           putStr "\n"                          
-               )
-           (lookup field itemdata)
-         
-
-  putStrLn   ("Item ID: " ++ show itemID)
-  putStrLn ""
-  printField "Title: "      "title"
-  printField "Publisher: "  "publisher"
-  printField "Book Title: " "bookTitle"
-  printField "Url: "        "url"
-  printField "DOI: "        "DOI"
-
-  printItemAuthor conn itemID 
-  
-  printField "Abstract :\n" "abstractNote"
-  putStrLn ""
-  mapM_ putStrLn path
-
-  putStrLn $ "Tags: " ++ joinStrings ", " tags
-
-  putStrLn "--------------------------------------------"
-
 -- :{
 -- let mapM2 :: (a -> IO b) -> [a] -> IO [b]
 --     mapM2 fn xs = sequence $ map fn xs 
 -- :}
 
-printCollection conn collID = do
-  items <- collectionItems conn collID
-  mapM_ (printItem conn) items 
-  
 {-
 Copy a zotero collection to a given directory given the
 collection ID and the destiny directory.
@@ -393,98 +376,17 @@ collection ID and the destiny directory.
  - dest   -> Destiny directory 
 
 -}
-copyCollectionTo conn collID dest = do
+
   
-  items       <- collectionItems conn collID
+getZoteroItemJSON conn itemID =
+  encode <$> getZoteroItem conn itemID 
 
-  attachments <- mapM (itemAttachmentFile conn storagePath) items
-  
-  createDirectoryIfMissing True dest
-
-  mapM_ copyToDest attachments
-
-  where
-
-    destPath itemFile =
-      SF.joinPath [dest, SF.takeFileName itemFile]
-
-    copyToDest :: Maybe FilePath -> IO ()
-    copyToDest itemFile =
-      mapM_ (\i -> copyFile i (destPath i)) itemFile  
+getZoteroItemsJSON conn itemIDs =
+  encode <$> mapM (getZoteroItem conn) itemIDs 
 
 
--- let destPath itemFile = SF.joinPath ["/tmp/test", SF.takeFileName itemFile]    
-
-prompt msg = do
-  putStr  msg
-  line    <- getLine
-  return line 
-
-
-
-
-
---main :: IO ()
-main = forever $ do
-
-  conn <- dbConnection
-
-  putStrLn "\n"
-  putStrLn "Enter 1 to list the collections "
-  putStrLn "Enter 2 to list a collection given collectionID"
-  putStrLn "Enter 3 to open a itemID"
-  putStrLn "Enter 4 Copy the a collection to a given directory"
-  putStrLn "Enter 5 to exit the library"
-  putStrLn "\n"
-  putStrLn "--------------------"
-
-  choice <- strip <$> getLine
-
-  case choice of
-    
-    "1" -> showCollections conn 
-    
-    "2" -> do
-             input <- prompt "Enter a collection ID: "  
-             mapM_ (printCollection conn) (readMaybe input :: Maybe Int)
-
-    "3" -> do
-             input <- prompt "Enter a item ID: "
-
-             let itemID = readMaybe input :: Maybe Int 
-
-             mapM_ (\fid -> printItem conn fid ) itemID
-
-             path <- fmap join $ mapM
-               (\itemID -> itemAttachmentFile conn storagePath itemID)
-               itemID
-
-             mapM_ (\p -> P.system $ "xdg-open " ++ "\"" ++ p ++ "\"") path
-
-
-    "4"  -> do  collID  <- prompt "Enter a collection ID: "                
-
-                let collID' = readMaybe collID :: Maybe Int
-
-                case collID' of
-                  
-                  Just collid -> do
-                               destDir <- prompt "Enter the destination directory "
-                               copyCollectionTo conn collid destDir
-                               putStrLn "Collection Copied OK."
-
-                  Nothing -> putStrLn "Failed not a valid collection number"
-
-    "5"  -> exitSuccess
-            
-             
-  
-    _  -> putStrLn "Error Enter with another option"
-            
-            
-  
-
-    
+getCollectionItemsJSON conn collID =
+  collectionItems conn collID >>= getZoteroItemsJSON conn
 
 
      

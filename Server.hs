@@ -17,11 +17,12 @@ import Happstack.Server (FromReqURI (..), dir, Conf, Conf (..), nullConf, ok
                          , seeOther, simpleHTTP, dir, dirs, path, seeOther, method
                          , Method (GET, POST, HEAD)
                          , ServerPart, ServerPartT, look
-                         , flatten 
+                         , flatten, toResponse 
                         
                         )
 
-import Happstack.Server ( Browsing(EnableBrowsing), nullConf
+import Happstack.Server ( Browsing(EnableBrowsing, DisableBrowsing),
+                          nullConf
                         , serveDirectory, simpleHTTP
                         )
 
@@ -29,6 +30,11 @@ import Happstack.Server.FileServe ( asContentType
                                    ,mimeTypes
                                    ,serveFile 
                                   )       
+
+import qualified Data.ByteString.Lazy as BL 
+import qualified Data.ByteString.Lazy.Char8 as LC 
+
+
 
 import Text.Printf (printf)
 
@@ -112,22 +118,24 @@ runServer =  simpleHTTP nullConf $
 
            flatten $ dir "api" $ dir "colls" $ routeCollectionID
            
-         , flatten $ dir "api" $ dir "colls"  $ routeCollection
+          , flatten $ dir "api" $ dir "colls"  $ routeCollection
 
          -- , dir "index" $ serveFile (asContentType mimeTypes) "index.html"
 
-        , flatten $ dir "static" $  serveDirectory EnableBrowsing
+           , flatten $ dir "static" $  serveDirectory EnableBrowsing
                                                   ["index.html",
                                                    "style.css",
                                                    "loader.js"
                                                   ]
                                                   "."
+                                                  
+          , flatten $ dir "attachment" $ serveDirectory DisableBrowsing [] Z.storagePath                                      
           
-        , flatten $ dir "wiki" $ serveDirectory EnableBrowsing ["Index.wiki.html"] "/home/archmaster/org/wiki"
+          , flatten $ dir "wiki" $ serveDirectory EnableBrowsing ["Index.wiki.html"] "/home/archmaster/org/wiki"
 
           
-        , flatten $ seeOther "static" "static"          
-       ]
+          , flatten $ seeOther "static" "static"          
+          ]
 
 
 routeCollection :: ServerPartT IO String
@@ -135,6 +143,7 @@ routeCollection =  do
   colls <- liftIO collectionsToJSON    
   return colls
                                  
+
 routeCollectionID :: ServerPartT IO String
 routeCollectionID = do
 
@@ -148,9 +157,9 @@ routeCollectionID = do
     
     Just collID' -> do
       json <-  liftIO $ withConn (\c -> Z.getCollectionItemsJSON c collID')
-      return json
+      return $ LC.unpack json
 
-    Nothing -> return ""             
+    Nothing -> return ""          
 
         
 main :: IO ()

@@ -43,4 +43,35 @@ h1 {
     color: cyan;
     
 }    
-                     
+
+
+
+.itemTable {
+    display:table;
+    width:100%;
+    table-layout:fixed;
+    /* border-top: thick double #ff0000; */
+    padding: 10px;
+   
+}
+
+
+.itemTable td:nth-child(1){
+    background-color:aqua;
+    display:table-cell;  
+    white-space:nowrap;
+}
+
+.itemTable td:nth-child(2) {
+    background-color: lightcyan;
+    width: 90%;
+
+    white-space:nowrap;
+    
+}
+
+.itemTable tbody tr:nth-child(1) td:nth-child(2) {
+   /* Styles goes here */
+     font-weight: bold;
+}
+
