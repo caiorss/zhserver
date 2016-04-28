@@ -22,10 +22,25 @@ module Zotero
          ,storagePath
          ,dbConnection
 
+         ,getTagItems
+         ,getRelatedTags
+         ,getTagsFromCollection
+
+          {- JSON Export Functions -}
+         ,getTagsJSON          
          ,getZoteroItem
          ,getZoteroItemJSON
          ,getZoteroItemsJSON
          ,getCollectionItemsJSON
+         ,getTagItemsJSON
+         ,getItemsFromAuthorJSON        
+         ,getAuthorsJSON
+         ,getRelatedTagsJSON
+         ,getTagsFromCollectionJSON
+          
+         ,getItemsFromAuthor         
+         ,getAuthors
+
 
          ,joinStrings
          ,strip
@@ -72,6 +87,7 @@ data ZoteroItem =
              } deriving (Eq, Show, Read,  Generic)
 
 
+
 instance FromJSON ZoteroItem
 
 instance ToJSON ZoteroItem where
@@ -87,6 +103,26 @@ instance ToJSON ZoteroItem where
     ]
     
 
+
+
+data ZoteroAuthor =
+  ZoteroAuthor  { zoteroAuthorID          :: Int
+                , zoteroAuthorFirstName   :: String 
+                , zoteroAuthorLastName    :: String                                                                          
+             } deriving (Eq, Show, Read,  Generic)
+
+
+
+
+instance ToJSON ZoteroAuthor where
+  toJSON (ZoteroAuthor authorID firstName lastName) = object
+    [
+       "id"    .= authorID
+      ,"first" .= firstName
+      ,"last"  .= lastName
+    ]
+
+
 data ZoteroTag =
   ZoteroTag {   zoteroTagID   :: Int
               , zoteroTagName :: String
@@ -101,7 +137,17 @@ instance ToJSON ZoteroTag where
     ]
 
 
+data ZoteroColl =
+  ZoteroColl {  zoteroCollID   :: Int
+               ,zoteroCollName :: String                                
+             } deriving (Eq, Show, Read, Generic)
 
+
+instance ToJSON ZoteroColl where
+  toJSON  (ZoteroColl collID name) = object
+    [   "id"    .= collID
+        ,"name" .= name
+    ]
 
 
 
@@ -113,12 +159,14 @@ database =  "/home/archmaster/zotero.sqlite"
 storagePath = "/home/archmaster/.mozilla/firefox/mwad0hks.zotero/zotero/storage"
 
 
+dbConnection =
+  SQLite.connectSqlite3 database 
 
 getZoteroItem conn itemID = do
   
   itemData    <- itemData conn itemID
-  itemTags    <- return []
-  itemColls   <- return []
+  itemTags    <- itemTagsData conn itemID 
+  itemColls   <- return  [] -- itemCollections conn itemID
   
   itemFile    <- itemAttachmentFile conn itemID
   itemMime    <- return Nothing
@@ -143,8 +191,6 @@ fromIntToInt64 :: Int -> Int64
 fromIntToInt64 = fromIntegral
 
 
-dbConnection =
-  SQLite.connectSqlite3 database 
 
 joinStrings :: String -> [String] -> String
 joinStrings common strs =
@@ -201,7 +247,9 @@ sqlQueryAll conn sql sqlvals projection = do
 
 sqlQueryColumn :: HDBC.IConnection conn => conn
                -> String
-               -> [HDBC.SqlValue] -> (HDBC.SqlValue -> b) -> IO [b]     
+               -> [HDBC.SqlValue]
+               -> (HDBC.SqlValue -> b)
+               -> IO [b]     
 sqlQueryColumn conn sql sqlvals coercion = do
   result <- sqlQueryAll conn sql sqlvals (coercion . (!!0))
   return $ result
@@ -262,7 +310,39 @@ itemTagsData conn itemID = do
     projection xs = (fromSqlToInt (xs !! 0), fromSqlToString (xs !! 1))
 
 
--- tagsAll :: HDBC.IConnection conn => conn -> Int ->
+
+
+itemCollections conn itemID = do
+
+  let itemID' = fromIntToInt64 itemID in
+
+    sqlQueryAll conn sql [HDBC.SqlInt64 itemID'] projection
+
+
+    where
+      
+      projection xs = (fromSqlToInt (xs !! 0), fromSqlToString (xs !! 1))
+
+      sql = "SELECT collectionID FROM   collectionItems WHERE  itemID = ?"
+
+
+
+-- Return all tags in the database
+-- 
+getTags :: HDBC.IConnection conn => conn ->  IO [ZoteroTag]
+getTags conn =
+
+  sqlQueryAll conn sql [] projection 
+  
+  where
+    sql = "SELECT tagID, name FROM tags"
+
+    projection row = ZoteroTag (fromSqlToInt (row !! 0))
+                               (fromSqlToString (row !! 1))
+
+
+getTagsJSON conn =
+  encode <$> getTags conn 
 
 
 itemTags conn itemID =
@@ -389,7 +469,106 @@ getCollectionItemsJSON conn collID =
   collectionItems conn collID >>= getZoteroItemsJSON conn
 
 
-     
+getTagItems conn tagID =
+
+  let tagID' = fromIntToInt64 tagID in
+
+  sqlQueryColumn conn sql [HDBC.SqlInt64 tagID'] fromSqlToInt
+
+  where
+    sql = unlines $ ["SELECT itemID", 
+                     "FROM itemTags", 
+                     "WHERE tagID = ?"
+                     ]
+
+getTagItemsJSON conn tagID =
+  getTagItems conn tagID >>= getZoteroItemsJSON conn
+
+
+getAuthors conn =
+
+  sqlQueryAll conn sql [] projection 
+
+  where
+
+    sql = "SELECT creatorDataID, firstName, lastName FROM creatorData"
+  
+    projection row = ZoteroAuthor (fromSqlToInt    (row !! 0))
+                                  (fromSqlToString (row !! 1))
+                                  (fromSqlToString (row !! 2))
+
+
+getAuthorsJSON conn  =
+  encode <$> getAuthors conn
+
+
+getItemsFromAuthor conn authorID =
+
+  let authorID' = fromIntToInt64 authorID in
+  
+  sqlQueryColumn conn sql [HDBC.SqlInt64 authorID'] fromSqlToInt
+
+  where
+
+    sql = "SELECT itemID FROM itemCreators WHERE creatorID = ?"
+
+
+getItemsFromAuthorJSON conn authorID =
+  getItemsFromAuthor conn authorID >>= getZoteroItemsJSON conn 
+
+
+
+getRelatedTags conn tagID =
+
+  let tagID' = fromIntToInt64 tagID in
+
+  sqlQueryAll conn sql [HDBC.SqlInt64 tagID', HDBC.SqlInt64 tagID'] projection  
+
+  where
+
+    projection row = ZoteroTag (fromSqlToInt    (row !! 0))
+                               (fromSqlToString (row !! 1))
+
+    sql = unlines $  ["SELECT DISTINCT itemTags.tagID, tags.name",
+                     "FROM   itemTags, tags             ",
+                     "WHERE  itemID IN (SELECT itemID   ", 
+                     "                  FROM   itemTags ", 
+                     "                  WHERE  tagID =? ",
+                     "                  )               ",
+                     "AND   itemTags.tagID = tags.tagID ",
+                     "AND   tags.tagID != ?             "
+                    ]   
+
+getRelatedTagsJSON conn tagID =
+  encode <$> getRelatedTags conn tagID 
+
+
+getTagsFromCollection conn collID =
+
+  let collID' = fromIntToInt64 collID in
+
+  sqlQueryAll conn sql [HDBC.SqlInt64 collID'] projection 
+  
+  where
+
+    projection row = ZoteroTag (fromSqlToInt    (row !! 0))
+                               (fromSqlToString (row !! 1))    
+    
+    sql = unlines $ [ "SELECT DISTINCT itemTags.tagID, tags.name",
+                      "FROM   itemTags, tags",
+                      "WHERE  itemTags.itemID IN", 
+                      "( SELECT itemID", 
+                      "FROM   collectionItems",
+                      "WHERE  collectionItems.collectionID = ?",
+                      ")",
+                      "AND    itemTags.tagID = tags.tagID"
+                     ]
+
+
+getTagsFromCollectionJSON conn collID =
+  encode <$> getTagsFromCollection conn collID
+  
+
 {-
 
 :load zotero.hs

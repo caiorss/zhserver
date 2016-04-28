@@ -28,7 +28,7 @@ import Happstack.Server ( Browsing(EnableBrowsing, DisableBrowsing),
 
 import Happstack.Server.FileServe ( asContentType
                                    ,mimeTypes
-                                   ,serveFile 
+                                   ,serveFile
                                   )       
 
 import qualified Data.ByteString.Lazy as BL 
@@ -111,18 +111,24 @@ collectionsToJSON = do
 runServer =  simpleHTTP nullConf $
   msum [
          
-           
-         --  flatten $ dir "hello" $ path $ \s -> ok $ "Hello, " ++ s
-                                      
-         -- flatten $ dir "test"         helloPart
+            flatten $ dir "api" $ dir "colls" $ routeCollectionID
 
-           flatten $ dir "api" $ dir "colls" $ routeCollectionID
+          , flatten $ dir "api" $ dir "colls" $ routeTagsFromCollID
            
           , flatten $ dir "api" $ dir "colls"  $ routeCollection
 
-         -- , dir "index" $ serveFile (asContentType mimeTypes) "index.html"
+          , flatten $ dir "api" $ dir "tags" $ routeTagID
+            
+          , flatten $ dir "api" $ dir "tags" $ routeTags
 
-           , flatten $ dir "static" $  serveDirectory EnableBrowsing
+          , flatten $ dir "api" $ dir "reltags" $ routeRealtedTags
+       
+
+          , flatten $ dir "api" $ dir "authors" $ routeAuthorID
+            
+          , flatten $ dir "api" $ dir "authors" $ routeAuthors 
+
+          , flatten $ dir "static" $  serveDirectory EnableBrowsing
                                                   ["index.html",
                                                    "style.css",
                                                    "loader.js"
@@ -161,26 +167,95 @@ routeCollectionID = do
 
     Nothing -> return ""          
 
+
+routeTags :: ServerPartT IO String
+routeTags = do
+  json <- liftIO $ withConn Z.getTagsJSON
+  return $ LC.unpack json
+
+
+
+
+routeTagID :: ServerPartT IO String
+routeTagID = do
+
+  queryTagID <- look "id"
+
+  let tagID = readMaybe queryTagID :: Maybe Int 
+
+  case tagID of
+
+    Just tagID' -> do 
+                      json <- liftIO $ withConn (\c -> Z.getTagItemsJSON c tagID')
+                      return $ LC.unpack json
+
+    Nothing -> return ""
+
+
+
+routeRealtedTags :: ServerPartT IO String
+routeRealtedTags = do
+
+  queryTagID <- look "id"
+
+  let tagID = readMaybe queryTagID :: Maybe Int 
+
+  case tagID of
+
+    Just tagID' -> do 
+                      json <- liftIO $ withConn (\c -> Z.getRelatedTagsJSON c tagID')
+                      return $ LC.unpack json
+
+    Nothing -> return ""
+
+
+
+
+routeTagsFromCollID :: ServerPartT IO String
+routeTagsFromCollID = do
+
+  queryTagID <- look "col2tag"
+
+  let tagID = readMaybe queryTagID :: Maybe Int 
+
+  case tagID of
+
+    Just tagID' -> do 
+          json <- liftIO $ withConn (\c -> Z.getTagsFromCollectionJSON c tagID')
+          return $ LC.unpack json
+
+    Nothing -> return ""
+
+
+
+routeAuthorID :: ServerPartT IO String
+routeAuthorID = do
+
+  queryAuthorID <- look "id"
+
+  let authorID = readMaybe queryAuthorID :: Maybe Int 
+
+  case authorID of
+
+    Just authorID' -> do 
+                      json <- liftIO $ withConn (\c -> Z.getItemsFromAuthorJSON c authorID')
+                        
+                      return $ LC.unpack json
+
+    Nothing -> return ""
+
+
+
+routeAuthors :: ServerPartT IO String
+routeAuthors = do
+  json <- liftIO $ withConn Z.getAuthorsJSON
+  return $ LC.unpack json
+
         
 main :: IO ()
 main = do
   putStrLn "Starting Server ..."
   runServer 
-
-helloPart :: ServerPart String
-helloPart =
-    do greeting <- look "greeting"
-       noun     <- look "noun"
-       ok $ greeting ++ ", " ++ noun
-
--- makeRoute :: 
--- makeRoute route httpMethod httpResp = do
---   dir route $ method httpMethod $ ok httpResp
-  
-
--- main = simpleHTTP serverConf $ serveDirectory EnableBrowsing [] "."
--- main = simpleHTTP nullConf $ serveDirectory EnableBrowsing [] "."
-
 
 
        

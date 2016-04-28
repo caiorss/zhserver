@@ -1,6 +1,6 @@
 
 
-h1 {
+h1, h2 {
     text-align: center;    
 }    
 
@@ -17,10 +17,24 @@ h1 {
     font-size: 12pt;
 }
 
+
+/* .filterItem { */
+/*     display: none; */
+/* } */
+
+#controls {
+   
+    margin-left: 30%;
+    position: absolute;
+    /* padding: 10%; */
+    align-content: center-right;
+    
+}
+
 #navpanel {
     
     float:         left;
-    position:      absolute;
+    position:      fixed;
     width:         100px;
     height:        100%;
 

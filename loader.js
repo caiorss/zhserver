@@ -169,41 +169,21 @@ function doXHReq(url){
 
 
 
-function collHtmlTemplate (obj){
-    // var html = '<a href="javascript:getCollection(' + obj.id '")>' +  obj.coll + "</a>"
-
-    var html = String.format(
-        "<li><a href='javascript:showCollectionID({0})'>{1}</a></il>",
-        obj["id"],
-        obj["coll"])
-
-    return html 
-}
-
-
-function insertCollections  (text){
-    var json = parseJson(text)
-
-    json.forEach (function (elem){
-        appendHtml("#content", collHtmlTemplate(elem));
-    });
-
-    console.log("Loaded")
-}
-
 
 function cleanContentArea (){
+    
     setHtml("#content", "");
 
     // Scroll to top
     scroll(0,0) ;
 }
 
-function showCollections(){
-    cleanContentArea();
-    doXHR("/api/colls",insertCollections , logger);
-    console.log("Displayed Collections OK");
+
+function setPageTile (title){
+
+    document.querySelector("#pageTitle").textContent = title; 
 }
+
 
 /* Forward Composition */
 function compose(){
@@ -224,24 +204,6 @@ function compose(){
 
 
 
-function showCollectionID(collID){
-    
-    var url = "/api/colls?id=" + collID.toString();
-    
-    cleanContentArea();
-      
-    doXHR(url,
-          function (data){
-              var js = parseJson(data);
-
-              console.log(js);
-              
-              displayZoteroItems(js);
-          },
-          logger
-         );
-    
-}
 
 /*
     xmlNode("a", 
@@ -345,16 +307,20 @@ function displayZoteroItem(json){
 
     console.log(json);
     
-    var data = arrayToObj(json.zoteroItemData);
-    var title = data.title
-    var url = data.url
-    var itemID = json.zoteroItemID ;
-    var file = json.zoteroItemFile;
+    var data = arrayToObj(json["data"]);
+    var title = data["title"]
+    var url = data["url"]
+    var itemID = json["id"] ;
+    var file = json["file"];
 
-    var downloadLink = xmlNode("a", {"href": "/attachment/" + file},
+    var downloadLink = xmlNode("a", {"href": "/attachment/" + file
+                                     ,"target": "_blank"
+                                    },                               
                                "Download")
     
-    var sourceLink = xmlNode("a", {"href": url}, "Url")
+    var sourceLink = xmlNode("a", {"href": url,
+                                   "target": "_blank"},
+                             "Url")
 
 
     var html = htmlPropertyTable(["Title", "ItemID", "Url", "File"],
@@ -385,6 +351,161 @@ function displayZoteroItems(items){
     items.forEach(displayZoteroItem);
 }
 
+
+
+
+
+function collHtmlTemplate (obj){
+    // var html = '<a href="javascript:getCollection(' + obj.id '")>' +  obj.coll + "</a>"
+
+    var html = String.format(
+        "<li class='filterItem'><a href='javascript:showCollectionID({0})'>{1}</a></il>",
+        obj["id"],
+        obj["coll"])
+
+    return html 
+}
+
+
+
+function insertCollections  (text){
+    var json = parseJson(text)
+
+    json.forEach (function (elem){
+        appendHtml("#content", collHtmlTemplate(elem));
+    });
+
+    console.log("Loaded")
+}
+
+
+
+function showCollections(){
+    setPageTile("All Collections");
+    cleanContentArea();
+    doXHR("/api/colls",insertCollections , logger);
+    console.log("Displayed Collections OK");
+}
+
+
+
+
+function showZoteroItemsFromUrl(url){       
+    
+    cleanContentArea();
+      
+    doXHR(url,
+          function (data){
+              var js = parseJson(data);
+
+              console.log(js);
+              
+              displayZoteroItems(js);
+          },
+          logger
+         );    
+}
+
+
+
+function showCollectionID(id){
+    
+    var url = "/api/colls?id=" + id.toString();   
+    showZoteroItemsFromUrl(url);
+}
+
+
+function showTagID(id){
+    var url = "/api/tags?id=" + id.toString();   
+    showZoteroItemsFromUrl(url);
+}
+
+
+
+function showAuthorID(id){
+    var url = "/api/authors?id=" + id.toString();   
+    showZoteroItemsFromUrl(url);
+}
+
+
+
+
+function liftMap (fn){
+    return function (xs) {
+        return xs.map(fn)
+    }
+}
+
+function insertTag (tag){
+    var a = xmlNode("a", {"href": String.format("javascript:showTagID({0})", tag.id)}, tag.name)
+    var t = xmlNode("li", {"class": "filterItem"}, a)
+    appendHtml("#content", t)
+}
+
+function showTags(){
+
+    setPageTile("All Tags");
+    cleanContentArea();    
+    doXHR("/api/tags", compose(parseJson, liftMap(insertTag)) , logger);
+}
+
+function insertAuthor (author){
+    
+    var a = xmlNode("a",
+                    {"href": String.format("javascript:showAuthorID({0})", author.id)},
+                     author.first + " " + author.last);
+    
+    var t = xmlNode ("li", {"class": "filterItem"}, a);
+
+    appendHtml("#content", t);        
+}
+
+
+function  showAuthors (){
+
+    setPageTile ("All Authors");
+    
+    cleanContentArea();    
+    doXHR("/api/authors", compose(parseJson, liftMap(insertAuthor)) , logger);
+}
+
+
+
+function domElements(cssSelector){
+    return Array.from(document.querySelectorAll(cssSelector));
+}
+
+
+function domElement(cssSelector){
+    return document.querySelector(cssSelector)
+}
+
+
+function filterNodes (pattern){
+    domElements(".filterItem a")
+        .filter (function (e) { return !e.text.toLowerCase().trim().startsWith(pattern.toLowerCase()) })
+        .forEach (function (e) { e.parentElement.style.visibility = "collapse";
+                                 e.parentElement.style.display = "none";
+                               })
+}
+
+function filterDisplay (){
+    input = domElement("#filterbox").value;
+    showNodes ();
+    
+    if (input != "") {   filterNodes(input); }       
+}
+
+function showNodes (){
+    domElements(".filterItem a")
+        .forEach(function (e) { e.style.visibility = "visible";
+                                e.parentElement.style.display = "block";
+                              }) 
+}
+
+
+
+    
 // Run JavaScript Only After Entire Page Has Loaded
 //
 // window.load = function() {
@@ -395,6 +516,11 @@ function displayZoteroItems(items){
 // };
 
 document.addEventListener('DOMContentLoaded', function() {
+
+
+    domElement("#filterbox").onkeypress = filterDisplay ;
+    domElement("#filterbox").onchange = filterDisplay ;        
+    
     console.log ("Loading");
     showCollections ();
     console.log("Loaded");
