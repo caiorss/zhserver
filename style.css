@@ -60,6 +60,26 @@ h1, h2 {
 
 
 
+table {
+    border: 1px #ccc solid;
+    overflow: auto;
+    width: 100%;
+    margin: .1em auto .75em;
+    padding: 0.5em;
+}
+
+td {
+    padding-left: .5em;
+}
+
+th {
+    vertical-align: top;
+    text-align: right;
+    width: 15%;
+    white-space: nowrap;
+    word-wrap: break-word;
+}
+
 .itemTable {
     display:table;
     width:100%;
@@ -71,13 +91,13 @@ h1, h2 {
 
 
 .itemTable td:nth-child(1){
-    background-color:aqua;
+    /* background-color:aqua; */
     display:table-cell;  
     white-space:nowrap;
 }
 
 .itemTable td:nth-child(2) {
-    background-color: lightcyan;
+    /* background-color: lightcyan; */
     width: 90%;
 
     white-space:nowrap;

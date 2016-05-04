@@ -1,0 +1,478 @@
+
+
+* FPJS 
+:PROPERTIES:
+:tangle: fpjs2.js
+:END:
+
+** Overview 
+
+Javascript toolset for functional programming. 
+
+** String Formating 
+   :PROPERTIES:
+   :ID:       6f74cc11-f9e5-48bf-b46b-1324bcf00f7e
+   :END:
+
+#+BEGIN_SRC js 
+if (!String.format) {
+  String.format = function(format) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    return format.replace(/{(\d+)}/g, function(match, number) { 
+      return typeof args[number] != 'undefined'
+        ? args[number] 
+        : match
+      ;
+    });
+  };
+}
+#+END_SRC
+
+** Predicates
+*** isString 
+    :PROPERTIES:
+    :ID:       fda3c739-4088-4cad-8fd9-8e6de25f615c
+    :END:
+
+#+BEGIN_SRC js 
+function isString(value) {
+    return typeof value == 'string' ;
+}
+#+END_SRC
+
+*** Logical Combinators 
+    :PROPERTIES:
+    :ID:       135ea721-a4d6-41e6-8dc5-207dbb09e55d
+    :END:
+
+Any 
+
+#+BEGIN_SRC js 
+//------ Boolean Combinators ------- //
+
+function any(){
+    return Array.from(arguments)
+        .reduce(function (acc, x)
+                { return acc || x},
+                false
+               )
+}
+
+#+END_SRC
+
+Some 
+
+#+BEGIN_SRC js 
+
+function all(){
+    return Array.from(arguments)
+        .reduce(function (acc, x)
+                { return acc &&  x},
+                true
+               )
+}
+#+END_SRC
+
+** Function Composition 
+   :PROPERTIES:
+   :ID:       e48111df-8b33-482b-9508-c55b5ed0f8bd
+   :END:
+
+#+BEGIN_SRC js 
+/* Forward Composition */
+
+function compose(){
+
+    var functions = Array.from(arguments);
+
+     logger(functions);
+    // logger(typeof(arguments));
+    
+    return function (x){
+        return functions.reduce(function (acc, fn){
+            return fn(acc)
+        },
+        x
+        )
+    }
+}
+#+END_SRC
+
+** DOM 
+*** Object Iterators 
+   :PROPERTIES:
+   :ID:       74c0d5f3-9359-4e26-9938-b75674899b5f
+   :END:
+
+#+BEGIN_SRC js 
+mapj = function (fn, obj){    
+    return Object.keys(obj).map( function(key) { 
+        return fn( key , obj[key] ) 
+    })
+}
+
+forEachj = function (fn, obj){    
+    return Object.keys(obj).forEach( function(key) { 
+
+        fn( key , obj[key] )
+        
+    })
+}
+
+reducej =  function (fn, obj, acc0){    
+    return Object.keys(obj).reduce( function(acc, key) { 
+        return fn(acc, key , obj[key]) 
+
+    }, acc0 )
+}
+
+
+#+END_SRC
+
+*** Http XHR Request 
+**** Synchronous xhr request 
+    :PROPERTIES:
+    :ID:       c824f363-e52d-4051-b531-269ec91b51a0
+    :END:
+
+The synchronous request must be avoided. It is preferable to use the
+asynchronous web request instead.
+
+Despite its disadvantages it is useful to during the development.
+
+method, url
+
+#+BEGIN_SRC js 
+function doXHRSync(method, url){
+    
+    var request = new XMLHttpRequest();  
+    request.open(method, url, false);   
+    request.send(null);  
+      
+    if (request.status === 200) {  
+
+        return Option.some(request.responseText)
+        
+    } else{
+        return Option.none 
+    }
+    
+}
+
+#+END_SRC
+
+**** Async xhr request 
+    :PROPERTIES:
+    :ID:       3e3e5593-4816-4f03-9d74-58a233106860
+    :END:
+
+#+BEGIN_SRC js 
+function doXHR(url, succeed, fail) {
+  var xhr = new XMLHttpRequest(); // or ActiveX equivalent
+  xhr.open("GET", url, true);
+  xhr.send(null);
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState == 4) {
+      if (xhr.status == 200)
+        succeed(xhr.responseText);
+      else
+        fail(xhr);
+    }
+  };
+}
+#+END_SRC
+*** DOM Manipulation 
+**** Logger 
+     :PROPERTIES:
+     :ID:       713ee88b-7383-4f31-81e0-7c4f0e8c129b
+     :END:
+
+#+BEGIN_SRC js 
+//----------- logger ------------
+//
+// Function wrapper to console.log 
+// 
+function logger(x){
+   console.log(x)
+};
+
+#+END_SRC
+
+**** HtmlDom 
+    :PROPERTIES:
+    :ID:       d09237ca-b020-44e9-9429-205db2a4474b
+    :END:
+
+This object provides utilities to create DOM elements. 
+
+#+BEGIN_SRC js
+function $h (tag){
+    return new HtmlDom(tag);
+}
+
+function HtmlDom (tag){
+
+    this.node = document.createElement(tag)
+
+    this.append = function (child){
+
+        if (child instanceof HtmlDom){
+            return this._appendElem(child.node);
+        }
+        else {
+            return this._appendElem(child)
+        }
+ 
+    }
+
+    this._appendElem = function (child){
+
+        if (isString(child)){
+                                       
+            this.node.appendChild(document.createTextNode(child))
+                    
+        }
+
+        else {
+                    
+            this.node.appendChild(child);
+        }
+
+        return this
+        
+    } // End of append 
+     
+
+    this.appendMany = function (childs){
+        
+        var dom = this
+            
+        childs.forEach(function (e){
+               
+            dom.append(e)
+        })
+
+        return this ;
+    }
+
+    
+    
+    this.set = function(jsobj){
+
+        console.log("set");
+
+        var node = this.node;
+
+        var obj = this 
+        
+        Object.keys(jsobj).forEach (function(key){
+
+            if (key != "child"){
+                
+                node.setAttribute(key, jsobj[key]);
+
+                console.log(key);                
+                console.log(node[key]);
+
+            }else{
+
+                var child = jsobj["child"]
+
+                console.log("Add child");
+                
+                if (Array.isArray (child)){
+                    
+                    obj.appendMany(child); 
+                }
+                else {
+
+                    obj.append(child);
+                }
+                 
+            }
+        });
+
+        return this;
+        
+    } // End of set 
+
+    this.appendTo = function (node){
+
+        node.appendChild(this.node);
+
+        return this;
+    }
+              
+
+};
+
+#+END_SRC
+**** DomSelector 
+     :PROPERTIES:
+     :ID:       3012c28c-78fb-49b6-8441-b93971507f8c
+     :END:
+
+This object help to manipulate the DOM nodes. 
+
+#+BEGIN_SRC js 
+function $d (selector) {
+    return new DomSelector(selector); 
+}
+
+
+function DomSelector (selector){
+
+    this.init = function  () {
+        
+        if (isString(selector)){
+            this.dom =  Array.from(document.querySelectorAll(selector));
+        }
+        else {
+            this.dom = selector 
+        }
+    }
+
+    this.init (); 
+
+    this.map = function (fn){
+        return new DomSelector(this.dom.map(fn));
+    }
+    
+    this.each = function (fn){
+        this.dom.forEach(fn);
+    }
+
+    this.filter = function (fn){
+        return new DomSelector(this.dom.filter(fn));
+    }
+
+    // Return a property of each element of Dom 
+    this.getAttr = function (attr) {
+        return this.map(function (e){ return e[attr]})
+    }
+
+    this.setAttr = function (attr, value){
+        this.each (function (e){ e[attr] = value });
+
+        return this 
+    }
+
+    this.remove = function () {
+        this.each (function (e){ e.remove();})
+    }
+
+
+    this.childNodes = function () {
+        return new DomSelector (
+            this.dom.map(function (e){
+                return Array.from(e.childNodes)
+            }))
+    }
+
+
+    this.show = function () {
+        this.dom.forEach(function (e){
+            e.style.visibility = "visible";
+            e.style.display = "block";
+        })
+
+        return this;
+    }
+
+
+    this.hide = function () {
+        this.dom.forEach(function (e){
+            e.style.visibility = "collapse";
+            e.style.display = "none"
+        })
+
+        return this;
+
+    }
+
+
+    this.append = function (child) {
+        
+        this.dom.forEach(function (e){ e.appendChild(child)})   
+
+        return this 
+    }
+
+
+    this.setHtml = function (value){
+        this.dom.forEach(function(e){ e.innerHTML = value}) ;
+        return this; 
+    }
+
+    this.getHtml = function (value){
+        return new DomSelector(this.dom.map(function (e)
+                                            { return e.innerHTML}))
+    }
+
+    this.html = function (value){
+        return this.dom[0].innerHTML
+    }
+    
+    this.one = function (){
+        return this.dom[0]; 
+    };
+
+    this.all = function (){
+        return this.dom ;
+    };
+
+}
+
+
+
+
+
+#+END_SRC
+
+**** htmlTable
+    :PROPERTIES:
+    :ID:       87e979fa-cc59-4c4f-99b5-1ac9fd3e7244
+    :END:
+
+#+BEGIN_SRC js
+
+function _htmlTable(){
+
+    this.table = $h("table") 
+
+    this.setRows = function (rows){
+
+        var table = this.table ;        
+        
+        rows.forEach(function(row){
+
+            var tr = $h("tr");
+
+            console.log("row = ")
+            console.log(row);
+
+            row.forEach(function (cell){
+
+                console.log(cell);
+            
+                var td = $h("td").append(cell);
+                tr.append(td.node);
+            });            
+   
+            table.append(tr.node)
+            
+        }) // -----        
+
+
+        return this
+        
+    } // End of this.setRows 
+}
+
+
+
+function htmlTable () {
+    return new _htmlTable ();
+}
+
+#+END_SRC

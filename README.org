@@ -24,16 +24,26 @@ Find, classify information, books, magazines, laws, patents, technical
 standards, web page snapshots and papers fast. 
 
 
-
 ** Road map 
 
  - [] Find items by tag
  - [] Find items by ID
- - [] Find items by collection
- - [] Find items by author
+ - [x] Find items by collection
+ - [x] Find items by author
  - [] Find items by a group of authors
  - [] Improve design for mobile devices
-
+ - [] Transfer the database from SQLite to Postgres SQL
+ - [] Add the nix file to the project.
+ - [] Add logging to the server.
+ - [] Improve Front End
+ - [] Improve User Interface Functionality
+ - [] Improve User Interface Design 
+ - [] Add tag search
+ - [] Create JavaScript functions to create templates.
+ - [] Add the database documentation
+ - [] Implement a filter
+ - [] Implement browser history
+ - [] Implement user friendly URL 
 
 ** REST API doc
 
