@@ -23,7 +23,6 @@ Basic functionality:
 Find, classify information, books, magazines, laws, patents, technical
 standards, web page snapshots and papers fast. 
 
-
 ** Road map 
 
  - [] Find items by tag
@@ -61,3 +60,56 @@ The API has the following scheme:
 
 
 
+
+* Database Documentation 
+** Search Titles that contains a word 
+
+Search all titles that contains the string "functional".
+
+#+BEGIN_SRC sql 
+SELECT itemData.itemID, itemDataValues.value  
+FROM   itemData, itemDataValues, itemAttachments
+WHERE  fieldID = 110 
+AND    itemData.valueID = itemDataValues.valueID
+AND    itemAttachments.sourceItemID = itemData.itemID
+AND    itemDataValues.value LIKE "%functional%" 
+#+END_SRC
+
+
+#+BEGIN_SRC sql 
+sqlite> 
+sqlite> SELECT itemData.itemID, itemDataValues.value  
+   ...> FROM   itemData, itemDataValues, itemAttachments
+   ...> WHERE  fieldID = 110 
+   ...> AND    itemData.valueID = itemDataValues.valueID
+   ...> AND    itemAttachments.sourceItemID = itemData.itemID
+   ...> AND    itemDataValues.value LIKE "%functional%" 
+   ...> ;
+1936|Functional Programming
+2688|Currently struggling. Can someone help em transition from functional programming to using OOP? : learnpython
+2750|When to use functional programming languages and techniques - TechRepublic
+2752|Where functional programming fits in - TechRepublic
+2754|Commercial Uses: Going functional on exotic trades
+2772|Functional Programming in the Financial Industry | Open Parallel
+2794|An introduction to functional programming
+2798|functional programming | Math ∩ Programming
+...
+#+END_SRC
+** Search by a Regex Pattern 
+
+#+BEGIN_SRC sql 
+SELECT itemData.itemID, itemDataValues.value  
+FROM   itemData, itemDataValues, itemAttachments
+WHERE  fieldID = 110 
+AND    itemData.valueID = itemDataValues.valueID
+AND    itemAttachments.sourceItemID = itemData.itemID
+AND    itemDataValues.value REGEXP "math.*" 
+#+END_SRC
+
+Result: 
+
+#+BEGIN_SRC sql 
+"2987"	"Functional Patterns for the non-mathematician"
+"4842"	"Power of mathematics: Reasoning about functional types"
+"6094"	"Discrete mathematics using a computer"
+#+END_SRC

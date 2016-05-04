@@ -7,6 +7,11 @@ function liftMap (fn){
 }
 
 
+// function parseJSRouter (){
+//     var hashPath = location.hash.replace(/^#!?/, "");
+//     var path = 
+// }
+
 
 function setPageTitle (title){
 
@@ -29,16 +34,18 @@ function cleanContentArea (){
 
 
 function showCollectionURL(collID){
-    return String.format("javascript:showCollectionID({0})", collID);
+    return "/#!colls?id=" + collID.toString();
 }
 
-function showAuthorURL(id){
-    return String.format("javascript:showAuthorID({0})", id)
+function showTagURL(tagID){
+    return "/#!tags?id=" + tagID.toString();
 }
 
-function showTagURL(id){
-    return String.format("javascript:showTagID({0})", id)
+
+function showAuthorURL(authorID){
+    return "#!author?id=" + authorID.toString();
 }
+
 
 
 function insertItemTypes (urlFunction, idLabel, valLabel){
@@ -286,17 +293,46 @@ function showAuthors (){
 
 
 
+function routeDispatcher (){
+    var route = location.hash.replace(/^#!?/, "");
+
+    //alert(route);
+    
+    if (route == "tags"  ){
+        showTags();
+        
+    } else if (route == "colls") {
+
+        showCollections ();
+
+    } else if (route.match (/colls\?id=(.+)/)){
+
+        var collID = route.match (/colls\?id=(.+)/)[1];
+        showCollectionID(collID);
+
+    } else if (route.match (/tags\?id=(.+)/)){
+
+        var tagID = route.match (/tags\?id=(.+)/)[1];
+        showTagID(tagID);
+
+    }
+
+
+    else{
+        
+        showCollections ();
+    }
+
+}
+
 
 document.addEventListener('DOMContentLoaded', function() {
 
-
     $d("#filterbox").setAttr("onkeypress", filterData);
-//    $d("#filterbox").setAttr("onchange",   filterData) ;   
+    //    $d("#filterbox").setAttr("onchange",   filterData) ;   
     
+    routeDispatcher ();
     
-    console.log ("Loading");
-    showCollections ();
-    console.log("Loaded");
 }, false);
 
 
@@ -305,4 +341,13 @@ function testData (){
     var data = parseJson($d("#testItem").html())
     var x    = displayZoteroItem(data)
     $d("#content").append(x.node)
-}    
+
+    
+    
+}  // ----------------------------------------//
+
+
+window.addEventListener("hashchange", routeDispatcher)
+
+
+
