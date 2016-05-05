@@ -126,7 +126,9 @@ runServer =  simpleHTTP nullConf $
 
           , flatten $ dir "api" $ dir "authors" $ routeAuthorID
             
-          , flatten $ dir "api" $ dir "authors" $ routeAuthors 
+          , flatten $ dir "api" $ dir "authors" $ routeAuthors
+
+          , flatten $ dir "api" $ dir "searchByTitle" $ routeSearchByTitleLike   
 
           , flatten $ dir "static" $  serveDirectory EnableBrowsing
                                                   ["index.html",
@@ -136,10 +138,7 @@ runServer =  simpleHTTP nullConf $
                                                   "."
                                                   
           , flatten $ dir "attachment" $ serveDirectory DisableBrowsing [] Z.storagePath                                      
-          
-          , flatten $ dir "wiki" $ serveDirectory EnableBrowsing ["Index.wiki.html"] "/home/archmaster/org/wiki"
-
-          
+                   
           , flatten $ seeOther "static" "static"          
           ]
 
@@ -251,6 +250,19 @@ routeAuthors = do
   json <- liftIO $ withConn Z.getAuthorsJSON
   return $ LC.unpack json
 
+
+routeSearchByTitleLike :: ServerPartT IO String
+routeSearchByTitleLike = do  
+
+  queryTitle <- look "like"
+
+  json <- liftIO $ withConn (\c -> Z.searchByTitleWordLikeJSON c  queryTitle)
+    
+  -- liftIO $ putStrLn ("Received Request : " ++ queryTitle)
+
+  return $ LC.unpack json 
+
+  
         
 main :: IO ()
 main = do

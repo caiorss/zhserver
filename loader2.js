@@ -33,16 +33,16 @@ function cleanContentArea (){
 
 
 
-function showCollectionURL(collID){
-    return "/#!colls?id=" + collID.toString();
+function showCollectionURL(collID, name){
+    return "/#!colls?id=" + collID.toString() + "&name=" + name 
 }
 
-function showTagURL(tagID){
-    return "/#!tags?id=" + tagID.toString();
+function showTagURL(tagID, name){
+    return "/#!tags?id=" + tagID.toString() + "&name=" + name 
 }
 
 
-function showAuthorURL(authorID){
+function showAuthorURL(authorID, name){
     return "#!author?id=" + authorID.toString();
 }
 
@@ -58,19 +58,19 @@ function insertItemTypes (urlFunction, idLabel, valLabel){
         
         json.forEach (function (e){
 
-            var coll = e[valLabel];
+            var name = e[valLabel];
             var id   = e[idLabel];
             
             console.log(e)
 
-            var words = coll
+            var words = name
                 .split(/\s,?\.?/)
                 .map(function (e){ return e.toLowerCase ()})
             
             var a = $h("a").set(
                 {
-                    "href": urlFunction(id),
-                    "child": coll 
+                    "href": urlFunction(id, name),
+                    "child": name 
                 });
             
             var li = $h("li").set({"class"      : "filterItem",
@@ -141,12 +141,14 @@ function jsonToZoteroItemDOM(json){
         ]
    )
 
+    table.table.set({"class": "itemTable"})
+
     var datawords = title.toLowerCase().split(" ")
     
     var div = $h("div").set({
         //"child"    : [ head.node, table.node],
         "data-words"  :  datawords,
-        "class"       : "filterItem",
+        "class"       : "filterItem zoteroItem",
     })
 
     div.append(head.node);
@@ -196,11 +198,17 @@ function showCollections () {
 
 //------------- Show CollectionID --------------//
 
-function showCollectionID(collID){
+function showCollectionID(collUri){
 
-    setPageTitle ("Collection ID: " + collID.toString())
+    // setPageTitle ("Collection ID: " + collID.toString())
+
+    name = collUri.split("&")[1].split("=")[1]
+    
+    setPageTitle("Collection: " + name);
+    
     cleanContentArea();
-    showZoteroItemsFromUrl("/api/colls?id=" + collID.toString());
+    
+    showZoteroItemsFromUrl("/api/colls?id=" + collUri);
 }
 
 
@@ -211,6 +219,9 @@ insertTags = insertItemTypes(showTagURL, "id", "name")
 
 
 function showTags () {
+
+    console.log("Show Tags");
+    
     setPageTitle("All Tags");
     
     cleanContentArea();    
@@ -225,13 +236,15 @@ function showTags () {
 
 
 
-function showTagID (tagID) {
+function showTagID (tagURI) {
+
+    tagname = tagURI.split("&")[1].split("=")[1]
     
-    setPageTitle("tag ID: " + tagID.toString());
+    setPageTitle("Tag: " + tagname);
     
     cleanContentArea();    
     
-    showZoteroItemsFromUrl("/api/tags?id=" + tagID.toString());
+    showZoteroItemsFromUrl("/api/tags?id=" + tagURI);
     
 }
 
@@ -292,6 +305,87 @@ function showAuthors (){
 } //---------------------------//
 
 
+function searchByTitleLike (){
+
+    var search = document.getElementById("searchbox").value;
+       
+    var url = "/api/searchByTitle?like=" + "%" + search + "%";
+
+    setPageTitle("Search: " + search);
+    
+    cleanContentArea();    
+    
+    showZoteroItemsFromUrl(url);       
+}
+
+
+function parseRoute (route){
+    
+    var s = route.replace(/^#!?/, "").split("?")
+
+    //console.log(s)
+
+    if (s.length >= 1){
+
+        var path = s[0].split("/")
+
+        if (s.length == 2){
+
+            var params = {}
+
+            var q = s[1].split("&")
+                .forEach(function (e) {
+
+                    var m = e.split("=")
+                    params[m[0]] = m[[1]];                    
+                })
+
+            return [path, params]
+            
+        }
+
+        return [path, {}]
+    }
+
+    return null
+    
+} // End of function parseRout
+
+
+function routeMatch (paths, keys, route, callback){
+    var s  = parseRoute(route);
+    var p  = s[0];
+    var q  = s[1];
+
+    console.log(p);
+
+    if (p[0] == paths[0]){
+
+        
+
+        var test = all(keys.map(function (k) { return k in q}))
+
+        console.log(test);
+        
+        if (test) {
+            callback(paths, keys)
+            
+            return true 
+        }
+
+        return false
+    }
+
+    return false
+}
+
+// routeMatch(["colls"],
+//            ["id", "name"],
+//            "#!colls?id=10&name=oic",
+//            function (a, b){ alert ("Executed")}
+//            )
+
+
 
 function routeDispatcher (){
     var route = location.hash.replace(/^#!?/, "");
@@ -312,7 +406,14 @@ function routeDispatcher (){
 
     } else if (route.match (/tags\?id=(.+)/)){
 
+        var tagdata = route.match (/tags\?id=(.+)&name=(.+)/)        
+        
+//     var tagID   = tagdata[2];
+//     var tagName = tagdata[3];
+
         var tagID = route.match (/tags\?id=(.+)/)[1];
+
+  
         showTagID(tagID);
 
     }
@@ -329,7 +430,9 @@ function routeDispatcher (){
 document.addEventListener('DOMContentLoaded', function() {
 
     $d("#filterbox").setAttr("onkeypress", filterData);
-    //    $d("#filterbox").setAttr("onchange",   filterData) ;   
+    //    $d("#filterbox").setAttr("onchange",   filterData) ;
+
+    $d("#ButtonDoSearch").setAttr("onclick", searchByTitleLike);
     
     routeDispatcher ();
     

@@ -6,7 +6,7 @@ h1, h2 {
 
 
 #content {
-    margin-top: 10%;
+    margin-top:  5%;
     margin-left: 100px;
     /* background-color: lightskyblue; */
     /* float: right; */
@@ -15,6 +15,7 @@ h1, h2 {
     /* display: inline; */
     padding: 6%;
     font-size: 12pt;
+    max-width: 80%;
 }
 
 
@@ -24,32 +25,30 @@ h1, h2 {
 
 #controls {
    
-    margin-left: 30%;
-    position: absolute;
+    margin-left: 12%;
+    /* position: absolute; */
     /* padding: 10%; */
-    align-content: center-right;
-    
+    /* align-content: center-right; */
+
+    position: relative;
+    float: left;
+    diplay: inline;
+
 }
 
 #navpanel {
     
     float:         left;
     position:      fixed;
-    width:         100px;
+    width:         10%;
     height:        100%;
 
-    display:       inline;
+    display:       block;
     margin:        0;
     padding:       0;
     margin-right:  6px;
 
     background-color: #C5E5F1;
-}    
-
-
-#navpanel ul {
-    list-style-type: disc;
-    margin-left: -20px;
 }    
 
 #navpanel li a:hover {
@@ -58,6 +57,12 @@ h1, h2 {
     
 }    
 
+#searchPanel {
+    position: relative;
+    float: left;
+    margin-left: 10px;
+
+}
 
 
 table {
@@ -86,21 +91,25 @@ th {
     table-layout:fixed;
     /* border-top: thick double #ff0000; */
     padding: 10px;
+    
+    /* background-color: #55ff77; */
    
 }
 
 
 .itemTable td:nth-child(1){
-    /* background-color:aqua; */
-    display:table-cell;  
+    /* background-color: gray; */
+    display:table-cell;
     white-space:nowrap;
+    font-weight: bold;
 }
 
 .itemTable td:nth-child(2) {
-    /* background-color: lightcyan; */
+    /* background-color: lightgray; */
     width: 90%;
 
     white-space:nowrap;
+   
     
 }
 
@@ -109,3 +118,17 @@ th {
      font-weight: bold;
 }
 
+.fiterItem {
+
+    max-width: 80%;
+    overflow: hidden;
+    word-wrap: break-word;
+}
+
+.zoteroItem {
+
+   border-bottom-width: 3px;
+   border-bottom-color: blue;
+   border-bottom-style: solid;
+
+}

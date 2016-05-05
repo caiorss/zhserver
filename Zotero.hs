@@ -25,6 +25,7 @@ module Zotero
          ,getTagItems
          ,getRelatedTags
          ,getTagsFromCollection
+         ,searchByTitleWordLike
 
           {- JSON Export Functions -}
          ,getTagsJSON          
@@ -37,6 +38,7 @@ module Zotero
          ,getAuthorsJSON
          ,getRelatedTagsJSON
          ,getTagsFromCollectionJSON
+         ,searchByTitleWordLikeJSON
           
          ,getItemsFromAuthor         
          ,getAuthors
@@ -567,7 +569,28 @@ getTagsFromCollection conn collID =
 
 getTagsFromCollectionJSON conn collID =
   encode <$> getTagsFromCollection conn collID
+
+
+searchByTitleWordLike conn searchWord =
+
+  sqlQueryColumn conn sql [HDBC.SqlString searchWord] fromSqlToInt
   
+  where
+
+    sql = unlines $ [
+
+       "SELECT itemData.itemID"  
+      ,"FROM   itemData, itemDataValues, itemAttachments"
+      ,"WHERE  fieldID = 110" 
+      ,"AND    itemData.valueID = itemDataValues.valueID"
+      ,"AND    itemAttachments.sourceItemID = itemData.itemID"
+      ,"AND    itemDataValues.value LIKE ?"      
+      ]
+
+searchByTitleWordLikeJSON conn searchWord =
+  searchByTitleWordLike conn searchWord >>= getZoteroItemsJSON conn 
+
+    
 
 {-
 

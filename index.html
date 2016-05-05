@@ -3,24 +3,15 @@
     <!-- <title>this website</title> -->
     <!-- <description>Application server for Zotero Database</description> -->
 
+    <title>ZhServer - Document Repository Server</title>
+    
+    <meta charset="UTF-8">
+    <meta name="description" content="Web server to Zotero Content Management">
+    <meta name="keywords"    content="zotero,cms,content,management,library,papaper,reference">
+    
     <link rel="stylesheet" type="text/css" href="style.css">
     <script src="fpjs2.js"></script>
     <script src="loader2.js"></script>
-
-    <script id="testItem" type="text/json">
-      {
-      "mime": null,
-      "colls": [],
-      "data": [
-      ["url", "http://blogs.sas.com/content/iml/2012/04/30/the-lag-function/"],
-      ["accessDate", "2014-12-24 20:05:11"],
-      ["title", "The LAG function: Useful for more than time series analysis - The DO Loop"]
-      ],
-      "id": 2746,
-      "file": "5JJN7ZXA/the-lag-function.html",
-      "tags": []
-      }
-    </script>
     
   </head>
   
@@ -33,18 +24,44 @@
     </div>
 
     <div id="controls">
-     
-      <input type="text" name="filterbox" id="filterbox">
+
+      <table id="controlForm">
+
+        <tr>        
+          <td><label>Filter</label></td>
+          <td><input type="text" name="filterbox" id="filterbox"></td>
+        </tr>
+
+        <tr>
+          <td><label>Search</label></td>
+          <td>
+            <input type="text" name="searchbox" id="searchbox">
+            <button name="doSearch" id="ButtonDoSearch">Search</button>
+          </td>
+        </tr>
+      </table>
       
+    </div>
+
+
+    <div id="searchPanel">
+      
+      <label>Search Option</label>
+      <lu>
+        <li><input type="checkbox" id="SearchByTitle" checked="true"><label>Search By Title</label></li>      
+        <li><input type="checkbox" id="searchByAuthor"><label>Search By Author</label></li>
+        <li><input type="checkbox" id="searchByAnyWord"><label>Search By Title, Tags and collection></label></li>
+      </lu>
+
     </div>
         
 
     <div id="navpanel">
-      <ul>    
-        <il><a href="/#!colls">Collections</a></il>
-        <il><a href="/#!tags">Tags</a></il>
-        <il><a href="/#!authors">Authors</a></il>
-     </ul>
+      <table>    
+        <tr><td><a href="/#!colls">Collections</a></td></tr>
+        <tr><td><a href="/#!tags">Tags</a></td></tr>
+        <tr><td><a href="/#!authors">Authors</a></td></tr>
+     </table>
     </div>  
   
   <div id="content">  
