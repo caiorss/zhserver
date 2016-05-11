@@ -1,7 +1,9 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
 
 {- # LANGUAGE DeriveDataTypeable #-}
+
 
 module Zotero
        (
@@ -50,33 +52,39 @@ module Zotero
        ) where
 
 
-import qualified Database.HDBC.Sqlite3 as SQLite
-import qualified Database.HDBC.PostgreSQL as PgSQL
-import qualified Database.HDBC as HDBC
-
+import Control.Monad.Trans
+import Control.Monad.Trans.Reader
 
 import Data.Maybe (catMaybes, maybe, fromJust, fromMaybe)
 import Data.List (lookup)
 import Control.Monad
 
+import qualified Database.HDBC.Sqlite3 as SQLite
+import qualified Database.HDBC.PostgreSQL as PgSQL
+import qualified Database.HDBC as HDBC
+
+
+
 import qualified System.FilePath as SF
-
 import qualified Data.Text as T 
-
-
 import Data.Int -- Int64 
-
-
-
 import System.Directory (copyFile, createDirectoryIfMissing)
 
 -- import Text.JSON.Generic
 import Data.Aeson 
 import GHC.Generics
 
+-- import Data.ByteString (ByteString)
+-- import Data.ByteString.Lazy.Internal.ByteString (ByteString)
+
+-- import Data.ByteString.Char8 (ByteString)
+import qualified Data.ByteString.Lazy.Internal as BLI
+
+{- ---------------------- Types -----------------}
 
 type SQLQuery =  [(String, HDBC.SqlValue)] 
 
+type DBConn a = forall conn. (HDBC.IConnection conn) =>  ReaderT conn IO a
 
 
 data ZoteroItem =
@@ -165,15 +173,16 @@ storagePath = "/home/archmaster/.mozilla/firefox/mwad0hks.zotero/zotero/storage"
 -- dbConnection = SQLite.connectSqlite3 database
 dbConnection = PgSQL.connectPostgreSQL "postgres://postgres@localhost/zotero"
 
-getZoteroItem conn itemID = do
-  
-  itemData    <- itemData conn itemID
-  itemTags    <- itemTagsData conn itemID 
-  itemColls   <- return  [] -- itemCollections conn itemID
-  
-  itemFile    <- itemAttachmentFile conn itemID
-  itemMime    <- return Nothing
 
+getZoteroItem :: Int -> DBConn ZoteroItem 
+getZoteroItem itemID = do
+  
+  itemData    <- itemData itemID
+  itemTags    <- itemTagsData itemID 
+  itemColls   <- return  [] -- itemCollections conn itemID  
+  itemFile    <- itemAttachmentFile itemID
+  itemMime    <- return Nothing
+  
   return $ ZoteroItem itemID
                       itemData 
                       itemTags 
@@ -226,36 +235,47 @@ fromSqlToInt  sv = HDBC.fromSql sv
 fromSqlToString :: HDBC.SqlValue -> String
 fromSqlToString sv = HDBC.fromSql sv 
 
-sqlQuery :: HDBC.IConnection conn =>  conn
-     -> String
-     -> [HDBC.SqlValue]
-     -> ([HDBC.SqlValue] -> b)
-     -> IO (Maybe b)
-sqlQuery conn sql sqlvals projection = do
-  stmt <- HDBC.prepare conn sql
-  HDBC.execute stmt sqlvals
-  row <- HDBC.fetchRow stmt
+-- sqlQuery :: HDBC.IConnection conn =>  conn
+--      -> String
+--      -> [HDBC.SqlValue]
+--      -> ([HDBC.SqlValue] -> b)
+--      -> IO (Maybe b)
+
+sqlQuery :: String -> [HDBC.SqlValue] -> ([HDBC.SqlValue] -> b) -> DBConn (Maybe b)
+sqlQuery sql sqlvals projection = do
+  conn   <- ask 
+  stmt   <- liftIO $  HDBC.prepare conn sql
+  liftIO $ HDBC.execute stmt sqlvals
+  row     <- liftIO $ HDBC.fetchRow stmt
   return (fmap projection row)
 
   
-sqlQueryAll
-  :: HDBC.IConnection conn =>
-     conn
-     -> String -> [HDBC.SqlValue] -> ([HDBC.SqlValue] -> b) -> IO [b]    
-sqlQueryAll conn sql sqlvals projection = do
-  stmt <- HDBC.prepare conn sql
-  HDBC.execute stmt sqlvals  
-  rows <- HDBC.fetchAllRows stmt
+-- sqlQueryAll
+--   :: HDBC.IConnection conn =>
+--      conn
+--      -> String -> [HDBC.SqlValue] -> ([HDBC.SqlValue] -> b) -> IO [b]
+
+sqlQueryAll :: String -> [HDBC.SqlValue] -> ([HDBC.SqlValue] -> b) -> DBConn [b]     
+sqlQueryAll sql sqlvals projection = do
+  con     <- ask 
+  stmt    <- liftIO $ HDBC.prepare con sql
+  liftIO  $ HDBC.execute stmt sqlvals  
+  rows    <- liftIO $ HDBC.fetchAllRows stmt
   return (map projection rows)
 
+
+{-
 sqlQueryColumn :: HDBC.IConnection conn => conn
                -> String
                -> [HDBC.SqlValue]
                -> (HDBC.SqlValue -> b)
-               -> IO [b]     
-sqlQueryColumn conn sql sqlvals coercion = do
-  result <- sqlQueryAll conn sql sqlvals (coercion . (!!0))
-  return $ result
+               -> IO [b]
+-}
+
+sqlQueryColumn :: String -> [HDBC.SqlValue] -> (HDBC.SqlValue -> b) -> DBConn [b]   
+sqlQueryColumn sql sqlvals coercion = do
+  sqlQueryAll sql sqlvals (coercion . (!!0))
+  
     
         
 withConnection :: HDBC.IConnection  conn => IO conn -> (conn -> IO r) -> IO r
@@ -264,11 +284,14 @@ withConnection ioConn function = do
   result <- function conn
   return result
 
-getCollections :: HDBC.IConnection conn => conn -> IO [(Int, String)]
-getCollections conn = do
-  
-  rows <- sqlQueryAll conn sql [] projection
-  return rows                   
+
+
+-- getCollections :: HDBC.IConnection conn => conn -> IO [(Int, String)]
+
+getCollections :: DBConn [(Int, String)]
+getCollections = do
+
+  sqlQueryAll sql [] projection
   
     where
       
@@ -280,27 +303,32 @@ getCollections conn = do
                                 <$> coerceInt    row 0
                                 <*> coerceString row 1)
 
+--showCollections :: DBConn ()  
+showCollections conn = do
+  mapM_ print =<< runReaderT getCollections conn 
+
+showCollections2 :: DBConn ()
+showCollections2 = do
+  colls <- getCollections
+  liftIO  (mapM_ print colls)
+
+
+--collectionItems :: HDBC.IConnection conn => conn -> Int -> IO [Int]
+collectionItems :: Int -> DBConn [Int]
+collectionItems collID = do
   
-showCollections conn =
-  mapM_ print =<< getCollections conn 
-
-
-collectionItems :: HDBC.IConnection conn => conn -> Int -> IO [Int]
-collectionItems conn collID =
-  let collID' = fromIntToInt64 collID in 
-
-  sqlQueryColumn conn sql [HDBC.SqlInt64 collID'] fromSqlToInt
+  let collID' = fromIntToInt64 collID
+  sqlQueryColumn sql [HDBC.SqlInt64 collID'] fromSqlToInt
   
   where
     sql = "SELECT  itemID FROM collectionItems WHERE collectionID = ?"
 
 
-itemTagsData :: HDBC.IConnection conn => conn -> Int -> IO [(Int, String)]
-itemTagsData conn itemID = do
+itemTagsData :: Int -> DBConn [(Int, String)]
+itemTagsData itemID = do
   
-  let itemID' = fromIntToInt64 itemID in
-
-    sqlQueryAll conn sql [HDBC.SqlInt64 itemID'] projection
+  let itemID' = fromIntToInt64 itemID 
+  sqlQueryAll sql [HDBC.SqlInt64 itemID'] projection
 
   where
     
@@ -314,13 +342,16 @@ itemTagsData conn itemID = do
 
 
 
+itemTags :: Int -> DBConn [String]
+itemTags itemID =
+  map snd <$> itemTagsData itemID 
 
-itemCollections conn itemID = do
 
-  let itemID' = fromIntToInt64 itemID in
+itemCollections :: Int -> DBConn [(Int, String)]
+itemCollections  itemID = do
 
-    sqlQueryAll conn sql [HDBC.SqlInt64 itemID'] projection
-
+    let itemID' = fromIntToInt64 itemID    
+    sqlQueryAll sql [HDBC.SqlInt64 itemID'] projection
 
     where
       
@@ -332,32 +363,28 @@ itemCollections conn itemID = do
 
 -- Return all tags in the database
 -- 
-getTags :: HDBC.IConnection conn => conn ->  IO [ZoteroTag]
-getTags conn =
+getTags :: DBConn [ZoteroTag]
+getTags = do
 
-  sqlQueryAll conn sql [] projection 
+  sqlQueryAll sql [] projection 
   
   where
+    
     sql = "SELECT tagID, name FROM tags"
 
     projection row = ZoteroTag (fromSqlToInt (row !! 0))
                                (fromSqlToString (row !! 1))
 
-
-getTagsJSON conn =
-  encode <$> getTags conn 
-
-
-itemTags conn itemID =
-  map snd <$> itemTagsData conn itemID 
+getTagsJSON :: DBConn BLI.ByteString
+getTagsJSON  =  encode <$> getTags
 
 
-itemAttachmentData :: HDBC.IConnection conn => conn -> Int -> IO (Maybe [String])
-itemAttachmentData conn itemID =
+itemAttachmentData :: Int -> DBConn (Maybe [String])
+itemAttachmentData itemID = do 
   
-  let itemID' = fromIntToInt64 itemID in
+  let itemID' = fromIntToInt64 itemID
 
-  sqlQuery conn sql [HDBC.SqlInt64 itemID', HDBC.SqlInt64 itemID'] projection
+  sqlQuery sql [HDBC.SqlInt64 itemID', HDBC.SqlInt64 itemID'] projection
 
   where 
 
@@ -375,12 +402,11 @@ itemAttachmentData conn itemID =
     projection = map fromSqlToString
 
 
-itemAttachmentFile :: HDBC.IConnection conn => conn ->  Int -> IO (Maybe FilePath)
-itemAttachmentFile conn itemID = do
+itemAttachmentFile :: Int -> DBConn (Maybe FilePath)
+itemAttachmentFile itemID = do
   
-  attachmentData <-itemAttachmentData conn itemID
-
-  return $ attachmetFile attachmentData
+  attachmentData <- itemAttachmentData itemID
+  return $  attachmetFile attachmentData
 
   where
     
@@ -397,11 +423,13 @@ itemAttachmentFile conn itemID = do
   
 
 --itemData :: HDBC.IConnection conn => conn -> Int -> IO [(String, String)
-itemData conn itemID =
-  
-  let itemID' = fromIntToInt64 itemID in
 
-  sqlQueryAll conn sql [HDBC.SqlInt64 itemID'] projection
+itemData ::  Int -> DBConn [(String, String)] 
+itemData itemID = do   
+  
+  let itemID' = fromIntToInt64 itemID 
+
+  sqlQueryAll  sql [HDBC.SqlInt64 itemID'] projection
 
   where
      
@@ -417,11 +445,12 @@ itemData conn itemID =
       (fromSqlToString $row !! 0, fromSqlToString $ row !! 1)
 
 {-  Query authors given the itemID.-}
-itemAuthors conn itemID =
+itemAuthors :: Int -> DBConn [[String]]
+itemAuthors itemID = do 
 
-  let itemID' = fromIntToInt64 itemID in
+  let itemID' = fromIntToInt64 itemID
 
-  sqlQueryAll conn sql [HDBC.SqlInt64 itemID'] (map fromSqlToString)
+  sqlQueryAll sql [HDBC.SqlInt64 itemID'] (map fromSqlToString)
 
   where
 
@@ -460,37 +489,62 @@ collection ID and the destiny directory.
 
 -}
 
-  
-getZoteroItemJSON conn itemID =
-  encode <$> getZoteroItem conn itemID 
-
-getZoteroItemsJSON conn itemIDs =
-  encode <$> mapM (getZoteroItem conn) itemIDs 
+getZoteroItemJSON :: Int -> DBConn BLI.ByteString  
+getZoteroItemJSON itemID = do 
+  zitem <- getZoteroItem  itemID
+  return $ encode zitem 
 
 
+getZoteroItemsJSON :: [Int] -> DBConn BLI.ByteString
+getZoteroItemsJSON itemIDs = do
+  zitems <- mapM getZoteroItem itemIDs
+  return $ encode zitems 
+--  encode <$> mapM (getZoteroItem conn) itemIDs 
+
+{-
 getCollectionItemsJSON conn collID =
   collectionItems conn collID >>= getZoteroItemsJSON conn
+-}
+
+-- getCollectionItemsJSON conn collID =
+--   runReaderT (collectionItems collID) conn
+--   >>= getZoteroItemsJSON conn
+
+getCollectionItemsJSON :: Int -> DBConn BLI.ByteString
+getCollectionItemsJSON collID = do
+  conn               <- ask 
+  itemIDs            <- collectionItems collID  
+  getZoteroItemsJSON itemIDs 
 
 
-getTagItems conn tagID =
+getTagItems :: Int -> DBConn [Int]
+getTagItems tagID = do 
+  
+  let tagID' = fromIntToInt64 tagID 
 
-  let tagID' = fromIntToInt64 tagID in
-
-  sqlQueryColumn conn sql [HDBC.SqlInt64 tagID'] fromSqlToInt
-
+  sqlQueryColumn sql [HDBC.SqlInt64 tagID'] fromSqlToInt
+                                        
   where
     sql = unlines $ ["SELECT itemID", 
                      "FROM itemTags", 
                      "WHERE tagID = ?"
                      ]
 
-getTagItemsJSON conn tagID =
-  getTagItems conn tagID >>= getZoteroItemsJSON conn
+-- getTagItemsJSON :: HDBC.IConnection conn => conn -> Int -> IO BLI.ByteString
+-- getTagItemsJSON conn tagID =
+--   runReaderT (getTagItems tagID) conn
+--   >>= getZoteroItemsJSON conn
+
+getTagItemsJSON :: Int -> DBConn BLI.ByteString
+getTagItemsJSON tagID = do
+  itemIDs <- getTagItems tagID
+  getZoteroItemsJSON itemIDs 
 
 
-getAuthors conn =
-
-  sqlQueryAll conn sql [] projection 
+getAuthors :: DBConn [ZoteroAuthor]
+getAuthors  = do
+  
+  sqlQueryAll sql [] projection 
 
   where
 
@@ -500,32 +554,35 @@ getAuthors conn =
                                   (fromSqlToString (row !! 1))
                                   (fromSqlToString (row !! 2))
 
+getAuthorsJSON :: DBConn BLI.ByteString
+getAuthorsJSON = 
+  encode <$> getAuthors 
 
-getAuthorsJSON conn  =
-  encode <$> getAuthors conn
 
-
-getItemsFromAuthor conn authorID =
+getItemsFromAuthor :: Int -> DBConn [Int]
+getItemsFromAuthor  authorID =
 
   let authorID' = fromIntToInt64 authorID in
   
-  sqlQueryColumn conn sql [HDBC.SqlInt64 authorID'] fromSqlToInt
+  sqlQueryColumn  sql [HDBC.SqlInt64 authorID'] fromSqlToInt
 
   where
 
     sql = "SELECT itemID FROM itemCreators WHERE creatorID = ?"
 
 
-getItemsFromAuthorJSON conn authorID =
-  getItemsFromAuthor conn authorID >>= getZoteroItemsJSON conn 
+getItemsFromAuthorJSON :: Int -> DBConn BLI.ByteString
+getItemsFromAuthorJSON authorID = do 
+  itemIDs <- getItemsFromAuthor authorID
+  getZoteroItemsJSON itemIDs
 
 
+getRelatedTags :: Int -> DBConn [ZoteroTag]
+getRelatedTags tagID = do 
 
-getRelatedTags conn tagID =
+  let tagID' = fromIntToInt64 tagID
 
-  let tagID' = fromIntToInt64 tagID in
-
-  sqlQueryAll conn sql [HDBC.SqlInt64 tagID', HDBC.SqlInt64 tagID'] projection  
+  sqlQueryAll sql [HDBC.SqlInt64 tagID', HDBC.SqlInt64 tagID'] projection  
 
   where
 
@@ -542,15 +599,18 @@ getRelatedTags conn tagID =
                      "AND   tags.tagID != ?             "
                     ]   
 
-getRelatedTagsJSON conn tagID =
-  encode <$> getRelatedTags conn tagID 
+getRelatedTagsJSON :: Int -> DBConn BLI.ByteString
+getRelatedTagsJSON tagID = do 
+  tags <- getRelatedTags tagID
+  return $ encode tags
 
 
-getTagsFromCollection conn collID =
+getTagsFromCollection :: Int -> DBConn [ZoteroTag] 
+getTagsFromCollection  collID = do 
 
-  let collID' = fromIntToInt64 collID in
+  let collID' = fromIntToInt64 collID 
 
-  sqlQueryAll conn sql [HDBC.SqlInt64 collID'] projection 
+  sqlQueryAll sql [HDBC.SqlInt64 collID'] projection 
   
   where
 
@@ -568,28 +628,32 @@ getTagsFromCollection conn collID =
                      ]
 
 
-getTagsFromCollectionJSON conn collID =
-  encode <$> getTagsFromCollection conn collID
+getTagsFromCollectionJSON :: Int ->  DBConn BLI.ByteString
+getTagsFromCollectionJSON collID = 
+  encode <$> getTagsFromCollection collID
 
 
-searchByTitleWordLike conn searchWord =
-
-  sqlQueryColumn conn sql [HDBC.SqlString searchWord] fromSqlToInt
+searchByTitleWordLike :: String -> DBConn [Int]
+searchByTitleWordLike  searchWord = do
   
-  where
+  sqlQueryColumn sql [HDBC.SqlString searchWord]  fromSqlToInt
+    
+    where
 
-    sql = unlines $ [
+      sql = unlines $ [
 
-       "SELECT itemData.itemID"  
-      ,"FROM   itemData, itemDataValues, itemAttachments"
-      ,"WHERE  fieldID = 110" 
-      ,"AND    itemData.valueID = itemDataValues.valueID"
-      ,"AND    itemAttachments.sourceItemID = itemData.itemID"
-      ,"AND    itemDataValues.value LIKE ?"      
-      ]
+        "SELECT itemData.itemID"  
+       ,"FROM   itemData, itemDataValues, itemAttachments"
+       ,"WHERE  fieldID = 110" 
+       ,"AND    itemData.valueID = itemDataValues.valueID"
+       ,"AND    itemAttachments.sourceItemID = itemData.itemID"
+       ,"AND    itemDataValues.value LIKE ?"      
+       ]
 
-searchByTitleWordLikeJSON conn searchWord =
-  searchByTitleWordLike conn searchWord >>= getZoteroItemsJSON conn 
+searchByTitleWordLikeJSON :: String -> DBConn BLI.ByteString
+searchByTitleWordLikeJSON searchWord = do  
+  items <- searchByTitleWordLike searchWord  
+  getZoteroItemsJSON items 
 
     
 
