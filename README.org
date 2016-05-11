@@ -60,7 +60,6 @@ The API has the following scheme:
 
 
 
-
 * Database Documentation 
 ** Search Titles that contains a word 
 
@@ -112,4 +111,31 @@ Result:
 "2987"	"Functional Patterns for the non-mathematician"
 "4842"	"Power of mathematics: Reasoning about functional types"
 "6094"	"Discrete mathematics using a computer"
+#+END_SRC
+** Full text search. 
+
+Search all items that have the word "haskell".
+
+#+BEGIN_SRC sql 
+SELECT DISTINCT itemID 
+FROM   fulltextItemWords, fulltextWords
+WHERE  fulltextItemWords.wordID = fulltextWords.wordID
+AND    fulltextWords.word LIKE "%haskell%"
+#+END_SRC 
+
+Search all items that have the word "haskell" in the title or in the
+content.
+
+#+BEGIN_SRC sql 
+SELECT itemData.itemID
+FROM   itemData, itemDataValues, fulltextItemWords, fulltextWords
+WHERE  itemData.fieldID = 110 
+AND    itemDataValues.valueID = itemData.valueID
+AND    fulltextItemWords.wordID = fulltextWords.wordID
+AND    fulltextItemWords.itemID = itemData.itemID
+AND    (itemDataValues.value LIKE "%haskell%"
+	    OR  
+		fulltextWords.word LIKE "%haskell%"
+		)	
+
 #+END_SRC

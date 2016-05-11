@@ -51,6 +51,7 @@ module Zotero
 
 
 import qualified Database.HDBC.Sqlite3 as SQLite
+import qualified Database.HDBC.PostgreSQL as PgSQL
 import qualified Database.HDBC as HDBC
 
 
@@ -161,8 +162,8 @@ database =  "/home/archmaster/zotero.sqlite"
 storagePath = "/home/archmaster/.mozilla/firefox/mwad0hks.zotero/zotero/storage"
 
 
-dbConnection =
-  SQLite.connectSqlite3 database 
+-- dbConnection = SQLite.connectSqlite3 database
+dbConnection = PgSQL.connectPostgreSQL "postgres://postgres@localhost/zotero"
 
 getZoteroItem conn itemID = do
   
