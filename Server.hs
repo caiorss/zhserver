@@ -3,9 +3,8 @@
 {- LANGUAGE FlexibleContexts, OverlappingInstances, RankNTypes, RecordWildCards #-}
 
 
-import qualified Zotero as Z
-
 import Control.Monad.Trans (liftIO, lift)
+import Control.Monad.Trans.Reader 
 
 import Data.Text                  (Text)
 
@@ -38,76 +37,13 @@ import qualified Data.ByteString.Lazy.Char8 as LC
 
 import Text.Printf (printf)
 
--- Quote a string 
-strQuote s = "\"" ++ s ++ "\""
+import qualified Zotero as Z
+import Zotero (DBConn)
 
-joinStrBy :: String -> [String] -> String 
-joinStrBy bystr strlist =
-  case strlist of
-    [] -> ""
-    _  -> foldr1 (\x acc -> x ++  bystr ++ acc  )  strlist 
-
-
-joinStrByFn :: String -> (a -> String) -> [a] -> String 
-joinStrByFn bystr fn xs =
-  case xs of
-    [] -> ""
-    _  -> foldr (\x acc -> fn x ++  bystr ++ acc ) acc0 xss
-            where
-              acc0 = fn $ head xs
-              xss  = tail xs
-              
-
-
-{-
-   >>> tupleToJSON show show "key" "val" (10, "text")
-   "{key: 10, val: \"text\"}"
-   >>> 
--}
-tupleToJSON :: (key -> String) -- Function to format the key 
-            -> (val -> String) -- Function to format the value 
-            -> String          -- Key Label               
-            -> String          -- Value Label
-            -> (key, val)      -- Tuple             
-            -> String
-            
-tupleToJSON fnKey fnVal keyLabel valLabel tuple  =
-  printf "{%s: %s, %s: %s}" (strQuote keyLabel)
-                            (fnKey . fst $ tuple)
-                            (strQuote valLabel)
-                            (fnVal . snd $ tuple) 
-
-
-tupleColumnToJSON :: (Show key, Show val) =>
-        String
-     -> String
-     -> [(key, val)]
-     -> String 
-tupleColumnToJSON keyLabel valLabel tupleList =
-  printf "[%s]" $ joinStrByFn ",\n" fn tupleList
-    where
-      fn = tupleToJSON show show keyLabel valLabel
-  
-
-withConn = Z.withConnection Z.dbConnection
-
-
-collectionsToJSON = do
-  colls <- withConn Z.getCollections
-  return $ tupleColumnToJSON "id" "coll" colls 
-
--- serverConf :: Conf 
--- serverConf = Conf
---   {
---       port       = 8080
---     , validator  = Nothing
---     , logAccess  = Nothing 
---     , timeout    = 30
-
---   }
 
 
 -- runServer :: IO ()
+runServer :: DBConn ()
 runServer =  simpleHTTP nullConf $
   msum [
          

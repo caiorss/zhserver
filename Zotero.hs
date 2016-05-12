@@ -7,7 +7,9 @@
 
 module Zotero
        (
-         withConnection
+
+         DBConn 
+         ,withConnection
          ,getCollections
          ,showCollections
          ,collectionItems
@@ -30,6 +32,7 @@ module Zotero
          ,searchByTitleWordLike
 
           {- JSON Export Functions -}
+         ,getCollectionsJSON
          ,getTagsJSON          
          ,getZoteroItem
          ,getZoteroItemJSON
@@ -302,6 +305,10 @@ getCollections = do
       projection  =  fromJust . (\row -> (,)
                                 <$> coerceInt    row 0
                                 <*> coerceString row 1)
+
+
+getCollectionsJSON :: DBConn BLI.ByteString
+getCollectionsJSON = encode <$> getCollections
 
 --showCollections :: DBConn ()  
 showCollections conn = do
