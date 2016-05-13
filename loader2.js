@@ -187,7 +187,7 @@ function showZoteroItemsFromUrl(url){
 
 //---------------- Show Collections -----------------//
 
-insertCollections = insertItemTypes (showCollectionURL, "id", "coll")
+insertCollections = insertItemTypes (showCollectionURL, "id", "name")
 
 function showCollections () {
     setPageTitle("All Collections");

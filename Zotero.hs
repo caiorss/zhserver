@@ -283,15 +283,15 @@ sqlQueryColumn sql sqlvals coercion = do
         
 withConnection :: HDBC.IConnection  conn => IO conn -> (conn -> IO r) -> IO r
 withConnection ioConn function = do
-  conn   <- ioConn
-  result <- function conn
+  conn     <- ioConn
+  result   <- function conn
   return result
 
 
 
 -- getCollections :: HDBC.IConnection conn => conn -> IO [(Int, String)]
 
-getCollections :: DBConn [(Int, String)]
+getCollections :: DBConn [ZoteroColl]
 getCollections = do
 
   sqlQueryAll sql [] projection
@@ -302,9 +302,8 @@ getCollections = do
                        "FROM collections"
                       ]
         
-      projection  =  fromJust . (\row -> (,)
-                                <$> coerceInt    row 0
-                                <*> coerceString row 1)
+      projection  row =  ZoteroColl (fromSqlToInt $ row !! 0)
+                                    (fromSqlToString $ row !! 1)
 
 
 getCollectionsJSON :: DBConn BLI.ByteString
