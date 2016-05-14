@@ -305,17 +305,47 @@ function showAuthors (){
 } //---------------------------//
 
 
-function searchByTitleLike (){
-
-    var search = document.getElementById("searchbox").value;
+function searchByTitleLike (search){
        
-    var url = "/api/searchByTitle?like=" + "%" + search + "%";
+    var url = "/api/search?title=" + "%" + search + "%";
 
     setPageTitle("Search: " + search);
     
     cleanContentArea();    
     
     showZoteroItemsFromUrl(url);       
+}
+
+
+function searchByContentAndTitleLike (search){
+       
+    var url = "/api/search?content=" + search
+    
+    setPageTitle("Search: " + search);    
+
+    cleanContentArea();        
+
+    showZoteroItemsFromUrl(url);       
+}
+
+  
+
+
+function searchItems () {
+    
+    var search = document.getElementById("searchbox").value;
+    var option = document.getElementById("searchSelection").value;        
+
+    switch (option){
+
+    case "title":
+        searchByTitleLike (search);
+        break;
+
+    case "content":
+        searchByContentAndTitleLike (search); 
+        break;
+    }    
 }
 
 
@@ -432,7 +462,7 @@ document.addEventListener('DOMContentLoaded', function() {
     $d("#filterbox").setAttr("onkeypress", filterData);
     //    $d("#filterbox").setAttr("onchange",   filterData) ;
 
-    $d("#ButtonDoSearch").setAttr("onclick", searchByTitleLike);
+    $d("#ButtonDoSearch").setAttr("onclick", searchItems);
     
     routeDispatcher ();
     

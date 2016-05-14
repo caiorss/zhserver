@@ -26,7 +26,8 @@ import Happstack.Server (FromReqURI (..), dir, Conf, Conf (..), nullConf, ok
 
 import Happstack.Server ( Browsing(EnableBrowsing, DisableBrowsing),
                           nullConf
-                        , serveDirectory, simpleHTTP
+                        , serveDirectory
+                        , simpleHTTP
                         )
 
 import Happstack.Server.FileServe ( asContentType
@@ -159,9 +160,10 @@ routes = msum
   , flatten $ dir "api" $ dir "relatedtags" $ routeRealatedTags                 
 
 
-  , flatten $ dir "api" $ dir "searchByTitle" $ routeSearchByTitleLike
-
-
+  , flatten $ dir "api" $ dir "search" $ routeSearchByTitleLike
+    
+  , flatten $ dir "api" $ dir "search" $ routeSearchByContentAndTitleLike 
+   
     
   {------------- Static Files -----------}
     
@@ -232,8 +234,12 @@ routeTagsFromCollID = serverRouteParamID "col2tag" Z.getTagsFromCollectionJSON
 
 
 routeSearchByTitleLike :: ServerApp LC.ByteString
-routeSearchByTitleLike = serverRouteParamString "like" Z.searchByTitleWordLikeJSON
+routeSearchByTitleLike =
+  serverRouteParamString "title" Z.searchByTitleWordLikeJSON
 
 routeRealatedTags :: ServerApp LC.ByteString
 routeRealatedTags = serverRouteParamID "id" Z.getRelatedTagsJSON  
 
+routeSearchByContentAndTitleLike :: ServerApp LC.ByteString
+routeSearchByContentAndTitleLike =
+  serverRouteParamString "content" Z.searchByContentAndTitleLikeJSON

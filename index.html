@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
   <head>
     <!-- <title>this website</title> -->
@@ -5,7 +6,8 @@
 
     <title>ZhServer - Document Repository Server</title>
     
-    <meta charset="UTF-8">
+
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="description" content="Web server to Zotero Content Management">
     <meta name="keywords"    content="zotero,cms,content,management,library,papaper,reference">
     
@@ -35,24 +37,27 @@
         <tr>
           <td><label>Search</label></td>
           <td>
-            <input type="text" name="searchbox" id="searchbox">
-            <button name="doSearch" id="ButtonDoSearch">Search</button>
+            <input type="text" name="searchbox" id="searchbox">           
           </td>
+        </tr>
+        <tr>
+          <td>
+            <select id="searchSelection">
+              <option value="title">   Search By Title</option>
+              <option value="content"> Search By Content and Title</option>
+              <option value="author">  Search By Author</option>        
+            </select>
+          </td>
+          <td>
+           <button name="doSearch" id="ButtonDoSearch">Search</button>
+           </td>
         </tr>
       </table>
       
     </div>
 
 
-    <div id="searchPanel">
-      
-      <label>Search Option</label>
-      <lu>
-        <li><input type="checkbox" id="SearchByTitle" checked="true"><label>Search By Title</label></li>      
-        <li><input type="checkbox" id="searchByAuthor"><label>Search By Author</label></li>
-        <li><input type="checkbox" id="searchByAnyWord"><label>Search By Title, Tags and collection></label></li>
-      </lu>
-
+    <div id="searchPanel">           
     </div>
         
 

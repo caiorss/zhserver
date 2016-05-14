@@ -30,6 +30,7 @@ module Zotero
          ,getRelatedTags
          ,getTagsFromCollection
          ,searchByTitleWordLike
+         ,searchByContentAndTitleLike
 
           {- JSON Export Functions -}
          ,getCollectionsJSON
@@ -44,6 +45,7 @@ module Zotero
          ,getRelatedTagsJSON
          ,getTagsFromCollectionJSON
          ,searchByTitleWordLikeJSON
+         ,searchByContentAndTitleLikeJSON 
           
          ,getItemsFromAuthor         
          ,getAuthors
@@ -661,7 +663,30 @@ searchByTitleWordLikeJSON searchWord = do
   items <- searchByTitleWordLike searchWord  
   getZoteroItemsJSON items 
 
-    
+searchByContentAndTitleLike :: String -> DBConn [Int]
+searchByContentAndTitleLike searchWord = do
+
+  sqlQueryColumn sql [HDBC.SqlString searchWord, HDBC.SqlString searchWord]  fromSqlToInt
+  
+  where
+     sql = unlines $
+       [
+        "SELECT itemData.itemID"
+       ,"FROM   itemData, itemDataValues, fulltextItemWords, fulltextWords "
+       ,"WHERE  itemData.fieldID = 110" 
+       ,"AND    itemDataValues.valueID = itemData.valueID"
+       ,"AND    fulltextItemWords.wordID = fulltextWords.wordID"
+       ,"AND    fulltextItemWords.itemID = itemData.itemID"
+       ,"AND    (itemDataValues.value LIKE ?"
+       ,"           OR                      "
+       ,"       fulltextWords.word LIKE ?)"
+       ]
+                                           
+searchByContentAndTitleLikeJSON :: String -> DBConn BLI.ByteString  
+searchByContentAndTitleLikeJSON searchWord = do
+  items <- searchByContentAndTitleLike searchWord  
+  getZoteroItemsJSON items 
+
 
 {-
 

@@ -23,6 +23,15 @@ h1, h2 {
 /*     display: none; */
 /* } */
 
+
+#top {
+    position: relative;
+    float:     top;
+    margin-bottom: 2pt;
+    display: block;
+    height: 10%;
+}
+
 #controls {
    
     margin-left: 12%;
@@ -32,7 +41,8 @@ h1, h2 {
 
     position: relative;
     float: left;
-    diplay: inline;
+    diplay: block;
+    background-color: lightgray;
 
 }
 
