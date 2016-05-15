@@ -49,8 +49,6 @@ import Text.Printf (printf)
 
 import qualified Zotero as Z
 
-import qualified ConfParser as CFP
-
 import Zotero (DBConn)
 
 
@@ -217,7 +215,7 @@ routes = msum
                                                    "style.css",
                                                    "loader.js"
                                                   ]
-                                                  "."
+                                                  "assets"
 
   , flatten $ dir "arch" $ serveDirectory EnableBrowsing [] "/tmp/arch"
     
@@ -289,7 +287,7 @@ loadServerConf configFile = do
     Nothing   -> putStrLn "Error: failed parse the config file"
   
 
- -- "sqlite:///home/archmaster/projects/zhserver/db/zotero.sqlite"
+
 
 main = do
   
