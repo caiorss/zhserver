@@ -3,7 +3,7 @@ let
   inherit (nixpkgs) pkgs;
   ghc = pkgs.haskell.packages.${compiler}.ghcWithPackages (ps: with ps; [
 
-        haskell-docs mtl conduit aeson stm HDBC HDBC-sqlite3 HDBC-postgresql happstack-server happstack-lite url json
+        haskell-docs mtl conduit aeson stm HDBC HDBC-sqlite3 HDBC-postgresql happstack-server happstack-lite url ConfigFile
        
         ]);
 in

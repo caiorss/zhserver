@@ -32,17 +32,18 @@ function cleanContentArea (){
 } //---------------------------//
 
 
+/*---------------  URL Formats ---------------------- */ 
 
-function showCollectionURL(collID, name){
+function makeCollectionURL(collID, name){
     return "/#!colls?id=" + collID.toString() + "&name=" + name 
 }
 
-function showTagURL(tagID, name){
+function makeTagURL(tagID, name){
     return "/#!tags?id=" + tagID.toString() + "&name=" + name 
 }
 
 
-function showAuthorURL(authorID, name){
+function makeAuthorURL(authorID, name){
     return "#!author?id=" + authorID.toString();
 }
 
@@ -61,7 +62,7 @@ function insertItemTypes (urlFunction, idLabel, valLabel){
             var name = e[valLabel];
             var id   = e[idLabel];
             
-            console.log(e)
+  //          console.log(e)
 
             var words = name
                 .split(/\s,?\.?/)
@@ -90,6 +91,9 @@ function insertItemTypes (urlFunction, idLabel, valLabel){
 } // End of insertItemtypes -------------------------//
 
 
+
+
+
 //---------------- Display Items ------------------- //
 
 function arrayToObj(arr){
@@ -100,9 +104,22 @@ function arrayToObj(arr){
     return d;
 }
 
+function bulletList(alist){
+
+    var liList = alist.map(function (e){
+        return $h("li").append(e);
+    })
+        
+    var lu = $h("lu").appendMany(liList);        
+    return lu;
+}
+
+
 function jsonToZoteroItemDOM(json){
     
     var data = arrayToObj(json["data"]);
+
+     
 
    // console.log(data)
     
@@ -131,30 +148,70 @@ function jsonToZoteroItemDOM(json){
         "data-words":   "" //title.split()
     })
 
+    var tagLinks = json["tags"].map(function (row) {
+        return $h("a").set({
+              href:     makeTagURL(row[0], row[1])
+            , target:  "_blank"
+            , child:   row[1]
+        });
+    });
+
+    var authorLinks = json["authors"].map(function(author){
+        return $h("a").set({
+             href:    "/#!author?id=" + author.id
+            ,target:  "_blank"
+            ,child:   author.first + " " + author.last 
+
+        });
+
+    });
+
+    
+
+    
+    var collsLinks = json["colls"].map(function (row) {
+        return $h("a").set({
+              href:     makeCollectionURL(row[0], row[1])
+            , target:  "_blank"
+            , child:   row[1]
+        });
+    })
+
+
     
    var table =  htmlTable().setRows(
         [
-            ["id",  itemID.toString()],
-            ["url", urlLink],          
-            ["Download", downloadLink]
+            ["id",            itemID.toString()],
+            ["url",           urlLink],          
+            ["Download",      downloadLink],
+            ["Authors",       bulletList(authorLinks).set({"class": "itemAttribRow"}) ],            
+            ["Collections",   bulletList(collsLinks).set({"class": "itemAttribRow"}) ],            
+            ["Tags",          bulletList(tagLinks).set({"class": "itemAttribRow"}) ]
+            // ["Abstract",      data["abstractNote"]]
 
         ]
    )
 
-    table.table.set({"class": "itemTable"})
+    table.table.set({"class": "itemTable"});
 
-    var datawords = title.toLowerCase().split(" ")
+    var tagswords = json["tags"].map(function (e) {return e[1];});
+
+    var datawords = title.toLowerCase().split(" ");
+    
     
     var div = $h("div").set({
         //"child"    : [ head.node, table.node],
         "data-words"  :  datawords,
+        "data-tags"   :  tagswords,
         "class"       : "filterItem zoteroItem",
-    })
+    });
 
     div.append(head.node);
     div.append(table.table.node);
+    div.append($h("h4").set({child: "Abstract"}));
+    div.append($h("p").set({child:  data["abstractNote"]}));
 
-    return div 
+    return div ;
 
 }
 
@@ -187,10 +244,10 @@ function showZoteroItemsFromUrl(url){
 
 //---------------- Show Collections -----------------//
 
-insertCollections = insertItemTypes (showCollectionURL, "id", "name")
+insertCollections = insertItemTypes (makeCollectionURL, "id", "name")
 
 function showCollections () {
-    setPageTitle("All Collections");
+    setPageTitle("Collections");
     cleanContentArea();    
     doXHR("/api/colls", compose(parseJson, insertCollections) , logger);
     console.log("Displayed Collections OK");    
@@ -214,15 +271,15 @@ function showCollectionID(collUri){
 
 //-------------- Show Tags ---------------------//
 
-insertTags = insertItemTypes(showTagURL, "id", "name")
+insertTags = insertItemTypes(makeTagURL, "id", "name")
 
 
 
 function showTags () {
 
-    console.log("Show Tags");
+    console.log("Tags");
     
-    setPageTitle("All Tags");
+    setPageTitle("Tags");
     
     cleanContentArea();    
 
@@ -248,6 +305,77 @@ function showTagID (tagURI) {
     
 }
 
+
+
+//---------------- Show Authors ---------------------//
+
+
+
+function insertAuthors (json){
+    
+        var docFragment = document.createDocumentFragment();   
+        
+        json.forEach (function (e){
+
+            var first = e["first"];
+            var last  = e["last"];
+            var id    = e["id"];
+            var name  = first + " " + last
+            
+//            console.log(e)
+
+            var words = name
+                .split(/\s,?\.?/)
+                .map(function (e){ return e.toLowerCase ()})
+            
+            var a = $h("a").set(
+                {
+                    "href": makeAuthorURL(id, name),
+                    "child": name 
+                });
+            
+            var li = $h("li").set({"class"      : "filterItem",
+                                   "child"      : a.node,
+                                   "data-words" : words,
+                                   "data-id"    : id.toString(),
+                                   
+                                  })
+
+            docFragment.appendChild(li.node)
+        });
+
+        $d("#content").append(docFragment);
+        
+} 
+
+
+
+function showAuthors () {
+
+    console.log("Show Authors");
+    
+    setPageTitle("Authors");
+    
+    cleanContentArea();    
+
+    doXHR("/api/authors", compose(parseJson, insertAuthors) , logger);
+
+    //console.log("Displayed Collections OK");    
+}
+
+
+
+//---------------- Show Author ID ------------------//
+
+function showAuthorID (id) {    
+    
+    setPageTitle("Author: ");
+    
+    cleanContentArea();    
+    
+    showZoteroItemsFromUrl("/api/authors?id=" + id);
+    
+}
 
 
 
@@ -290,19 +418,6 @@ function filterData () {
     
 }
 
-
-function showAuthors (){
-
-    setPageTitle ("All Authors");
-    
-    cleanContentArea();
-    
-    doXHR("/api/authors",
-          compose(parseJson,
-                  liftMap(insertAuthor)) ,
-          logger);
-    
-} //---------------------------//
 
 
 function searchByTitleLike (search){
@@ -429,6 +544,10 @@ function routeDispatcher (){
 
         showCollections ();
 
+    } else if (route == "authors"){
+
+        showAuthors ();
+
     } else if (route.match (/colls\?id=(.+)/)){
 
         var collID = route.match (/colls\?id=(.+)/)[1];
@@ -445,6 +564,11 @@ function routeDispatcher (){
 
   
         showTagID(tagID);
+
+    } else if (route.match (/author\?id=(.+)/)){
+
+        var id = route.match (/author\?id=(.+)/)[1];
+        showAuthorID(id);
 
     }
 

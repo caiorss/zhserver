@@ -128,6 +128,17 @@ th {
      font-weight: bold;
 }
 
+
+.itemAttribRow {
+    list-style-type: none;  /* Hide points */
+}
+
+.itemAttribRow li {
+    float: left;            /* Bullet list horizontal */
+    padding-left: 10px;
+    diplay: block;
+}
+
 .fiterItem {
 
     max-width: 80%;
@@ -141,4 +152,23 @@ th {
    border-bottom-color: blue;
    border-bottom-style: solid;
 
+}
+
+.itemTable {
+    table-layout:fixed;
+    width: 90%;
+    align: left;
+    white-space: nowrap;
+}
+
+.itemTable td {
+
+    word-wrap:   break-word;
+    white-space:pre-wrap;
+    white-space:-moz-pre-wrap;
+    white-space:-pre-wrap;
+    white-space:-o-pre-wrap;
+    word-wrap:break-word;
+    /* overflow:    ; */
+    text-overflow: ellipsis;
 }

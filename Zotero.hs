@@ -94,7 +94,8 @@ type DBConn a = forall conn. (HDBC.IConnection conn) =>  ReaderT conn IO a
 
 data ZoteroItem =
   ZoteroItem {    zoteroItemID          :: Int
-                , zoteroItemData        :: [(String, String)]                                           
+                , zoteroItemData        :: [(String, String)]
+                , zoteroItemAuthors     :: [ZoteroAuthor]  -- (AuthorID, [firstName, lastName]) 
                 , zoteroItemTags        :: [(Int, String)] -- (tagID, tag)
                 , zoteroItemCollections :: [(Int, String)] -- (collID, collection)
                                            
@@ -107,15 +108,16 @@ data ZoteroItem =
 instance FromJSON ZoteroItem
 
 instance ToJSON ZoteroItem where
-  toJSON (ZoteroItem itemID itemData itemTags
+  toJSON (ZoteroItem itemID itemData itemAuthors itemTags 
           itemColls itemFile itemMime) = object
     [
-       "id"    .= itemID
-      ,"data"  .= itemData
-      ,"tags"  .= itemTags
-      ,"colls" .= itemColls
-      ,"file"  .= itemFile
-      ,"mime"  .= itemMime
+       "id"       .= itemID
+      ,"data"     .= itemData       
+      ,"authors"  .= itemAuthors
+      ,"tags"     .= itemTags
+      ,"colls"    .= itemColls
+      ,"file"     .= itemFile
+      ,"mime"     .= itemMime
     ]
     
 
@@ -137,6 +139,8 @@ instance ToJSON ZoteroAuthor where
       ,"first" .= firstName
       ,"last"  .= lastName
     ]
+
+instance FromJSON ZoteroAuthor    
 
 
 data ZoteroTag =
@@ -183,17 +187,21 @@ getZoteroItem :: Int -> DBConn ZoteroItem
 getZoteroItem itemID = do
   
   itemData    <- itemData itemID
+  itemAuthors <- itemAuthors itemID 
   itemTags    <- itemTagsData itemID 
-  itemColls   <- return  [] -- itemCollections conn itemID  
+  itemColls   <- itemCollections itemID  
   itemFile    <- itemAttachmentFile itemID
   itemMime    <- return Nothing
   
   return $ ZoteroItem itemID
-                      itemData 
+                      itemData
+                      itemAuthors 
                       itemTags 
                       itemColls 
                       itemFile
                       itemMime
+
+
 
 
 splitOn delim text =  
@@ -331,7 +339,7 @@ collectionItems collID = do
   where
     sql = "SELECT  itemID FROM collectionItems WHERE collectionID = ?"
 
-
+{- Returns all tags of a given item -}
 itemTagsData :: Int -> DBConn [(Int, String)]
 itemTagsData itemID = do
   
@@ -354,7 +362,11 @@ itemTags :: Int -> DBConn [String]
 itemTags itemID =
   map snd <$> itemTagsData itemID 
 
+{- Returns all collections that an item benlongs to
 
+  itemCollections :: itemID -> [(Collection ID, Collection Name)]
+
+-}
 itemCollections :: Int -> DBConn [(Int, String)]
 itemCollections  itemID = do
 
@@ -365,7 +377,11 @@ itemCollections  itemID = do
       
       projection xs = (fromSqlToInt (xs !! 0), fromSqlToString (xs !! 1))
 
-      sql = "SELECT collectionID FROM   collectionItems WHERE  itemID = ?"
+      sql = unlines $ [ "SELECT collectionItems.collectionID, collections.collectionName"
+                       ,"FROM   collectionItems, collections"                        
+                       ,"WHERE  itemID = ?"
+                       ,"AND    collectionItems.collectionID = collections.collectionID"
+                      ]
 
 
 
@@ -453,18 +469,22 @@ itemData itemID = do
       (fromSqlToString $row !! 0, fromSqlToString $ row !! 1)
 
 {-  Query authors given the itemID.-}
-itemAuthors :: Int -> DBConn [[String]]
+itemAuthors :: Int -> DBConn [ZoteroAuthor]
 itemAuthors itemID = do 
 
   let itemID' = fromIntToInt64 itemID
 
-  sqlQueryAll sql [HDBC.SqlInt64 itemID'] (map fromSqlToString)
+  sqlQueryAll sql [HDBC.SqlInt64 itemID'] projection 
 
   where
 
+    projection row = ZoteroAuthor (fromSqlToInt    (row !! 0))
+                                  (fromSqlToString (row !! 1))
+                                  (fromSqlToString (row !! 2))
+
     sql = unlines $ [
       
-      "SELECT   creatorData.firstName, creatorData.lastName, creatorTypes.creatorType",
+      "SELECT   itemCreators.creatorID, creatorData.firstName, creatorData.lastName",
       "FROM     creatorData, creatorTypes, creators, itemCreators",
       "WHERE    itemCreators.creatorID = creators.creatorID",
       "AND      itemCreators.creatorTypeID = creatorTypes.creatorTypeID",

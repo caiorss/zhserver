@@ -1,5 +1,4 @@
 
-
 * FPJS 
 :PROPERTIES:
 :tangle: fpjs2.js
@@ -271,14 +270,14 @@ function HtmlDom (tag){
                 
                 node.setAttribute(key, jsobj[key]);
 
-                console.log(key);                
-                console.log(node[key]);
+               // console.log(key);                
+               // console.log(node[key]);
 
             }else{
 
                 var child = jsobj["child"]
 
-                console.log("Add child");
+                //console.log("Add child");
                 
                 if (Array.isArray (child)){
                     

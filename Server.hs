@@ -3,10 +3,13 @@
 {-# LANGUAGE RecordWildCards #-}
 
 
+
 import Control.Monad.Trans (liftIO, lift)
 import Control.Monad.Trans.Reader 
+import Control.Monad.Trans.Maybe
 
-import Data.Text                  (Text)
+import Data.Text        (Text)
+import qualified Data.Text as T
 
 import Control.Monad    (msum, mapM, mapM_, foldM)
 
@@ -40,12 +43,20 @@ import qualified Data.ByteString.Lazy.Char8 as LC
 
 import qualified Database.HDBC as HDBC
 import qualified Database.HDBC.PostgreSQL as Pg
+import qualified Database.HDBC.Sqlite3    as Sqlite3 
 
 import Text.Printf (printf)
 
 import qualified Zotero as Z
+
+import qualified ConfParser as CFP
+
 import Zotero (DBConn)
 
+
+data HDBConn =   ConnSqlite Sqlite3.Connection
+               | ConnPg     Pg.Connection
+             
 
 {-
    ReaderT conn (ServerPartT IO) response
@@ -55,6 +66,16 @@ import Zotero (DBConn)
 -}
 type ServerApp a =  forall conn. (HDBC.IConnection conn)
                     => ReaderT conn (ServerPartT IO) a
+
+
+data ServerConfig = ServerConfig
+                    {
+                      serverPort        :: Int,
+                      serverHost        :: String,
+                      serverStoragePath :: String, 
+                      serverDatabase    :: String
+
+                    } deriving (Eq, Show, Read)
 
 readInt :: String -> Maybe Int 
 readInt s = readMaybe s
@@ -72,7 +93,25 @@ withConnServer driver uri conf serverApp = do
   HDBC.disconnect conn
   return ()
 
+{-  Database connection is closed on each request -}
+withConnServer2 ::  (HDBC.IConnection conn, Response.ToMessage a) =>
+                 (String -> IO conn)
+                 -> String
+                 -> Conf 
+                 -> ServerApp a
+                 -> IO ()  
+withConnServer2 driver uri conf serverApp = do
+  conn1     <- driver  uri
+  simpleHTTP conf $ runReaderT serverWrapper conn1
+  return ()
 
+    where
+--      serverWrapper :: ServerApp b
+      serverWrapper = do
+        conn      <- ask        
+        response  <- serverApp
+        liftIO    $ HDBC.disconnect conn
+        return response
            
 
 runDbQuery :: DBConn b -> ServerApp b
@@ -119,6 +158,8 @@ routes = msum
 
   [
 
+    flatten $ dir "api" $ dir "item" $  serverRouteParamID "id" Z.getZoteroItemJSON
+    
     {- REST API -}
 
     -- Return all items from a given collection
@@ -126,7 +167,7 @@ routes = msum
     -- /api/colls?id=23423
     -- /api/coll?id={collection ID}
     --
-      flatten $ dir "api" $ dir "colls" $ routeCollectionID
+    ,flatten $ dir "api" $ dir "colls" $ routeCollectionID
 
     -- Returns all collections 
     --
@@ -149,13 +190,15 @@ routes = msum
    --
   , flatten $ dir "api" $ dir "tags" $ routeTags
 
-  , flatten $ dir "api" $ dir "authors" $ routeAuthors
-
   -- Returns all items from a given author
   --
   -- /api/authors?id=34
   --
   , flatten $ dir "api" $ dir "authors" $ routeAuthorID
+    
+  , flatten $ dir "api" $ dir "authors" $ routeAuthors
+
+
 
   , flatten $ dir "api" $ dir "relatedtags" $ routeRealatedTags                 
 
@@ -175,10 +218,15 @@ routes = msum
                                                    "loader.js"
                                                   ]
                                                   "."
+
+  , flatten $ dir "arch" $ serveDirectory EnableBrowsing [] "/tmp/arch"
+    
                                                   
   , flatten $ seeOther "static" "static"                                                       
     
   ]
+
+
 
 
 serverConf :: Conf 
@@ -190,15 +238,69 @@ serverConf = Conf
   , threadGroup = Nothing
   }
 
+  
+stripPrefix prefix str =
+ case T.stripPrefix (T.pack prefix) (T.pack str) of
+   Just s   -> T.unpack s
+   Nothing  -> str
+
+parseDbDriver uri =
+  T.unpack . (!!0) . T.split (==':') . T.pack $ uri
+   
+-- openDBConnection :: HDBC.IConnection conn => String -> IO HDBConn
+-- openDBConnection uri = do
+--   let driver = T.unpack . (!!0) . T.split (==':') . T.pack $ uri
+
+--   case driver of
+--     "sqlite"   -> ConnSqlite <$>  Sqlite3.connectSqlite3 (stripPrefix "sqlite://" uri)
+--     "postgres" -> ConnPg <$> Pg.connectPostgreSQL uri
+--     _          -> error "Error: This driver is not supported"
+  
+
+loadServerConf configFile = do
+  
+  conf' <- (\text -> readMaybe text :: Maybe ServerConfig) <$> readFile configFile
+    
+
+  case conf' of
+
+    Just conf -> do
+      let database = serverDatabase conf
+      let port     = serverPort conf
+      let path     = serverStoragePath conf
+      let sconf    = Conf port Nothing Nothing 30 Nothing
+
+      let sqlitePath = (stripPrefix "sqlite://" database)
+
+      putStrLn database
+      putStrLn sqlitePath
+      
+      case parseDbDriver database of
+        "sqlite" ->    
+          withConnServer Sqlite3.connectSqlite3
+                          sqlitePath 
+                          sconf
+                          routes
+        "postgres" ->
+          withConnServer Pg.connectPostgreSQL database sconf routes
+
+        _         -> error "Error: Database not supported"
+
+    Nothing   -> putStrLn "Error: failed parse the config file"
+  
+
+ -- "sqlite:///home/archmaster/projects/zhserver/db/zotero.sqlite"
 
 main = do
   
-  putStrLn "Server Running" 
+  putStrLn "Server Running"
 
-  withConnServer Pg.connectPostgreSQL
-                 "postgres://postgres@localhost/zotero"
-                 serverConf
-                 routes
+  loadServerConf "zhserver.conf"
+
+  -- withConnServer2 Pg.connectPostgreSQL
+  --                "postgres://postgres@localhost/zotero"
+  --                serverConf
+  --                routes
 
   -- withConn Pg.connectPostgreSQL
   --          "postgres://postgres@localhost/zotero"

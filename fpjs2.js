@@ -131,9 +131,13 @@ function HtmlDom (tag){
 
     this._appendElem = function (child){
 
-        if (isString(child)){
+        if (typeof child == "undefined"){
+
+            return this;
+
+        } else if(isString(child)){
                                        
-            this.node.appendChild(document.createTextNode(child))
+         this.node.appendChild(document.createTextNode(child))
                     
         }
 
@@ -175,14 +179,14 @@ function HtmlDom (tag){
                 
                 node.setAttribute(key, jsobj[key]);
 
-                console.log(key);                
-                console.log(node[key]);
+               // console.log(key);                
+               // console.log(node[key]);
 
             }else{
 
                 var child = jsobj["child"]
 
-                console.log("Add child");
+                //console.log("Add child");
                 
                 if (Array.isArray (child)){
                     
@@ -287,11 +291,23 @@ function DomSelector (selector){
 
 
     this.append = function (child) {
-        
-        this.dom.forEach(function (e){ e.appendChild(child)})   
 
-        return this 
+        if (typeof child == "undefined"){
+            return this;
+        }
+        
+        
+        this.dom.forEach(function (e){
+            
+            if (typeof e != "undefined"){
+                e.appendChild(child);
+            };
+        });   
+
+        return this;
+
     }
+                        
 
 
     this.setHtml = function (value){
@@ -334,7 +350,7 @@ function _htmlTable(){
             console.log(row);
 
             row.forEach(function (cell){
-
+                
                 console.log(cell);
             
                 var td = $h("td").append(cell);
