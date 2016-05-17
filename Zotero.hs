@@ -308,9 +308,10 @@ getCollections = do
   
     where
       
-      sql = unlines   ["SELECT collectionID, collectionName",
-                       "FROM collections"
-                      ]
+      sql = "SELECT collectionID, collectionName \
+            \FROM collections \
+            \ORDER BY collectionName"
+            
         
       projection  row =  ZoteroColl (fromSqlToInt $ row !! 0)
                                     (fromSqlToString $ row !! 1)
@@ -394,7 +395,8 @@ getTags = do
   
   where
     
-    sql = "SELECT tagID, name FROM tags"
+    sql =   "SELECT tagID, name FROM tags \
+           \ORDER BY name"
 
     projection row = ZoteroTag (fromSqlToInt (row !! 0))
                                (fromSqlToString (row !! 1))
