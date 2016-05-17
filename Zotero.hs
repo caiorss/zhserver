@@ -32,6 +32,9 @@ module Zotero
          ,searchByTitleWordLike
          ,searchByContentAndTitleLike
 
+          ,getCollectionChild
+          ,getCollectionTop 
+
           {- JSON Export Functions -}
          ,getCollectionsJSON
          ,getTagsJSON          
@@ -45,7 +48,9 @@ module Zotero
          ,getRelatedTagsJSON
          ,getTagsFromCollectionJSON
          ,searchByTitleWordLikeJSON
-         ,searchByContentAndTitleLikeJSON 
+         ,searchByContentAndTitleLikeJSON
+         ,getCollectionChildJSON
+         ,getCollectionTopJSON
           
          ,getItemsFromAuthor         
          ,getAuthors
@@ -254,6 +259,7 @@ fromSqlToString sv = HDBC.fromSql sv
 --      -> ([HDBC.SqlValue] -> b)
 --      -> IO (Maybe b)
 
+
 sqlQuery :: String -> [HDBC.SqlValue] -> ([HDBC.SqlValue] -> b) -> DBConn (Maybe b)
 sqlQuery sql sqlvals projection = do
   conn   <- ask 
@@ -262,7 +268,8 @@ sqlQuery sql sqlvals projection = do
   row     <- liftIO $ HDBC.fetchRow stmt
   return (fmap projection row)
 
-  
+
+    
 -- sqlQueryAll
 --   :: HDBC.IConnection conn =>
 --      conn
@@ -289,6 +296,13 @@ sqlQueryColumn :: String -> [HDBC.SqlValue] -> (HDBC.SqlValue -> b) -> DBConn [b
 sqlQueryColumn sql sqlvals coercion = do
   sqlQueryAll sql sqlvals (coercion . (!!0))
   
+
+sqlRun :: String -> [HDBC.SqlValue] -> DBConn ()
+sqlRun sql sqlvals = do
+  conn    <- ask 
+  stmt    <- liftIO $ HDBC.prepare conn sql
+  liftIO  $ HDBC.execute stmt sqlvals
+  liftIO  $ HDBC.commit conn 
     
         
 withConnection :: HDBC.IConnection  conn => IO conn -> (conn -> IO r) -> IO r
@@ -301,6 +315,7 @@ withConnection ioConn function = do
 
 -- getCollections :: HDBC.IConnection conn => conn -> IO [(Int, String)]
 
+{- Get all collections -}
 getCollections :: DBConn [ZoteroColl]
 getCollections = do
 
@@ -319,6 +334,44 @@ getCollections = do
 
 getCollectionsJSON :: DBConn BLI.ByteString
 getCollectionsJSON = encode <$> getCollections
+
+{- Get only top level collections -}
+getCollectionTop :: DBConn [ZoteroColl]
+getCollectionTop = do
+
+  sqlQueryAll sql [] projection
+  
+    where
+  
+      sql = "SELECT collectionID, collectionName FROM collections \
+            \WHERE  parentCollectionID IS NULL"
+
+      projection  row =  ZoteroColl (fromSqlToInt $ row !! 0)
+                                    (fromSqlToString $ row !! 1)        
+
+
+getCollectionTopJSON :: DBConn BLI.ByteString
+getCollectionTopJSON = encode <$> getCollectionTop
+
+{- Get sub-collections of a collection -}
+getCollectionChild :: Int -> DBConn [ZoteroColl]
+getCollectionChild collID = do
+
+  let collID' = fromIntToInt64 collID
+  
+  sqlQueryAll sql [HDBC.SqlInt64 collID'] projection  
+  
+    where
+  
+      sql = "SELECT collectionID, collectionName FROM collections \
+            \WHERE  parentCollectionID = ?"  
+
+      projection  row =  ZoteroColl (fromSqlToInt $ row !! 0)
+                                    (fromSqlToString $ row !! 1)
+        
+
+getCollectionChildJSON :: Int -> DBConn BLI.ByteString
+getCollectionChildJSON collID = encode <$> getCollectionChild collID
 
 --showCollections :: DBConn ()  
 showCollections conn = do
@@ -493,11 +546,6 @@ itemAuthors itemID = do
       "AND      creators.creatorDataID = creatorData.creatorDataID",
       "AND      itemCreators.itemID = ?"
       ]
-
-
-
-
-
 
 ignore :: IO a -> IO ()
 ignore ioValue = do
@@ -712,6 +760,155 @@ searchByContentAndTitleLikeJSON searchWord = do
   items <- searchByContentAndTitleLike searchWord  
   getZoteroItemsJSON items 
 
+
+
+
+replaceTagBy :: Int -> Int -> DBConn ()
+replaceTagBy  tagIDfrom tagIDto = do
+
+  let tagIDfrom' = fromIntToInt64 tagIDfrom
+  let tagIDto'   = fromIntToInt64 tagIDto
+
+  sqlRun sql1 [HDBC.SqlInt64 tagIDto', HDBC.SqlInt64 tagIDfrom']
+  sqlRun sql2 [HDBC.SqlInt64 tagIDfrom']
+    
+  where
+
+    sql1 = "UPDATE itemTags    \
+           \SET    tagID = ?   \
+           \WHERE  tagID = ? "
+
+    sql2 = "DELETE FROM tags WHERE tagID = ?"
+
+
+
+removeAuthor :: Int -> DBConn ()
+removeAuthor id = do 
+
+  let id' = fromIntToInt64 id
+
+  row  <-  sqlQuery sql0 [HDBC.SqlInt64 id'] (\x -> x)
+  let dataId = fmap head row
+                     
+  case dataId of
+
+    Nothing      -> return ()
+    
+    Just dataId' -> do
+                        sqlRun sql1 [HDBC.SqlInt64 id']
+                        sqlRun sql2 [HDBC.SqlInt64 id']
+                        sqlRun sql3 [dataId']
+
+  where
+
+    sql0 = "SELECT creatorDataID FROM creators WHERE creatorID = ?"
+    
+    sql1 = "DELETE FROM itemCreators WHERE creatorID = ? "
+
+    sql2 = "DELETE FROM creators WHERE creatorID = ?"
+
+    sql3 = "DELETE FROM creatorData WHERE creatorDataID = ?"
+    
+
+replaceAuthorBy :: Int -> Int -> DBConn ()
+replaceAuthorBy fromId toId = do
+
+  let fromId' = fromIntToInt64 fromId
+  let toId'   = fromIntToInt64 toId
+
+  sqlRun sql [HDBC.SqlInt64 toId', HDBC.SqlInt64 fromId']
+
+  removeAuthor fromId
+  
+  where
+
+    sql = "UPDATE itemCreators \
+          \SET    creatorID = ? \
+          \WHERE  creatorID = ? "
+
+
+renameTag :: Int -> String -> DBConn ()
+renameTag id name = do
+  
+  let id' = fromIntToInt64 id
+
+  sqlRun sql [HDBC.SqlString name, HDBC.SqlInt64 id']
+  
+  where
+
+    sql = "UPDATE tags \
+          \SET    name = ? \
+          \WHERE  tagID = ?"
+
+
+
+renameCollection :: Int -> String -> DBConn ()
+renameCollection id name = do
+  
+  let id' = fromIntToInt64 id
+
+  sqlRun sql [HDBC.SqlString name, HDBC.SqlInt64 id']
+  
+  where
+
+    sql = "UPDATE collections \
+          \SET    collectionName = ? \
+          \WHERE  collectionID = ?"
+          
+      
+
+deleteTag :: Int -> DBConn ()
+deleteTag id = do
+  
+  let id' = fromIntToInt64 id
+
+  sqlRun sql1 [HDBC.SqlInt64 id']
+  sqlRun sql2 [HDBC.SqlInt64 id']
+
+  where
+    sql1 = "DELETE  FROM itemTags WHERE tagID = ?"
+    sql2 = "DELETE  FROM tags WHERE tagID = ?"
+
+
+renameAuthor :: Int -> String -> String -> DBConn ()
+renameAuthor id firstName lastName = do
+  
+  let id' = fromIntToInt64 id
+
+  sqlRun sql [HDBC.SqlString firstName, HDBC.SqlString lastName, HDBC.SqlInt64 id']
+
+  where
+
+    sql = "UPDATE creatorData \
+          \SET   firstName = ?, lastName = ? \
+          \WHERE  creatorDataID IN \
+          \         (SELECT creatorData.creatorDataID \
+          \          FROM creatorData, creators \
+          \          WHERE  creators.creatorDataID  = creatorData.creatorDataID \
+          \          AND    creators.creatorID = ? )"
+
+
+
+setItemField :: Int -> String -> String -> DBConn () 
+setItemField itemID field value  = do
+
+  let itemID' = fromIntToInt64 itemID
+
+  sqlRun sql [HDBC.SqlString value,
+              HDBC.SqlInt64  itemID',
+              HDBC.SqlString field]
+
+  where
+
+    sql = "UPDATE itemDataValues \
+          \SET    value = ? \ 
+          \WHERE  valueID IN ( \
+          \SELECT  itemDataValues.valueID \
+          \FROM    fields, itemDataValues, itemData \
+          \WHERE   itemData.fieldID = fields.fieldID \
+          \AND     itemData.valueID = itemDataValues.valueID \
+          \AND     itemData.itemID = ? \
+          \AND     fields.fieldName = ? )"
 
 {-
 
