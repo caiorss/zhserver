@@ -576,7 +576,10 @@ getAuthors  = do
 
   where
 
-    sql = "SELECT creatorDataID, firstName, lastName FROM creatorData"
+    sql = "SELECT    creators.creatorID, creatorData.firstName, creatorData.lastName \
+          \FROM      creatorData, creators \
+          \WHERE     creatorData.creatorDataID = creators.creatorDataID \
+          \ORDER BY  creators.creatorID"
   
     projection row = ZoteroAuthor (fromSqlToInt    (row !! 0))
                                   (fromSqlToString (row !! 1))
