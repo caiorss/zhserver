@@ -160,6 +160,10 @@ routes = msum
     
     {- REST API -}
 
+
+  , flatten $ dir "api" $ dir "colls" $ dir "without"
+         $ runDbQuery Z.itemsWithoutCollectionsJSON  
+          
     -- Return all items from a given collection
     -- 
     -- /api/colls?id=23423
@@ -172,9 +176,12 @@ routes = msum
     -- /api/colls
     --
     , flatten $ dir "api" $ dir "colls" $ routeCollection
-
-
+    
+      
     , flatten $ dir "api" $ dir "colls" $ routeTagsFromCollID
+
+
+
 
     -- Returns all collections from a given tag
     --
@@ -209,18 +216,18 @@ routes = msum
   {------------- Static Files -----------}
     
   , flatten $ dir "attachment" $ serveDirectory DisableBrowsing [] Z.storagePath
-      
-  , flatten $ dir "static" $  serveDirectory EnableBrowsing
-                                                  ["index.html",
+
+
+  -- // Homer - root route "/"
+  --
+  , flatten $ serveDirectory EnableBrowsing      ["index.html",
                                                    "style.css",
                                                    "loader.js"
                                                   ]
-                                                  "assets"
-
-  , flatten $ dir "arch" $ serveDirectory EnableBrowsing [] "/tmp/arch"
-    
+                                                  "assets"    
                                                   
-  , flatten $ seeOther "static" "static"                                                       
+ -- , flatten $ seeOther "static" "/"
+  , flatten $ Response.notFound $ "Error: Not found"                                              
     
   ]
 

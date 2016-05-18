@@ -21,7 +21,7 @@ module Zotero
          ,itemAuthors
          ,sqlQuery
          ,sqlQueryAll
-         ,sqlQueryColumn
+         ,sqlQueryRow
          ,database
          ,storagePath
          ,dbConnection
@@ -33,7 +33,9 @@ module Zotero
          ,searchByContentAndTitleLike
 
           ,getCollectionChild
-          ,getCollectionTop 
+          ,getCollectionTop
+
+           , itemsWithoutCollections
 
           {- JSON Export Functions -}
          ,getCollectionsJSON
@@ -51,6 +53,8 @@ module Zotero
          ,searchByContentAndTitleLikeJSON
          ,getCollectionChildJSON
          ,getCollectionTopJSON
+         ,itemsWithoutCollectionsJSON
+
           
          ,getItemsFromAuthor         
          ,getAuthors
@@ -58,6 +62,7 @@ module Zotero
 
          ,joinStrings
          ,strip
+         
 
        ) where
 
@@ -89,6 +94,9 @@ import GHC.Generics
 
 -- import Data.ByteString.Char8 (ByteString)
 import qualified Data.ByteString.Lazy.Internal as BLI
+
+
+import System.Random (getStdGen, newStdGen, randomRs)
 
 {- ---------------------- Types -----------------}
 
@@ -253,6 +261,17 @@ fromSqlToInt  sv = HDBC.fromSql sv
 fromSqlToString :: HDBC.SqlValue -> String
 fromSqlToString sv = HDBC.fromSql sv 
 
+createKey :: IO String 
+createKey = do
+
+  g <- newStdGen
+
+  return $ map (alphabet!!) $ take 8 $ randomRs (0, 35) g
+  
+  where
+    alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+
 -- sqlQuery :: HDBC.IConnection conn =>  conn
 --      -> String
 --      -> [HDBC.SqlValue]
@@ -281,20 +300,32 @@ sqlQueryAll sql sqlvals projection = do
   stmt    <- liftIO $ HDBC.prepare con sql
   liftIO  $ HDBC.execute stmt sqlvals  
   rows    <- liftIO $ HDBC.fetchAllRows stmt
-  return (map projection rows)
+  return (fmap projection rows)
 
 
 {-
-sqlQueryColumn :: HDBC.IConnection conn => conn
+sqlQueryRow :: HDBC.IConnection conn => conn
                -> String
                -> [HDBC.SqlValue]
                -> (HDBC.SqlValue -> b)
                -> IO [b]
 -}
 
-sqlQueryColumn :: String -> [HDBC.SqlValue] -> (HDBC.SqlValue -> b) -> DBConn [b]   
-sqlQueryColumn sql sqlvals coercion = do
+sqlQueryRow :: String -> [HDBC.SqlValue] -> (HDBC.SqlValue -> b) -> DBConn [b]   
+sqlQueryRow sql sqlvals coercion = do
   sqlQueryAll sql sqlvals (coercion . (!!0))
+
+
+sqlQueryOne :: String -> [HDBC.SqlValue] -> (HDBC.SqlValue -> b) -> DBConn (Maybe b)
+sqlQueryOne sql sqlvals projection = do
+  conn   <- ask 
+  stmt   <- liftIO $  HDBC.prepare conn sql
+  liftIO $ HDBC.execute stmt sqlvals
+  row     <- liftIO $ HDBC.fetchRow stmt
+  liftIO $ HDBC.commit conn 
+  return $ (!!0) . (map projection) <$> row
+
+  
   
 
 sqlRun :: String -> [HDBC.SqlValue] -> DBConn ()
@@ -388,7 +419,7 @@ collectionItems :: Int -> DBConn [Int]
 collectionItems collID = do
   
   let collID' = fromIntToInt64 collID
-  sqlQueryColumn sql [HDBC.SqlInt64 collID'] fromSqlToInt
+  sqlQueryRow sql [HDBC.SqlInt64 collID'] fromSqlToInt
   
   where
     sql = "SELECT  itemID FROM collectionItems WHERE collectionID = ?"
@@ -436,6 +467,27 @@ itemCollections  itemID = do
                        ,"WHERE  itemID = ?"
                        ,"AND    collectionItems.collectionID = collections.collectionID"
                       ]
+
+
+
+itemsWithoutCollections :: DBConn [Int]
+itemsWithoutCollections =
+  
+  sqlQueryRow sql [] fromSqlToInt
+  
+  where
+            
+    sql = "SELECT itemID \
+          \FROM   items \
+          \WHERE  itemID NOT IN ( SELECT itemID FROM collectionItems ) LIMIT 100"
+
+itemsWithoutCollectionsJSON :: DBConn BLI.ByteString
+itemsWithoutCollectionsJSON = do 
+  items <- itemsWithoutCollections
+  json  <- getZoteroItemsJSON items
+  return json 
+  
+
 
 
 
@@ -600,7 +652,7 @@ getTagItems tagID = do
   
   let tagID' = fromIntToInt64 tagID 
 
-  sqlQueryColumn sql [HDBC.SqlInt64 tagID'] fromSqlToInt
+  sqlQueryRow sql [HDBC.SqlInt64 tagID'] fromSqlToInt
                                         
   where
     sql = unlines $ ["SELECT itemID", 
@@ -629,7 +681,7 @@ getAuthors  = do
     sql = "SELECT    creators.creatorID, creatorData.firstName, creatorData.lastName \
           \FROM      creatorData, creators \
           \WHERE     creatorData.creatorDataID = creators.creatorDataID \
-          \ORDER BY  creators.creatorID"
+          \ORDER BY creatorData.firstName || ' ' || creatorData.lastName"
   
     projection row = ZoteroAuthor (fromSqlToInt    (row !! 0))
                                   (fromSqlToString (row !! 1))
@@ -645,7 +697,7 @@ getItemsFromAuthor  authorID =
 
   let authorID' = fromIntToInt64 authorID in
   
-  sqlQueryColumn  sql [HDBC.SqlInt64 authorID'] fromSqlToInt
+  sqlQueryRow  sql [HDBC.SqlInt64 authorID'] fromSqlToInt
 
   where
 
@@ -717,7 +769,7 @@ getTagsFromCollectionJSON collID =
 searchByTitleWordLike :: String -> DBConn [Int]
 searchByTitleWordLike  searchWord = do
   
-  sqlQueryColumn sql [HDBC.SqlString searchWord]  fromSqlToInt
+  sqlQueryRow sql [HDBC.SqlString searchWord]  fromSqlToInt
     
     where
 
@@ -739,7 +791,7 @@ searchByTitleWordLikeJSON searchWord = do
 searchByContentAndTitleLike :: String -> DBConn [Int]
 searchByContentAndTitleLike searchWord = do
 
-  sqlQueryColumn sql [HDBC.SqlString searchWord, HDBC.SqlString searchWord]  fromSqlToInt
+  sqlQueryRow sql [HDBC.SqlString searchWord, HDBC.SqlString searchWord]  fromSqlToInt
   
   where
      sql = unlines $
@@ -909,6 +961,27 @@ setItemField itemID field value  = do
           \AND     itemData.valueID = itemDataValues.valueID \
           \AND     itemData.itemID = ? \
           \AND     fields.fieldName = ? )"
+
+
+
+{- Note: Only works in PostgresSQL -}
+insertCollection :: String -> DBConn Int 
+insertCollection name = do
+
+  key <- liftIO $ createKey
+  id <- fromJust <$> sqlQueryOne sql [HDBC.SqlString name, HDBC.SqlString key] fromSqlToInt
+  return id 
+
+  where
+
+    sql = "WITH rows as (\
+          \INSERT INTO collections (collectionID, collectionName, key)\
+          \VALUES ( (SELECT 1 + max(collectionID) FROM collections), ?, ?)\
+          \)\
+          \SELECT max(collectionID) FROM collections"
+
+
+
 
 {-
 

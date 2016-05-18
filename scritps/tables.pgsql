@@ -145,7 +145,8 @@ CREATE INDEX transactions_transactionSetID ON transactions(transactionSetID);
 CREATE TABLE transactionLog (
     transactionID INT,
     field TEXT,
-    value NONE,
+--    value NONE,
+    value NULL
     PRIMARY KEY (transactionID, field, value)
     
 );
@@ -292,6 +293,8 @@ CREATE TABLE itemCreators (
 
 CREATE TABLE collections (
     collectionID INTEGER PRIMARY KEY,
+  --  collectionID SERIAL PRIMARY KEY,
+    
     collectionName TEXT NOT NULL,
     parentCollectionID INT DEFAULT NULL,
     dateAdded TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -523,11 +526,14 @@ CREATE INDEX customBaseFieldMappings_baseFieldID ON customBaseFieldMappings(base
 
 CREATE INDEX customBaseFieldMappings_customFieldID ON customBaseFieldMappings(customFieldID);
 
-CREATE TABLE translatorCache (
-	leafName TEXT PRIMARY KEY,
-	translatorJSON TEXT,
-	code TEXT,
-	lastModifiedTime INT
-);
 
-CREATE TABLE zoteroDummyTable (id INTEGER PRIMARY KEY);
+
+
+-- CREATE TABLE translatorCache (
+-- 	leafName TEXT PRIMARY KEY,
+-- 	translatorJSON TEXT,
+-- 	code TEXT,
+-- 	lastModifiedTime INT
+-- );
+
+-- CREATE TABLE zoteroDummyTable (id INTEGER PRIMARY KEY);

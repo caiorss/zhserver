@@ -1,4 +1,11 @@
 
+a:visited {
+    text-decoration: none;
+}
+
+a:active {
+    text-decoration: underline;
+}
 
 h1, h2 {
     text-align: center;    
@@ -155,16 +162,26 @@ th {
 
 .itemAttribRow li {
     float: left;            /* Bullet list horizontal */
-    padding-left: 10px;
+    padding-left: 0px;
     diplay: block;
+    padding-right: 10px;
+    
 }
 
 .fiterItem {
 
     max-width: 80%;
-    overflow: hidden;
+    overflow:  hidden;
     word-wrap: break-word;
+    margin-top: 10px;
 }
+
+.filterItem li {
+    margin-top: 10px;
+    display:    inline-block;
+    font-size:  14px;
+}
+
 
 .zoteroItem {
 
