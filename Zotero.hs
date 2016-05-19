@@ -11,7 +11,7 @@ module Zotero
          DBConn 
          ,withConnection
          ,getCollections
-         ,showCollections
+       --  ,showCollections
          ,collectionItems
          ,itemTagsData
          ,itemTags
@@ -184,7 +184,13 @@ instance ToJSON ZoteroColl where
 
 
 
--- instance ToJSON ZoteroItem 
+-- instance ToJSON ZoteroItem
+
+stripPrefixStr :: String -> String -> String 
+stripPrefixStr prefix str =
+  case T.unpack <$> T.stripPrefix (T.pack prefix) (T.pack str) of
+    Nothing -> str
+    Just s  -> s 
  
 
 database =  "/home/archmaster/zotero.sqlite"
@@ -405,13 +411,13 @@ getCollectionChildJSON :: Int -> DBConn BLI.ByteString
 getCollectionChildJSON collID = encode <$> getCollectionChild collID
 
 --showCollections :: DBConn ()  
-showCollections conn = do
-  mapM_ print =<< runReaderT getCollections conn 
+-- showCollections conn = do
+--   mapM_ print =<< runReaderT getCollections conn 
 
-showCollections2 :: DBConn ()
-showCollections2 = do
-  colls <- getCollections
-  liftIO  (mapM_ print colls)
+-- showCollections2 :: DBConn ()
+-- showCollections2 = do
+--   colls <- getCollections
+--   liftIO  (mapM_ print colls)
 
 
 --collectionItems :: HDBC.IConnection conn => conn -> Int -> IO [Int]
@@ -470,20 +476,25 @@ itemCollections  itemID = do
 
 
 
-itemsWithoutCollections :: DBConn [Int]
-itemsWithoutCollections =
+itemsWithoutCollections :: Int -> Int -> DBConn [Int]
+itemsWithoutCollections paging offset  =
   
-  sqlQueryRow sql [] fromSqlToInt
-  
+  sqlQueryRow sql [HDBC.SqlInt64 $ fromIntToInt64 paging,
+                   HDBC.SqlInt64 $ fromIntToInt64 (offset * paging)
+                  ]
+                  fromSqlToInt  
   where
             
     sql = "SELECT itemID \
           \FROM   items \
-          \WHERE  itemID NOT IN ( SELECT itemID FROM collectionItems ) LIMIT 100"
+          \WHERE  itemID NOT IN ( SELECT itemID FROM collectionItems ) \
+          \ORDER BY itemID \
+          \LIMIT ? \
+          \OFFSET ? "
 
-itemsWithoutCollectionsJSON :: DBConn BLI.ByteString
-itemsWithoutCollectionsJSON = do 
-  items <- itemsWithoutCollections
+itemsWithoutCollectionsJSON :: Int -> Int -> DBConn BLI.ByteString
+itemsWithoutCollectionsJSON paging offset = do 
+  items <- itemsWithoutCollections paging offset 
   json  <- getZoteroItemsJSON items
   return json 
   
@@ -533,6 +544,23 @@ itemAttachmentData itemID = do
     projection = map fromSqlToString
 
 
+
+(<!!>) :: [a] -> Int -> Maybe a
+(<!!>) xs i =
+  if length xs > i
+  then Just $ xs !! i
+  else Nothing 
+       
+
+
+{-
+    ["/home/tux/Downloads/Python Packaging for Production.pdf",
+     "7ZPVKJQH","application/pdf",
+     "attachment"
+     ]
+
+-}
+
 itemAttachmentFile :: Int -> DBConn (Maybe FilePath)
 itemAttachmentFile itemID = do
   
@@ -541,15 +569,20 @@ itemAttachmentFile itemID = do
 
   where
     
-      -- Maybe Monad 
+      -- Maybe Monad
+    attachmetFile :: Maybe [String] -> Maybe String 
     attachmetFile attachmentData = do
       
-      attachdata <- attachmentData
+      attachdata <- attachmentData      
+      key        <- attachdata <!!> 1
+      path'      <- attachdata <!!> 0      
+--      path       <- (splitOn ":" path') <!!> 1
+      return $ SF.joinPath [ key, stripPrefixStr ":storage"  path']
 
-      let path = splitOn ":" (attachdata !! 0) !! 1
-      let key  = attachdata !! 1 
-          
-      return $ SF.joinPath [ key, path]
+        
+      -- return $ do path <- splitOn ":" (attachdata <!!> 0) >>= (<!!>1)
+      --             key  <-  attachdata <!!> 1 
+      --             return $ SF.joinPath [ key, path]
 
   
 

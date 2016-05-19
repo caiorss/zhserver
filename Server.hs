@@ -8,10 +8,11 @@ import Control.Monad.Trans (liftIO, lift)
 import Control.Monad.Trans.Reader 
 import Control.Monad.Trans.Maybe
 
+
 import Data.Text        (Text)
 import qualified Data.Text as T
 
-import Control.Monad    (msum, mapM, mapM_, foldM)
+import Control.Monad    
 
 import Text.Read (readMaybe)
 
@@ -75,8 +76,8 @@ data ServerConfig = ServerConfig
 
                     } deriving (Eq, Show, Read)
 
-readInt :: String -> Maybe Int 
-readInt s = readMaybe s
+parseInt :: String -> Maybe Int 
+parseInt s = readMaybe s
 
 
 withConnServer ::  (HDBC.IConnection conn, Response.ToMessage a) =>
@@ -138,7 +139,7 @@ serverRouteParamID :: String
               -> (Int -> DBConn LC.ByteString)
               -> ServerApp LC.ByteString
 serverRouteParamID param dbFn = 
-  serverRouteParam readInt param LC.empty dbFn
+  serverRouteParam parseInt param LC.empty dbFn
 
 
 {- Crates a server route for which the paramter is 
@@ -161,8 +162,8 @@ routes = msum
     {- REST API -}
 
 
-  , flatten $ dir "api" $ dir "colls" $ dir "without"
-         $ runDbQuery Z.itemsWithoutCollectionsJSON  
+  , flatten $ dir "api" $ dir "collsw"
+         $ routeItemsWithoutCollection
           
     -- Return all items from a given collection
     -- 
@@ -350,3 +351,34 @@ routeRealatedTags = serverRouteParamID "id" Z.getRelatedTagsJSON
 routeSearchByContentAndTitleLike :: ServerApp LC.ByteString
 routeSearchByContentAndTitleLike =
   serverRouteParamString "content" Z.searchByContentAndTitleLikeJSON
+
+
+routeItemsWithoutCollection :: ServerApp LC.ByteString
+routeItemsWithoutCollection = do
+  conn <- ask 
+  paging <- parseInt <$>  look   "paging"
+  offset <- parseInt <$>  look "offset"
+
+  case paging of
+    Nothing -> return (LC.pack "Error wrong parameters")
+
+    Just p -> case offset of
+              Nothing -> return (LC.pack "Error wrong parameters")
+              Just o ->  runDbQuery $ Z.itemsWithoutCollectionsJSON p o
+
+
+
+routeItemsWithoutCollection2 :: ServerApp LC.ByteString
+routeItemsWithoutCollection2 = do
+  conn <- ask 
+  paging <- parseInt <$>  look   "paging"
+  offset <- parseInt <$>  look "offset"
+
+  case paging of
+    
+    Nothing -> return (LC.pack "Error wrong parameters")
+
+    Just p -> case offset of
+              Nothing -> return (LC.pack "Error wrong parameters")
+              Just o ->  runDbQuery $ Z.itemsWithoutCollectionsJSON p o
+
