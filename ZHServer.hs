@@ -267,7 +267,7 @@ parseDbDriver uri =
 loadServerConf configFile = do
   
   conf' <- (\text -> readMaybe text :: Maybe ServerConfig) <$> readFile configFile
-    
+
 
   case conf' of
 
@@ -394,6 +394,9 @@ parseArgs args =
 
   ["-c", file]       -> loadServerConf file
 
+  -- ["-listen", host; port; "--dburi"; uri; "--storage"; path]  -> loadServerConf file
+  
+  _                  -> putStrLn "Error: Invalid option."
 
 main = do
   putStrLn "Server Running"
