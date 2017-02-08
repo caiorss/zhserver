@@ -18,13 +18,132 @@ Basic functionality:
    - Document ID
    - Download Zotero files. 
 
+** Build Instructions 
+*** Install Dependencies 
+
+Install system dependencies (Arch Linux)
+
+#+BEGIN_SRC sh
+sudo pacman -S postgresql  extra/postgresql-libs
+#+END_SRC
+
+Install Haskell dependencies with stack 
+
+#+BEGIN_SRC sh 
+stack install HDBC-sqlite3
+stack install HDBC-postgresql
+stack install happstack-server
+#+END_SRC
+
+*** Compile 
+
+#+BEGIN_SRC sh 
+$ stack exec -- ghc --make Server 
+Linking Server ...
+#+END_SRC
+
+** Usage 
+*** Find the Zotero's databases 
+
+Find the sqlite databases for testing 
+
+#+BEGIN_SRC sh 
+$ find ~/.mozilla -name zotero.sqlite
+/home/arch/.mozilla/firefox/dic34vce.default/zotero/zotero.sqlite
+/home/arch/.mozilla/firefox/mwad0hks.zotero/zotero/zotero.sqlite
+#+END_SRC
+
+*** Find storage directory 
+
+#+BEGIN_SRC sh 
+$ find ~/.mozilla -name 'storage' | grep zotero
+/home/arch/.mozilla/firefox/dic34vce.default/zotero/storage
+/home/arch/.mozilla/firefox/mwad0hks.zotero/zotero/storage
+/home/arch/.mozilla/firefox/mwad0hks.zotero/storage
+
+$ ls /home/arch/.mozilla/firefox/mwad0hks.zotero/zotero/storage | head -n16
+22HUC5F9/
+22NEC2IE/
+236SC55S/
+2372MKGN/
+23K7EW4R/
+24P9755W/
+258V847Q/
+25F3TBCX/
+25HSTF7M/
+267B6WPX/
+26B3KTBR/
+26W3KU88/
+27B9VSG4/
+27ERHSIM/
+27FEX8GN/
+27GZRZ49/
+
+$ ls /home/arch/.mozilla/firefox/mwad0hks.zotero/zotero/storage/267B6WPX
+ 3512243057-widgets.js                                           ghosh_cover150.jpg          plusone.js
+'3ZGfnXYPgAVNngtqatUNgAAAABJRU5ErkJggg=='                        gplus-32.png                product.jpg
+ anon16-rounded.gif                                              gprofile_button-16.png      s_bottom.png
+ b16-rounded.gif                                                 gradients_light.png         share_buttons_20_3.png
+ body_gradient_tile_light.png                                    icon18_edit_allbkg.gif      shAutoloader.js
+ brand                                                           icon18_email.gif            shCore.js
+ cm.002.png                                                      icon18_wrench_allbkg.png    show_ads.js
+ combinators-as-sublanguage-of-dsl.css                           icon_delete13.gif           stats-flipper.png
+ combinators-as-sublanguage-of-dsl.html                          icon_wikipedia_search.png   s_top.png
+ diagram-trans.gif                                               KhUMAAAAAElFTkSuQmCC        triangle_ltr.gif
+'DLgASBKnApgkVgXIkhgKiNKJ005s4gDLbCZBiSxfygAAAABJRU5ErkJggg=='   mobile_share_icons4.png     triangle_open.gif
+ favicon.ico                                                     openid16-rounded.gif        untitled
+ feed-icon32x32.png                                              photo.jpg
+
+
+$ ls /home/arch/.mozilla/firefox/mwad0hks.zotero/zotero/storage/26B3KTBR/
+'Translatable Finite State Time Machine.pdf'
+
+#+END_SRC
+
+*** Set the configuration file 
+
+The file zotserver.conf stores the server configuration such as port
+and host which the server will listen to, the storage path and the
+database. 
+
+Example: 
+
+#+BEGIN_SRC sh 
+ServerConfig {
+               serverPort         = 8000
+             , serverHost         = "0.0.0.0"
+             , serverStoragePath  = "/home/arch/.mozilla/firefox/mwad0hks.zotero/zotero/zotero" 
+             , serverDatabase     = "sqlite:///home/arch/.mozilla/firefox/mwad0hks.zotero/zotero/zotero.sqlite"
+             }
+#+END_SRC
+
+The serverHost variable sets what address the server will listen to: 
+ 
+ - 0.0.0.0   - Listen to all hosts
+ - 127.0.0.1 - Listen to localhost only 
+
+The serverDatabase variable sets the database used by the server. The
+databases Sqlite and Postgres are supported. 
+
+ - SQlite URI:    
+
+#+BEGIN_SRC text 
+sqlite:///home/arch/.mozilla/firefox/mwad0hks.zotero/zotero/zotero.sqlite
+#+END_SRC
+
+ - Postgres URI: 
+
+#+BEGIN_SRC text 
+postgres://postgres@localhost/zotero
+#+END_SRC
+
 ** Benefits 
 
 Find, classify information, books, magazines, laws, patents, technical
 standards, web page snapshots and papers fast. 
 
 ** Road map 
-
+   
  - [] Find items by tag
  - [] Find items by ID
  - [x] Find items by collection
@@ -56,9 +175,6 @@ The API has the following scheme:
 | =/api/item?id=10=       | Return the item which ID is 10                    |   |
 | =/api/attachment?id=20= | Return a link to file of item  which ID is 10     |   |
 |                         |                                                   |   |
-
-
-
 
 * Database Documentation 
 ** Search Titles that contains a word 
