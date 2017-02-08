@@ -1,11 +1,12 @@
 all: server 
 
+app = ZHServer 
 
 zotero:
 	stack exec -- ghc --make Zotero 
 
 server: 
-	stack exec -- ghc --make Server
+	stack exec -- ghc --make $(app)
 
 ## Linux Centos specific dependencies
 deps-centos:
@@ -30,13 +31,13 @@ $(dbtest): $(dbsrc)
 	cat $(dbsrc) | sqlite3 testdb/zotero.sqlite
 
 run: Server 
-	./Server 
+	./$(app) 
 
 run-test: dbtest server
-	./Server --conf ./zhserver.conf
+	./$(app) --conf ./zhserver.conf
 
 run-test2: dbtest server
-	./Server --conf ./my-zhserver.conf
+	./$(app) --conf ./my-zhserver.conf
 
 
 clean-db:
