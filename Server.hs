@@ -2,8 +2,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE RecordWildCards #-}
 
-
-
 import Control.Monad.Trans (liftIO, lift)
 import Control.Monad.Trans.Reader 
 import Control.Monad.Trans.Maybe
@@ -296,24 +294,7 @@ loadServerConf configFile = do
   
 
 
-
-main = do
-  
-  putStrLn "Server Running"
-
-  loadServerConf "zhserver.conf"
-
-  -- withConnServer2 Pg.connectPostgreSQL
-  --                "postgres://postgres@localhost/zotero"
-  --                serverConf
-  --                routes
-
-  -- withConn Pg.connectPostgreSQL
-  --          "postgres://postgres@localhost/zotero"
-           
-  
-
- {- --------------- ROUTES ----------------}
+{- ================ HTTP ROUTES ======================== -}
 
 
 routeCollection :: ServerApp LC.ByteString
@@ -391,3 +372,21 @@ routeItemsWithoutCollection2 = do
   --             Nothing -> return (LC.pack "Error wrong parameters")
   --             Just o ->  runDbQuery $ Z.itemsWithoutCollectionsJSON p o
 
+
+{- ==================== MAIN  ======================== -}
+
+
+main = do
+  
+  putStrLn "Server Running"
+
+  loadServerConf "zhserver.conf"
+
+  -- withConnServer2 Pg.connectPostgreSQL
+  --                "postgres://postgres@localhost/zotero"
+  --                serverConf
+  --                routes
+
+  -- withConn Pg.connectPostgreSQL
+  --          "postgres://postgres@localhost/zotero"
+          
