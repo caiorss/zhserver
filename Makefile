@@ -7,6 +7,18 @@ zotero:
 server: 
 	stack exec -- ghc --make Server
 
+## Linux Centos specific dependencies
+deps-centos:
+	yum install sqlite-devel.x86_64
+	yum install postgresql-devel.x86_64
+
+## Install dependencies need to compile the project
+deps:
+	stack install HDBC
+	stack install HDBC-sqlite3
+	stack install HDBC-postgresql
+	stack install happstack-server 
+
 
 dbsrc  := database/zotero-test.sql
 dbtest := testdb/zotero.sqlite
