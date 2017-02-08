@@ -382,8 +382,13 @@ parseArgs :: [String] -> IO ()
 parseArgs args =
   case args of
   []                 ->  do
-                           putStrLn "Loading default configuration file"
-                           loadServerConf "zhserver.conf"
+                           putStrLn "Loading default configuration file from ZHSERVER_CONFIG environment variable."
+                           conf  <- lookupEnv "ZHSERVER_CONFIG"
+                           case conf of
+                             Just file -> loadServerConf file
+                             Nothing   -> do putStrLn "Error: Configuration file not found"
+
+
 
   ["--conf", file]   -> loadServerConf file
 
