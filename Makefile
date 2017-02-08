@@ -1,13 +1,6 @@
 all: server 
 
 
-run: Server 
-	./Server 
-
-run-test: dbtest server
-	./Server --conf ./zhserver-test.conf
-
-
 zotero:
 	stack exec -- ghc --make Zotero 
 
@@ -23,6 +16,16 @@ $(dbtest): $(dbsrc)
 	mkdir -p testdb
 	mkdir -p testdb/storage
 	cat $(dbsrc) | sqlite3 testdb/zotero.sqlite
+
+run: Server 
+	./Server 
+
+run-test: dbtest server
+	./Server --conf ./zhserver.conf
+
+run-test2: dbtest server
+	./Server --conf ./my-zhserver.conf
+
 
 clean-db:
 	rm -rf ./testdb
