@@ -375,6 +375,16 @@ routeItemsWithoutCollection2 = do
 
 {- ==================== MAIN  ======================== -}
 
+parseArgs :: [String] -> IO ()
+parseArgs args =
+  case args of
+  []                 ->  do
+                           putStrLn "Loading default configuration file"
+                           loadServerConf "zhserver.conf"
+
+  ["--conf", file]   -> loadServerConf file
+
+  _                  -> putStrLn "Error: Invalid option"
 
 main = do
   
