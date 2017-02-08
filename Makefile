@@ -1,16 +1,19 @@
 all: server 
 
-zotero:
-	stack exec -- ghc --make Zotero 
-
-server: Server 
-	stack exec -- ghc --make Server
 
 run: Server 
 	./Server 
 
-run-test:
+run-test: dbtest server
 	./Server --conf ./zhserver-test.conf
+
+
+zotero:
+	stack exec -- ghc --make Zotero 
+
+server: 
+	stack exec -- ghc --make Server
+
 
 dbsrc  := database/zotero-test.sql
 dbtest := testdb/zotero.sqlite
@@ -25,4 +28,8 @@ clean-db:
 	rm -rf ./testdb
 
 clean:
+	rm -rf *.o *.hi *.bin Zotero Server
+
+clean-all:
+	rm -rf ./testdb
 	rm -rf *.o *.hi *.bin Zotero Server
