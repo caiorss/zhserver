@@ -14,6 +14,9 @@ import Control.Monad
 
 import Text.Read (readMaybe)
 
+import System.Environment
+import System.Exit
+
 import qualified Happstack.Server.Response as Response
 
 import qualified Happstack.Server.Internal.Types as ServerTypes 
@@ -387,10 +390,13 @@ parseArgs args =
   _                  -> putStrLn "Error: Invalid option"
 
 main = do
-  
   putStrLn "Server Running"
+  putStrLn "------------------"
+  -- getArgs >>= \args -> putStrLn (show args)
 
-  loadServerConf "zhserver.conf"
+  getArgs >>= parseArgs
+  
+  -- loadServerConf "zhserver.conf"
 
   -- withConnServer2 Pg.connectPostgreSQL
   --                "postgres://postgres@localhost/zotero"
