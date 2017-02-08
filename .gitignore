@@ -2,6 +2,11 @@
 *.o
 *.bin
 *.so
+*.so.*
 *.exe
 Zotero
 Server
+*.sqlite
+*.zip
+*.tgz
+*.tar.bz2
