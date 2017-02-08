@@ -2,8 +2,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE RecordWildCards #-}
 
-
-
 import Control.Monad.Trans (liftIO, lift)
 import Control.Monad.Trans.Reader 
 import Control.Monad.Trans.Maybe
@@ -15,6 +13,9 @@ import qualified Data.Text as T
 import Control.Monad    
 
 import Text.Read (readMaybe)
+
+import System.Environment
+import System.Exit
 
 import qualified Happstack.Server.Response as Response
 
@@ -266,7 +267,7 @@ parseDbDriver uri =
 loadServerConf configFile = do
   
   conf' <- (\text -> readMaybe text :: Maybe ServerConfig) <$> readFile configFile
-    
+
 
   case conf' of
 
@@ -296,24 +297,7 @@ loadServerConf configFile = do
   
 
 
-
-main = do
-  
-  putStrLn "Server Running"
-
-  loadServerConf "zhserver.conf"
-
-  -- withConnServer2 Pg.connectPostgreSQL
-  --                "postgres://postgres@localhost/zotero"
-  --                serverConf
-  --                routes
-
-  -- withConn Pg.connectPostgreSQL
-  --          "postgres://postgres@localhost/zotero"
-           
-  
-
- {- --------------- ROUTES ----------------}
+{- ================ HTTP ROUTES ======================== -}
 
 
 routeCollection :: ServerApp LC.ByteString
@@ -370,15 +354,64 @@ routeItemsWithoutCollection = do
 
 routeItemsWithoutCollection2 :: ServerApp LC.ByteString
 routeItemsWithoutCollection2 = do
-  conn <- ask 
-  paging <- parseInt <$>  look   "paging"
-  offset <- parseInt <$>  look "offset"
+  
+  paging <- parseInt <$>  look "paging" -- :: Maybe Int 
+  offset <- parseInt <$>  look "offset"   -- :: Maybe Int 
 
-  case paging of
+  let ans = do
+        page <- paging 
+        offs <- offset
+        return (page, offs)
+        
+  case ans of
+    Nothing       -> return (LC.pack "Error wrong parameters")
+    Just (p, o)   -> runDbQuery $ Z.itemsWithoutCollectionsJSON p o
     
-    Nothing -> return (LC.pack "Error wrong parameters")
+  -- case paging of
+    
+  --   Nothing -> return (LC.pack "Error wrong parameters")
 
-    Just p -> case offset of
-              Nothing -> return (LC.pack "Error wrong parameters")
-              Just o ->  runDbQuery $ Z.itemsWithoutCollectionsJSON p o
+  --   Just p -> case offset of
+  --             Nothing -> return (LC.pack "Error wrong parameters")
+  --             Just o ->  runDbQuery $ Z.itemsWithoutCollectionsJSON p o
 
+
+{- ==================== MAIN  ======================== -}
+
+parseArgs :: [String] -> IO ()
+parseArgs args =
+  case args of
+  []                 ->  do
+                           putStrLn "Loading default configuration file from ZHSERVER_CONFIG environment variable."
+                           conf  <- lookupEnv "ZHSERVER_CONFIG"
+                           case conf of
+                             Just file -> loadServerConf file
+                             Nothing   -> do putStrLn "Error: Configuration file not found"
+
+
+
+  ["--conf", file]   -> loadServerConf file
+
+  ["-c", file]       -> loadServerConf file
+
+  -- ["-listen", host; port; "--dburi"; uri; "--storage"; path]  -> loadServerConf file
+  
+  _                  -> putStrLn "Error: Invalid option."
+
+main = do
+  putStrLn "Server Running"
+  putStrLn "------------------"
+  -- getArgs >>= \args -> putStrLn (show args)
+
+  getArgs >>= parseArgs
+  
+  -- loadServerConf "zhserver.conf"
+
+  -- withConnServer2 Pg.connectPostgreSQL
+  --                "postgres://postgres@localhost/zotero"
+  --                serverConf
+  --                routes
+
+  -- withConn Pg.connectPostgreSQL
+  --          "postgres://postgres@localhost/zotero"
+          

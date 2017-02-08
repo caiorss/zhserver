@@ -195,7 +195,7 @@ stripPrefixStr prefix str =
 
 database =  "/home/archmaster/zotero.sqlite"
 
-storagePath = "/home/archmaster/.mozilla/firefox/mwad0hks.zotero/zotero/storage"
+storagePath = "/home/arch/.mozilla/firefox/mwad0hks.zotero/zotero/storage"
 
 
 -- dbConnection = SQLite.connectSqlite3 database
@@ -577,7 +577,7 @@ itemAttachmentFile itemID = do
       key        <- attachdata <!!> 1
       path'      <- attachdata <!!> 0      
 --      path       <- (splitOn ":" path') <!!> 1
-      return $ SF.joinPath [ key, stripPrefixStr ":storage"  path']
+      return $ SF.joinPath [ key, stripPrefixStr "storage:"  path']
 
         
       -- return $ do path <- splitOn ":" (attachdata <!!> 0) >>= (<!!>1)
