@@ -10,3 +10,4 @@ Server
 *.zip
 *.tgz
 *.tar.bz2
+/my-zhserver.conf
