@@ -392,7 +392,8 @@ parseArgs args =
 
   ["--conf", file]   -> loadServerConf file
 
-  _                  -> putStrLn "Error: Invalid option"
+  ["-c", file]       -> loadServerConf file
+
 
 main = do
   putStrLn "Server Running"
