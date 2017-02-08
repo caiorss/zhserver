@@ -1,10 +1,13 @@
 all: server 
 
 zotero:
-	nix-shell --command "ghc -c Zotero.hs"
+	stack exec -- ghc --make Zotero 
 
 server:
-	nix-shell --command "ghc --make Server"
+	stack exec -- ghc --make Server
+
+run:
+	./Server 
 
 clean:
 	rm -rf *.o *.hi *.bin Zotero Server
