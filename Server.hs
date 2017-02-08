@@ -370,15 +370,24 @@ routeItemsWithoutCollection = do
 
 routeItemsWithoutCollection2 :: ServerApp LC.ByteString
 routeItemsWithoutCollection2 = do
-  conn <- ask 
-  paging <- parseInt <$>  look   "paging"
-  offset <- parseInt <$>  look "offset"
+  
+  paging <- parseInt <$>  look "paging" -- :: Maybe Int 
+  offset <- parseInt <$>  look "offset"   -- :: Maybe Int 
 
-  case paging of
+  let ans = do
+        page <- paging 
+        offs <- offset
+        return (page, offs)
+        
+  case ans of
+    Nothing       -> return (LC.pack "Error wrong parameters")
+    Just (p, o)   -> runDbQuery $ Z.itemsWithoutCollectionsJSON p o
     
-    Nothing -> return (LC.pack "Error wrong parameters")
+  -- case paging of
+    
+  --   Nothing -> return (LC.pack "Error wrong parameters")
 
-    Just p -> case offset of
-              Nothing -> return (LC.pack "Error wrong parameters")
-              Just o ->  runDbQuery $ Z.itemsWithoutCollectionsJSON p o
+  --   Just p -> case offset of
+  --             Nothing -> return (LC.pack "Error wrong parameters")
+  --             Just o ->  runDbQuery $ Z.itemsWithoutCollectionsJSON p o
 

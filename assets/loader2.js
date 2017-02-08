@@ -253,6 +253,10 @@ function showCollections () {
     console.log("Displayed Collections OK");    
 }
 
+//------------ Show Not in Collection ------------- //
+
+
+
 //------------- Show CollectionID --------------//
 
 function showCollectionID(collUri){
@@ -362,6 +366,7 @@ function showAuthors () {
 
     //console.log("Displayed Collections OK");    
 }
+
 
 
 
