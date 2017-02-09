@@ -821,6 +821,9 @@ searchByTitleWordLikeJSON searchWord = do
   items <- searchByTitleWordLike searchWord  
   getZoteroItemsJSON items 
 
+{- Search all items which content (word) and title
+   contains a search string.
+-}
 searchByContentAndTitleLike :: String -> DBConn [Int]
 searchByContentAndTitleLike searchWord = do
 
