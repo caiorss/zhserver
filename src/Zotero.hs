@@ -2,6 +2,15 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 
+{-
+
+Description: Database interface for Zotero database.
+File:        Zotero.hs
+
+-}
+
+
+
 {- # LANGUAGE DeriveDataTypeable #-}
 
 

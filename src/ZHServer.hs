@@ -2,6 +2,13 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE RecordWildCards #-}
 
+{-
+Description: Zhserver - Zotero/based Web server main file.
+File:        ZHServer.hs  
+
+-}
+
+
 import Control.Monad.Trans (liftIO, lift)
 import Control.Monad.Trans.Reader 
 import Control.Monad.Trans.Maybe

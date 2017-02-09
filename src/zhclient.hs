@@ -1,7 +1,7 @@
 {-
-     Command line interactive client to access the database. 
-  
-file: zhclient.hs 
+
+Description: Command line interactive client to access the database.  
+File:        zhclient.hs 
 
 -}
 
