@@ -3,7 +3,7 @@
 #+EMAIL:  <caiorss.rodrigues@gmail.com>
 #+KEYWORKDS: zotero papers docs documents patent search metadata notes haskell database 
 
-* Documentation 
+* User Guide 
 ** Overview 
 
 Zhserver is an application server that provides a json REST API to
@@ -71,6 +71,12 @@ stack install HDBC-postgresql
 stack install happstack-server
 #+END_SRC
 
+Additional Dependencies: 
+
+ - Sqlite to run the demonstration database 
+
+ - PostgresSQL database server for production 
+
 *** Compile 
 
 #+BEGIN_SRC sh 
@@ -84,6 +90,18 @@ server just run =$ make run-test= it will create the database
 _testdb/zotero.sqlite_ from the sample sql dump _database/zotero-test.sql_
 The server will listen the port 8000 and it can be accessed from
 http://127.0.0.1:8000 or http://localhost:8000 .
+
+
+#+BEGIN_SRC sh
+  $ make run-test 
+  stack exec -- ghc --make -o zhserver.bin src/ZHServer.hs src/Zotero.hs
+  [2 of 2] Compiling Main             ( src/ZHServer.hs, src/ZHServer.o )
+  Linking zhserver.bin ...
+  # stack exec -- ghc src/ZHServer.hs -o bin/ZHServer.bin
+  ./zhserver.bin --conf src/zhserver.conf
+  Server Running
+  ------------------
+#+END_SRC
 
 ** Usage 
 *** Find the Zotero's databases 
@@ -180,6 +198,7 @@ sqlite:///home/arch/.mozilla/firefox/mwad0hks.zotero/zotero/zotero.sqlite
 postgres://postgres@localhost/zotero
 #+END_SRC
 *** Run the server 
+**** Run with Configuration file in Environment Variable 
 
 Pass the configuration file by enviroment variable: 
 
@@ -210,7 +229,7 @@ or
 
 #+END_SRC
 
-Pass Configuration file by command line:
+**** Pass Configuration file by command line:
 
 #+BEGIN_SRC sh 
 $ ./ZHServer --conf zhserver.conf 
@@ -218,12 +237,19 @@ Server Running
 ------------------
 sqlite://testdb/zotero.sqlite
 testdb/zotero.sqlite
-
-
 #+END_SRC
 
-* REST API doc
-** End Points
+**** Run with all server parameters passed by command line 
+
+#+BEGIN_SRC sh 
+  $ ./zhserver.bin --params 0.0.0.0 9090 "sqlite://testdb/zotero.sqlite" ./assets/ testdb/storage 
+  Server Running
+  ------------------
+#+END_SRC
+
+* Development Documentation 
+** REST API doc
+*** End Points
 
 The API has the following scheme:
 
@@ -235,8 +261,8 @@ The API has the following scheme:
 | =/api/item?id=10=       | Return the item which ID is 10                    |   |
 | =/api/attachment?id=20= | Return a link to file of item  which ID is 10     |   |
 |                         |                                                   |   |
-** Examples 
-*** Get item by Id 
+*** Examples 
+**** Get item by Id 
 
 #+BEGIN_SRC json
   $ curl -s http://localhost:8000/api/item?id=17 |  python -mjson.tool
@@ -279,7 +305,7 @@ The API has the following scheme:
 
 #+END_SRC
 
-*** Get Collections 
+**** Get Collections 
 
 Example: Querying the REST api with curl: 
 
@@ -316,7 +342,7 @@ Get collections:
 
 #+END_SRC
 
-*** Get all Items from a Collection 
+**** Get all Items from a Collection 
 
 Query all items wich belongs to collection Fsharp which id=6.
 
@@ -435,7 +461,7 @@ Query all items wich belongs to collection Fsharp which id=6.
 
 #+END_SRC
 
-*** Get all authors 
+**** Get all authors 
 
 #+BEGIN_SRC json
 $ curl -s http://localhost:8000/api/authors |  python -mjson.tool
@@ -521,7 +547,7 @@ $ curl -s http://localhost:8000/api/authors |  python -mjson.tool
 
 #+END_SRC
 
-*** Get all items that belongs to an author 
+**** Get all items that belongs to an author 
 
 #+BEGIN_SRC json
   $ curl -s http://localhost:8000/api/authors?id=10 |  python -mjson.tool
@@ -583,7 +609,7 @@ $ curl -s http://localhost:8000/api/authors |  python -mjson.tool
 
 #+END_SRC
 
-*** Get all tags 
+**** Get all tags 
 
 #+BEGIN_SRC json
   $ curl -s http://localhost:8000/api/tags |  python -mjson.tool
@@ -646,7 +672,7 @@ $ curl -s http://localhost:8000/api/authors |  python -mjson.tool
       
 #+END_SRC
 
-*** Get all items with a tag 
+**** Get all items with a tag 
 
 Get all items which contains the tag 'Linux' which Id=9.
 
@@ -729,7 +755,7 @@ $ curl -s http://localhost:8000/api/tags?id=9 |  python -mjson.tool
 
 #+END_SRC
 
-*** Search all items which title or word contains a string 
+**** Search all items which title or word contains a string 
 
 Search all items which contais the word 'cpp'
 
@@ -815,9 +841,8 @@ $ curl -s http://localhost:8000/api/search?content=cpp |  python -mjson.tool
 ]
 
 #+END_SRC
-
-* Database Documentation 
-** Search Titles that contains a word 
+** Database Documentation 
+*** Search Titles that contains a word 
 
 Search all titles that contains the string "functional".
 
@@ -850,7 +875,7 @@ sqlite> SELECT itemData.itemID, itemDataValues.value
 2798|functional programming | Math ∩ Programming
 ...
 #+END_SRC
-** Search by a Regex Pattern 
+*** Search by a Regex Pattern 
 
 #+BEGIN_SRC sql 
 SELECT itemData.itemID, itemDataValues.value  
@@ -868,7 +893,7 @@ Result:
 "4842"	"Power of mathematics: Reasoning about functional types"
 "6094"	"Discrete mathematics using a computer"
 #+END_SRC
-** Full text search. 
+*** Full text search. 
 
 Search all items that have the word "haskell".
 
@@ -895,3 +920,20 @@ AND    (itemDataValues.value LIKE "%haskell%"
 		)	
 
 #+END_SRC
+** Haskell Related Documentation 
+
+Happstack Sever Framework 
+
+ - [[https://hackage.haskell.org/package/happstack-server][happstack-server: Web related tools and services.]]
+
+Haskell SQLite Database Driver 
+
+ - [[https://hackage.haskell.org/package/HDBC-sqlite3-2.3.3.1/docs/Database-HDBC-Sqlite3.html][Database.HDBC.Sqlite3]]
+
+Haskell PostgresSQL Database Driver 
+
+ - [[https://hackage.haskell.org/package/HDBC-postgresql][HDBC-postgresql: PostgreSQL driver for HDBC]]
+
+Haskell AESON - Json library 
+
+ - [[https://hackage.haskell.org/package/aeson][aeson: Fast JSON parsing and encoding]]
