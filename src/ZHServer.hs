@@ -316,9 +316,7 @@ stripPrefix prefix str =
    Just s   -> T.unpack s
    Nothing  -> str
 
-parseDbDriver uri =
-  T.unpack . (!!0) . T.split (==':') . T.pack $ uri
-   
+
 -- openDBConnection :: HDBC.IConnection conn => String -> IO HDBConn
 -- openDBConnection uri = do
 --   let driver = T.unpack . (!!0) . T.split (==':') . T.pack $ uri
@@ -327,6 +325,10 @@ parseDbDriver uri =
 --     "sqlite"   -> ConnSqlite <$>  Sqlite3.connectSqlite3 (stripPrefix "sqlite://" uri)
 --     "postgres" -> ConnPg <$> Pg.connectPostgreSQL uri
 --     _          -> error "Error: This driver is not supported"
+
+
+parseDbDriver uri =
+  T.unpack . (!!0) . T.split (==':') . T.pack $ uri
   
 
 loadServerConf configFile = do
