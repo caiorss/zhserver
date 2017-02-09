@@ -60,11 +60,6 @@ import qualified Zotero as Z
 
 import Zotero (DBConn)
 
-
-data HDBConn =   ConnSqlite Sqlite3.Connection
-               | ConnPg     Pg.Connection
-             
-
 {-
    ReaderT conn (ServerPartT IO) response
     = conn -> (ServerPartT IO) response
@@ -74,14 +69,25 @@ data HDBConn =   ConnSqlite Sqlite3.Connection
 type ServerApp a =  forall conn. (HDBC.IConnection conn)
                     => ReaderT conn (ServerPartT IO) a
 
+-- Database Connection - Objective make the database connection implementation agnostic.
+--
+data HDBConn =  HDBConnSqlite   Sqlite3.Connection
+              | HDBConnPostgres Pg.Connection
+              -- deriving (Eq, Read, Show)
+
+-- Database URI
+--
+data DBUri = DBUriSqlite   String
+           | DBUriPostGres String
+           deriving (Eq, Read, Show)
 
 data ServerConfig = ServerConfig
                     {
-                      serverPort        :: Int,      -- Port that server will listen to
-                      serverHost        :: String,   -- Host that server will listent
-                      serverStoragePath :: String,   -- Zotero storage Path
-                      serverDatabase    :: String,   -- Server Database URI
-                      serverStaticFiles :: String    -- Single Page App static files like /index.html, /js/script.js
+                     serverPort        :: Int      -- Port that server will listen
+                    ,serverHost        :: String   -- Host that server will listen
+                    ,serverStaticPath  :: String    -- Single Page App static files like /index.html, /js/script.js
+                    ,serverStoragePath :: String   -- Zotero storage Path
+                    ,serverDatabase    :: String   -- Server Database URI
                     } deriving (Eq, Show, Read)
 
 
@@ -100,6 +106,48 @@ serverConf = Conf
 
 parseInt :: String -> Maybe Int 
 parseInt s = readMaybe s
+
+
+
+parseDbDriver2 dbUri =
+  case getDbType dbUri of
+    "sqlite"    -> Just (DBUriSqlite   sqlitePath)
+    "postgres"  -> Just (DBUriPostGres dbUri)
+    _           -> Nothing
+  where
+    sqlitePath = (stripPrefix "sqlite://" dbUri)
+    getDbType dbUri = T.unpack . (!!0) . T.split (==':') . T.pack $ dbUri
+
+
+openDBConnection :: String -> IO (Maybe HDBConn)
+openDBConnection dbUri =
+  case parseDbDriver2 dbUri of
+    Just (DBUriSqlite   uri) -> Sqlite3.connectSqlite3  uri >>= \conn -> return $ Just (HDBConnSqlite conn)
+    Just (DBUriPostGres uri) -> Pg.connectPostgreSQL    uri >>= \conn -> return $ Just ( HDBConnPostgres conn)
+    Nothing                  -> return Nothing
+
+
+withConnServerDB ::  Response.ToMessage a =>
+                     String         -- Database URI
+                  -> Conf           -- Server Configuration
+                  -> ServerApp a    -- Server Monad
+                  -> IO ()
+withConnServerDB dbUri conf serverApp = do
+  maybeConn <- openDBConnection dbUri
+
+  case maybeConn of
+
+    Just (HDBConnSqlite conn)   ->  withConn conn conf serverApp
+    Just (HDBConnPostgres conn) ->  withConn conn conf serverApp
+    Nothing                     ->  putStrLn $ "Error: Invalid database URI " ++ dbUri
+
+  where
+    withConn conn conf serverApp = do
+      -- Listen http request
+      simpleHTTP conf $ runReaderT serverApp conn
+      -- Disconnect database
+      HDBC.disconnect conn
+      return ()
 
 
 withConnServer ::  (HDBC.IConnection conn, Response.ToMessage a) =>
@@ -182,8 +230,8 @@ serverRouteParamString param dbFn =
 
 {-- ================ Server Routes Dispatch ========================== -}
 
-routes :: ServerApp ServerTypes.Response
-routes  = msum
+makeRoutes :: String -> String -> ServerApp ServerTypes.Response
+makeRoutes staticPath storagePath = msum
 
   [
     -- 
@@ -247,7 +295,7 @@ routes  = msum
    
     
     -- Zotero Attachment Files
-  , flatten $ dir "attachment" $ serveDirectory DisableBrowsing [] Z.storagePath
+  , flatten $ dir "attachment" $ serveDirectory DisableBrowsing [] storagePath
 
 
   -- Single Page App static files
@@ -255,7 +303,7 @@ routes  = msum
                                                    "style.css",
                                                    "loader.js"
                                                   ]
-                                                  "assets"    
+                                                  staticPath
                                                   
  -- , flatten $ seeOther "static" "/"
   , flatten $ Response.notFound $ "Error: Not found"                                              
@@ -268,9 +316,7 @@ stripPrefix prefix str =
    Just s   -> T.unpack s
    Nothing  -> str
 
-parseDbDriver uri =
-  T.unpack . (!!0) . T.split (==':') . T.pack $ uri
-   
+
 -- openDBConnection :: HDBC.IConnection conn => String -> IO HDBConn
 -- openDBConnection uri = do
 --   let driver = T.unpack . (!!0) . T.split (==':') . T.pack $ uri
@@ -279,41 +325,39 @@ parseDbDriver uri =
 --     "sqlite"   -> ConnSqlite <$>  Sqlite3.connectSqlite3 (stripPrefix "sqlite://" uri)
 --     "postgres" -> ConnPg <$> Pg.connectPostgreSQL uri
 --     _          -> error "Error: This driver is not supported"
+
+
+parseDbDriver uri =
+  T.unpack . (!!0) . T.split (==':') . T.pack $ uri
   
 
+-- Start server with a given configuration 
+-- 
+runServerConf :: ServerConfig -> IO ()
+runServerConf conf = do
+  let dbUri       = serverDatabase conf
+  let port        = serverPort conf
+  let storagePath = serverStoragePath conf
+  let staticPath  = serverStaticPath conf
+  let sconf       = Conf port Nothing Nothing 30 Nothing
+  withConnServerDB dbUri sconf (makeRoutes staticPath storagePath)
+
+
+runServer host port dbUri staticPath storagePath =
+  case readMaybe port :: Maybe Int of
+    Just p    -> do  let sconf = Conf p Nothing Nothing 30 Nothing
+                     withConnServerDB dbUri sconf (makeRoutes staticPath storagePath)
+    Nothing   -> putStrLn "Error: Invalid port number"
+
+  
+-- Start server loading its settings from a configuration file.
+--
 loadServerConf configFile = do
-  
   conf' <- (\text -> readMaybe text :: Maybe ServerConfig) <$> readFile configFile
-
-
   case conf' of
-
-    Just conf -> do
-      let database = serverDatabase conf
-      let port     = serverPort conf
-      let path     = serverStoragePath conf
-
-      -- @TODO: Check documentation about Conf
-      let sconf    = Conf port Nothing Nothing 30 Nothing
-
-      let sqlitePath = (stripPrefix "sqlite://" database)
-
-      putStrLn database
-      putStrLn sqlitePath
-      
-      case parseDbDriver database of
-        "sqlite" ->    
-          withConnServer Sqlite3.connectSqlite3
-                          sqlitePath 
-                          sconf
-                          routes
-        "postgres" ->
-          withConnServer Pg.connectPostgreSQL database sconf routes
-
-        _         -> error "Error: Database not supported"
-
+    Just conf -> runServerConf conf
     Nothing   -> putStrLn "Error: failed parse the config file"
-  
+
 
 
 {- ================ HTTP ROUTES ======================== -}
@@ -410,6 +454,8 @@ parseArgs args =
 
   ["--conf", file]   -> loadServerConf file
   ["-c", file]       -> loadServerConf file
+
+  ["--params", host, port, dbUri, staticPath, storagePath] -> runServer host port dbUri staticPath storagePath
 
   -- ["-listen", host; port; "--dburi"; uri; "--storage"; path]  -> loadServerConf file
   
