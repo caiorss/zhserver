@@ -332,6 +332,24 @@ parseDbDriver uri =
   
 
 loadServerConf configFile = do
+-- Start server with a given configuration
+--
+runServerConf :: ServerConfig -> IO ()
+runServerConf conf = do
+  let dbUri       = serverDatabase conf
+  let port        = serverPort conf
+  let storagePath = serverStoragePath conf
+  let staticPath  = serverStaticPath conf
+  let sconf       = Conf port Nothing Nothing 30 Nothing
+  withConnServerDB dbUri sconf (makeRoutes staticPath storagePath)
+
+
+runServer host port dbUri staticPath storagePath =
+  case readMaybe port :: Maybe Int of
+    Just p    -> do  let sconf = Conf p Nothing Nothing 30 Nothing
+                     withConnServerDB dbUri sconf (makeRoutes staticPath storagePath)
+    Nothing   -> putStrLn "Error: Invalid port number"
+
   
   conf' <- (\text -> readMaybe text :: Maybe ServerConfig) <$> readFile configFile
 
