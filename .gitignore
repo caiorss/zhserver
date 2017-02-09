@@ -11,3 +11,4 @@ Server
 *.tgz
 *.tar.bz2
 /my-zhserver.conf
+/ZHServer
