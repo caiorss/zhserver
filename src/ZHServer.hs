@@ -75,6 +75,11 @@ data HDBConn =  HDBConnSqlite   Sqlite3.Connection
               | HDBConnPostgres Pg.Connection
               -- deriving (Eq, Read, Show)
 
+-- Database URI
+--
+data DBUri = DBUriSqlite   String
+           | DBUriPostGres String
+           deriving (Eq, Read, Show)
 
 data ServerConfig = ServerConfig
                     {
