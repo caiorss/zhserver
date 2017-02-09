@@ -331,9 +331,8 @@ parseDbDriver uri =
   T.unpack . (!!0) . T.split (==':') . T.pack $ uri
   
 
-loadServerConf configFile = do
--- Start server with a given configuration
---
+-- Start server with a given configuration 
+-- 
 runServerConf :: ServerConfig -> IO ()
 runServerConf conf = do
   let dbUri       = serverDatabase conf
