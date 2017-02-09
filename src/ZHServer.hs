@@ -118,6 +118,15 @@ parseDbDriver2 dbUri =
     sqlitePath = (stripPrefix "sqlite://" dbUri)
     getDbType dbUri = T.unpack . (!!0) . T.split (==':') . T.pack $ dbUri
 
+
+openDBConnection :: String -> IO (Maybe HDBConn)
+openDBConnection dbUri =
+  case parseDbDriver2 dbUri of
+    Just (DBUriSqlite   uri) -> Sqlite3.connectSqlite3  uri >>= \conn -> return $ Just (HDBConnSqlite conn)
+    Just (DBUriPostGres uri) -> Pg.connectPostgreSQL    uri >>= \conn -> return $ Just ( HDBConnPostgres conn)
+    Nothing                  -> return Nothing
+
+
 withConnServer ::  (HDBC.IConnection conn, Response.ToMessage a) =>
                  (String -> IO conn)
                  -> String
