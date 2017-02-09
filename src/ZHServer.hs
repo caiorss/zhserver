@@ -108,6 +108,16 @@ parseInt :: String -> Maybe Int
 parseInt s = readMaybe s
 
 
+
+parseDbDriver2 dbUri =
+  case getDbType dbUri of
+    "sqlite"    -> Just (DBUriSqlite   sqlitePath)
+    "postgres"  -> Just (DBUriPostGres dbUri)
+    _           -> Nothing
+  where
+    sqlitePath = (stripPrefix "sqlite://" dbUri)
+    getDbType dbUri = T.unpack . (!!0) . T.split (==':') . T.pack $ dbUri
+
 withConnServer ::  (HDBC.IConnection conn, Response.ToMessage a) =>
                  (String -> IO conn)
                  -> String
