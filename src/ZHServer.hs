@@ -339,35 +339,18 @@ loadServerConf configFile = do
   case conf' of
 
     Just conf -> do
-      let database       = serverDatabase conf
+      let dbUri          = serverDatabase conf
       let port           = serverPort conf
       let storagePath    = serverStoragePath conf
       let staticPath     = serverStaticPath conf
 
       -- @TODO: Check documentation about Conf
       let sconf    = Conf port Nothing Nothing 30 Nothing
-
-      let sqlitePath = (stripPrefix "sqlite://" database)
-
-      putStrLn database
-      putStrLn sqlitePath
       
-      case parseDbDriver database of
-        "sqlite" ->    
-          withConnServer Sqlite3.connectSqlite3
-                          sqlitePath 
-                          sconf
-                          (makeRoutes staticPath storagePath)
-        "postgres" ->
-          withConnServer Pg.connectPostgreSQL
-                         database
-                         sconf
-                         (makeRoutes staticPath storagePath)
-
-        _         -> error "Error: Database not supported"
+      withConnServerDB dbUri sconf (makeRoutes staticPath storagePath)
 
     Nothing   -> putStrLn "Error: failed parse the config file"
-  
+
 
 
 {- ================ HTTP ROUTES ======================== -}
