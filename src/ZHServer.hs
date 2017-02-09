@@ -84,6 +84,20 @@ data ServerConfig = ServerConfig
                       serverStaticFiles :: String    -- Single Page App static files like /index.html, /js/script.js
                     } deriving (Eq, Show, Read)
 
+
+
+
+serverConf :: Conf
+serverConf = Conf
+  { port      = 8080
+  , validator = Nothing
+  , logAccess = Nothing
+  , timeout   = 30
+  , threadGroup = Nothing
+  }
+
+
+
 parseInt :: String -> Maybe Int 
 parseInt s = readMaybe s
 
@@ -243,18 +257,6 @@ routes = msum
   ]
 
 
-
-
-serverConf :: Conf 
-serverConf = Conf
-  { port      = 8080
-  , validator = Nothing
-  , logAccess = Nothing
-  , timeout   = 30
-  , threadGroup = Nothing
-  }
-
-  
 stripPrefix prefix str =
  case T.stripPrefix (T.pack prefix) (T.pack str) of
    Just s   -> T.unpack s
