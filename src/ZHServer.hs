@@ -119,9 +119,9 @@ withConnServer driver uri conf serverApp = do
 
 {-  Database connection is closed on each request -}
 withConnServer2 ::  (HDBC.IConnection conn, Response.ToMessage a) =>
-                 (String -> IO conn)
-                 -> String
-                 -> Conf 
+                 (String -> IO conn)  -- driver : Function that takes a database URI and returns a DB connection
+                 -> String            -- uri    : Database URI/URL
+                 -> Conf              -- conf   : Server Configuration
                  -> ServerApp a
                  -> IO ()  
 withConnServer2 driver uri conf serverApp = do
