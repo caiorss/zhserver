@@ -77,11 +77,11 @@ type ServerApp a =  forall conn. (HDBC.IConnection conn)
 
 data ServerConfig = ServerConfig
                     {
-                      serverPort        :: Int,
-                      serverHost        :: String,
-                      serverStoragePath :: String, 
-                      serverDatabase    :: String
-
+                      serverPort        :: Int,      -- Port that server will listen to
+                      serverHost        :: String,   -- Host that server will listent
+                      serverStoragePath :: String,   -- Zotero storage Path
+                      serverDatabase    :: String,   -- Server Database URI
+                      serverStaticFiles :: String    -- Single Page App static files like /index.html, /js/script.js
                     } deriving (Eq, Show, Read)
 
 parseInt :: String -> Maybe Int 
