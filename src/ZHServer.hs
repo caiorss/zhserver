@@ -109,8 +109,11 @@ withConnServer ::  (HDBC.IConnection conn, Response.ToMessage a) =>
                  -> ServerApp a
                  -> IO ()                
 withConnServer driver uri conf serverApp = do
+  -- Open database Connection
   conn     <- driver  uri
+  -- Listen http request
   simpleHTTP conf $ runReaderT serverApp conn
+  -- Disconnect database
   HDBC.disconnect conn
   return ()
 
