@@ -60,11 +60,6 @@ import qualified Zotero as Z
 
 import Zotero (DBConn)
 
-
-data HDBConn =   ConnSqlite Sqlite3.Connection
-               | ConnPg     Pg.Connection
-             
-
 {-
    ReaderT conn (ServerPartT IO) response
     = conn -> (ServerPartT IO) response
@@ -73,6 +68,12 @@ data HDBConn =   ConnSqlite Sqlite3.Connection
 -}
 type ServerApp a =  forall conn. (HDBC.IConnection conn)
                     => ReaderT conn (ServerPartT IO) a
+
+-- Database Connection - Objective make the database connection implementation agnostic.
+--
+data HDBConn =  HDBConnSqlite   Sqlite3.Connection
+              | HDBConnPostgres Pg.Connection
+              -- deriving (Eq, Read, Show)
 
 
 data ServerConfig = ServerConfig
