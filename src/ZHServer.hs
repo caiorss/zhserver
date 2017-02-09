@@ -351,22 +351,12 @@ runServer host port dbUri staticPath storagePath =
     Nothing   -> putStrLn "Error: Invalid port number"
 
   
+-- Start server loading its settings from a configuration file.
+--
+loadServerConf configFile = do
   conf' <- (\text -> readMaybe text :: Maybe ServerConfig) <$> readFile configFile
-
-
   case conf' of
-
-    Just conf -> do
-      let dbUri          = serverDatabase conf
-      let port           = serverPort conf
-      let storagePath    = serverStoragePath conf
-      let staticPath     = serverStaticPath conf
-
-      -- @TODO: Check documentation about Conf
-      let sconf    = Conf port Nothing Nothing 30 Nothing
-      
-      withConnServerDB dbUri sconf (makeRoutes staticPath storagePath)
-
+    Just conf -> runServerConf conf
     Nothing   -> putStrLn "Error: failed parse the config file"
 
 
