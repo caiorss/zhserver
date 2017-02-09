@@ -138,6 +138,9 @@ withConnServer2 driver uri conf serverApp = do
         return response
            
 
+
+{- ========== Server Higher Order Functions ============ -}
+
 runDbQuery :: DBConn b -> ServerApp b
 runDbQuery dbQuery = do
   conn   <- ask
@@ -177,8 +180,10 @@ serverRouteParamString param dbFn =
   serverRouteParam return param LC.empty dbFn
 
 
+{-- ================ Server Routes Dispatch ========================== -}
+
 routes :: ServerApp ServerTypes.Response
-routes = msum
+routes  = msum
 
   [
     -- 
@@ -241,13 +246,11 @@ routes = msum
   , flatten $ dir "api" $ dir "search" $ routeSearchByContentAndTitleLike 
    
     
-  {------------- Static Files -----------}
-    
+    -- Zotero Attachment Files
   , flatten $ dir "attachment" $ serveDirectory DisableBrowsing [] Z.storagePath
 
 
-  -- // Homer - root route "/"
-  --
+  -- Single Page App static files
   , flatten $ serveDirectory EnableBrowsing      ["index.html",
                                                    "style.css",
                                                    "loader.js"
@@ -289,6 +292,8 @@ loadServerConf configFile = do
       let database = serverDatabase conf
       let port     = serverPort conf
       let path     = serverStoragePath conf
+
+      -- @TODO: Check documentation about Conf
       let sconf    = Conf port Nothing Nothing 30 Nothing
 
       let sqlitePath = (stripPrefix "sqlite://" database)
@@ -387,8 +392,12 @@ routeItemsWithoutCollection2 = do
   --             Just o ->  runDbQuery $ Z.itemsWithoutCollectionsJSON p o
 
 
+
 {- ==================== MAIN  ======================== -}
 
+
+--  Server command line switches.
+--
 parseArgs :: [String] -> IO ()
 parseArgs args =
   case args of
@@ -399,15 +408,14 @@ parseArgs args =
                              Just file -> loadServerConf file
                              Nothing   -> do putStrLn "Error: Configuration file not found"
 
-
-
   ["--conf", file]   -> loadServerConf file
-
   ["-c", file]       -> loadServerConf file
 
   -- ["-listen", host; port; "--dburi"; uri; "--storage"; path]  -> loadServerConf file
   
   _                  -> putStrLn "Error: Invalid option."
+
+
 
 main = do
   putStrLn "Server Running"
