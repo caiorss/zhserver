@@ -1,12 +1,16 @@
 all: server 
 
-app = ZHServer 
+app = zhserver.bin
+src = src/ZHServer.hs src/Zotero.hs
+
+config = src/zhserver.conf
 
 zotero:
 	stack exec -- ghc --make Zotero 
 
-server: 
-	stack exec -- ghc --make $(app)
+server: $(src)
+	stack exec -- ghc --make -o $(app) $(src)
+	# stack exec -- ghc src/ZHServer.hs -o bin/ZHServer.bin
 
 ## Linux Centos specific dependencies
 deps-centos:
@@ -34,7 +38,7 @@ run: server
 	./$(app) 
 
 run-test: dbtest server
-	./$(app) --conf ./zhserver.conf
+	./$(app) --conf $(config)
 
 run-test2: dbtest server
 	./$(app) --conf ./my-zhserver.conf
