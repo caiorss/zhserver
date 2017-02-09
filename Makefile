@@ -37,12 +37,26 @@ $(dbtest): $(dbsrc)
 run: server
 	./$(app) 
 
+# Load sample configuration file 
 run-test: dbtest server
 	./$(app) --conf $(config)
 
 run-test2: dbtest server
 	./$(app) --conf ./my-zhserver.conf
 
+# Load configuration file from environment variable 
+run-test3: dbtest server 
+	env ZHSERVER_CONF=src/zhserver.conf ./$(app) 
+
+# Run with configuration passed as command line arguments
+run-test4: dbtest server
+	# Run server with
+	# - Listen all hosts	: 0.0.0.0
+	# - Listen port			: 9090
+    # - Database driver		: "sqlite://testdb/zotero.sqlite"
+    # - Static files		: ./assets/
+    # - Storage path		: testdb/storage 
+	./$(app) --params 0.0.0.0 9090 "sqlite://testdb/zotero.sqlite" ./assets/ testdb/storage 
 
 clean-db:
 	rm -rf ./testdb
