@@ -127,6 +127,29 @@ openDBConnection dbUri =
     Nothing                  -> return Nothing
 
 
+withConnServerDB ::  Response.ToMessage a =>
+                     String         -- Database URI
+                  -> Conf           -- Server Configuration
+                  -> ServerApp a    -- Server Monad
+                  -> IO ()
+withConnServerDB dbUri conf serverApp = do
+  maybeConn <- openDBConnection dbUri
+
+  case maybeConn of
+
+    Just (HDBConnSqlite conn)   ->  withConn conn conf serverApp
+    Just (HDBConnPostgres conn) ->  withConn conn conf serverApp
+    Nothing                     ->  putStrLn $ "Error: Invalid database URI " ++ dbUri
+
+  where
+    withConn conn conf serverApp = do
+      -- Listen http request
+      simpleHTTP conf $ runReaderT serverApp conn
+      -- Disconnect database
+      HDBC.disconnect conn
+      return ()
+
+
 withConnServer ::  (HDBC.IConnection conn, Response.ToMessage a) =>
                  (String -> IO conn)
                  -> String
