@@ -182,8 +182,8 @@ serverRouteParamString param dbFn =
 
 {-- ================ Server Routes Dispatch ========================== -}
 
-routes :: ServerApp ServerTypes.Response
-routes  = msum
+makeRoutes :: String -> String -> ServerApp ServerTypes.Response
+makeRoutes staticPath storagePath = msum
 
   [
     -- 
@@ -247,7 +247,7 @@ routes  = msum
    
     
     -- Zotero Attachment Files
-  , flatten $ dir "attachment" $ serveDirectory DisableBrowsing [] Z.storagePath
+  , flatten $ dir "attachment" $ serveDirectory DisableBrowsing [] storagePath
 
 
   -- Single Page App static files
@@ -255,7 +255,7 @@ routes  = msum
                                                    "style.css",
                                                    "loader.js"
                                                   ]
-                                                  "assets"    
+                                                  staticPath
                                                   
  -- , flatten $ seeOther "static" "/"
   , flatten $ Response.notFound $ "Error: Not found"                                              
@@ -307,9 +307,12 @@ loadServerConf configFile = do
           withConnServer Sqlite3.connectSqlite3
                           sqlitePath 
                           sconf
-                          routes
+                          (makeRoutes staticPath storagePath)
         "postgres" ->
-          withConnServer Pg.connectPostgreSQL database sconf routes
+          withConnServer Pg.connectPostgreSQL
+                         database
+                         sconf
+                         (makeRoutes staticPath storagePath)
 
         _         -> error "Error: Database not supported"
 
