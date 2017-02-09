@@ -30,7 +30,7 @@ $(dbtest): $(dbsrc)
 	mkdir -p testdb/storage
 	cat $(dbsrc) | sqlite3 testdb/zotero.sqlite
 
-run: Server 
+run: server
 	./$(app) 
 
 run-test: dbtest server
