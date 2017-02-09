@@ -157,14 +157,13 @@ routes :: ServerApp ServerTypes.Response
 routes = msum
 
   [
-
+    -- 
     flatten $ dir "api" $ dir "item" $  serverRouteParamID "id" Z.getZoteroItemJSON
     
     {- REST API -}
 
 
-  , flatten $ dir "api" $ dir "collsw"
-         $ routeItemsWithoutCollection
+  , flatten $ dir "api" $ dir "collsw"  $ routeItemsWithoutCollection
           
     -- Return all items from a given collection
     -- 
@@ -177,24 +176,27 @@ routes = msum
     --
     -- /api/colls
     --
+
+    --  End point: http://localhost:8000/api/colls
+    -- 
     , flatten $ dir "api" $ dir "colls" $ routeCollection
     
-      
+    -- End point: http://localhost:8000/api/colls?id=6
+    --            http://localhost:8000/api/colls?id=<collection ID>
+    --
     , flatten $ dir "api" $ dir "colls" $ routeTagsFromCollID
-
-
 
 
     -- Returns all collections from a given tag
     --
-    -- /api/tags?id=343  
+    -- End Point: http://localhost:8000/api/tags?id=15
+    --            http://localhost:8000/api/tags?id=<tag ID>
     --
    , flatten $ dir "api" $ dir "tags" $ routeTagID
       
    -- Returns all items from a given tag
-   --
-   -- /api/tags
-   --
+   -- 
+   -- End Point: http://localhost:8000/api/tags
   , flatten $ dir "api" $ dir "tags" $ routeTags
 
   -- Returns all items from a given author
@@ -202,9 +204,9 @@ routes = msum
   -- /api/authors?id=34
   --
   , flatten $ dir "api" $ dir "authors" $ routeAuthorID
+
     
   , flatten $ dir "api" $ dir "authors" $ routeAuthors
-
 
 
   , flatten $ dir "api" $ dir "relatedtags" $ routeRealatedTags                 
@@ -353,16 +355,13 @@ routeItemsWithoutCollection = do
 
 
 routeItemsWithoutCollection2 :: ServerApp LC.ByteString
-routeItemsWithoutCollection2 = do
-  
+routeItemsWithoutCollection2 = do 
   paging <- parseInt <$>  look "paging" -- :: Maybe Int 
   offset <- parseInt <$>  look "offset"   -- :: Maybe Int 
-
   let ans = do
         page <- paging 
         offs <- offset
-        return (page, offs)
-        
+        return (page, offs)        
   case ans of
     Nothing       -> return (LC.pack "Error wrong parameters")
     Just (p, o)   -> runDbQuery $ Z.itemsWithoutCollectionsJSON p o
