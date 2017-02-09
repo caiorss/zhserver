@@ -6,7 +6,7 @@
 ** Overview 
 
 Zhserver is an application server that provides a json REST API to
-interface Zotero database and allows multiple users and third party
+interface [[https://www.zotero.org/][Zotero]] database and allows multiple users and third party
 apps to search documents by collections, tags, author and so on. 
 
 Basic functionality:
@@ -17,6 +17,41 @@ Basic functionality:
    - Author
    - Document ID
    - Download Zotero files. 
+
+*Benefits*
+
+Find, classify information, books, magazines, laws, patents, technical
+standards, web page snapshots and papers fast. 
+
+*Screenshots*
+
+[[file:images/collections.png][file:images/collections.png]]
+
+[[file:images/tags.png][file:images/tags.png]]
+
+[[file:images/authors1.png][file:images/authors1.png]]
+
+[[file:images/authors-all.png]]
+
+*Road map*
+   
+ - [X] Find items by tag
+ - [X] Find items by ID
+ - [X] Find items by collection
+ - [X] Find items by author
+ - [] Find items by a group of authors
+ - [] Improve design for mobile devices
+ - [] Transfer the database from SQLite to Postgres SQL
+ - [] Add logging to the server.
+ - [] Improve Front End
+ - [] Improve User Interface Functionality
+ - [] Improve User Interface Design 
+ - [] Add tag search
+ - [] Create JavaScript functions to create templates.
+ - [] Add the database documentation
+ - [] Implement a filter
+ - [] Implement browser history
+ - [] Implement user friendly URL 
 
 ** Build Instructions 
 *** Install Dependencies 
@@ -41,6 +76,13 @@ stack install happstack-server
 $ stack exec -- ghc --make Server 
 Linking Server ...
 #+END_SRC
+*** Run tests 
+
+This server comes with a sample database dump for testing. To test the
+server just run =$ make run-test= it will create the database
+_testdb/zotero.sqlite_ from the sample sql dump _database/zotero-test.sql_
+The server will listen the port 8000 and it can be accessed from
+http://127.0.0.1:8000 or http://localhost:8000 .
 
 ** Usage 
 *** Find the Zotero's databases 
@@ -136,32 +178,48 @@ sqlite:///home/arch/.mozilla/firefox/mwad0hks.zotero/zotero/zotero.sqlite
 #+BEGIN_SRC text 
 postgres://postgres@localhost/zotero
 #+END_SRC
+*** Run the server 
 
-** Benefits 
+Pass the configuration file by enviroment variable: 
 
-Find, classify information, books, magazines, laws, patents, technical
-standards, web page snapshots and papers fast. 
+#+BEGIN_SRC sh 
+  $ env ZHSERVER_CONFIG=./zhserver.conf ./ZHServer 
+  Server Running
+  ------------------
+  Loading default configuration file from ZHSERVER_CONFIG environment variable.
+  sqlite://testdb/zotero.sqlite
+  testdb/zotero.sqlite
 
-** Road map 
-   
- - [] Find items by tag
- - [] Find items by ID
- - [x] Find items by collection
- - [x] Find items by author
- - [] Find items by a group of authors
- - [] Improve design for mobile devices
- - [] Transfer the database from SQLite to Postgres SQL
- - [] Add the nix file to the project.
- - [] Add logging to the server.
- - [] Improve Front End
- - [] Improve User Interface Functionality
- - [] Improve User Interface Design 
- - [] Add tag search
- - [] Create JavaScript functions to create templates.
- - [] Add the database documentation
- - [] Implement a filter
- - [] Implement browser history
- - [] Implement user friendly URL 
+
+#+END_SRC 
+
+or 
+
+#+BEGIN_SRC sh 
+  $ export ZHSERVER_CONFIG=./zhserver.conf
+
+
+  $ ./ZHServer 
+  Server Running
+  ------------------
+  Loading default configuration file from ZHSERVER_CONFIG environment variable.
+  sqlite://testdb/zotero.sqlite
+  testdb/zotero.sqlite
+
+
+#+END_SRC
+
+Pass Configuration file by command line:
+
+#+BEGIN_SRC sh 
+$ ./ZHServer --conf zhserver.conf 
+Server Running
+------------------
+sqlite://testdb/zotero.sqlite
+testdb/zotero.sqlite
+
+
+#+END_SRC
 
 * REST API doc
 ** End Points
