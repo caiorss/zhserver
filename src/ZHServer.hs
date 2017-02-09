@@ -456,6 +456,8 @@ parseArgs args =
   ["--conf", file]   -> loadServerConf file
   ["-c", file]       -> loadServerConf file
 
+  ["--params", host, port, dbUri, staticPath, storagePath] -> runServer host port dbUri staticPath storagePath
+
   -- ["-listen", host; port; "--dburi"; uri; "--storage"; path]  -> loadServerConf file
   
   _                  -> putStrLn "Error: Invalid option."
