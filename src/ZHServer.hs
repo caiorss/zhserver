@@ -77,11 +77,11 @@ type ServerApp a =  forall conn. (HDBC.IConnection conn)
 
 data ServerConfig = ServerConfig
                     {
-                      serverPort        :: Int,      -- Port that server will listen to
-                      serverHost        :: String,   -- Host that server will listent
-                      serverStoragePath :: String,   -- Zotero storage Path
-                      serverDatabase    :: String,   -- Server Database URI
-                      serverStaticFiles :: String    -- Single Page App static files like /index.html, /js/script.js
+                     serverPort        :: Int      -- Port that server will listen
+                    ,serverHost        :: String   -- Host that server will listen
+                    ,serverStaticPath  :: String    -- Single Page App static files like /index.html, /js/script.js
+                    ,serverStoragePath :: String   -- Zotero storage Path
+                    ,serverDatabase    :: String   -- Server Database URI
                     } deriving (Eq, Show, Read)
 
 
@@ -289,9 +289,10 @@ loadServerConf configFile = do
   case conf' of
 
     Just conf -> do
-      let database = serverDatabase conf
-      let port     = serverPort conf
-      let path     = serverStoragePath conf
+      let database       = serverDatabase conf
+      let port           = serverPort conf
+      let storagePath    = serverStoragePath conf
+      let staticPath     = serverStaticPath conf
 
       -- @TODO: Check documentation about Conf
       let sconf    = Conf port Nothing Nothing 30 Nothing
