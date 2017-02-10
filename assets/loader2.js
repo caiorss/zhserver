@@ -114,15 +114,13 @@ function bulletList(alist){
     return lu;
 }
 
-
+/// Display a single Zotero Item given its json data
+///
 function jsonToZoteroItemDOM(json){
     
     var data = arrayToObj(json["data"]);
 
-     
-
    // console.log(data)
-    
     var title = data["title"]
     var url = data["url"]
     var itemID = json["id"] ;
@@ -213,7 +211,7 @@ function jsonToZoteroItemDOM(json){
 
     return div ;
 
-}
+} // End of funtion jsonToZoteroItemDOM
 
 
 
@@ -410,19 +408,15 @@ function filterData () {
                            .split(",")
                            .map( w => w.match(new RegExp(input))))))
         .hide()
-    
-}
+
+} // End of function filterData
 
 
 
 function searchByTitleLike (search){
-       
     var url = "/api/search?title=" + "%" + search + "%";
-
     setPageTitle("Search: " + search);
-    
-    cleanContentArea();    
-    
+    cleanContentArea();
     showZoteroItemsFromUrl(url);       
 }
 
