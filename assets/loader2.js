@@ -437,27 +437,18 @@ function searchByItemID (search){
 }
 
 
-function searchItems () {
-    
-    var search = document.getElementById("searchbox").value;
-    var option = document.getElementById("searchSelection").value;        
-
-    switch (option){
-
-    case "title":
-        searchByTitleLike (search);
-        break;
 var searchItemDispatch = {
     "title":   searchByTitleLike,
     "content": searchByContentAndTitleLike,
     "itemID":  searchByItemID
 }
+  
 
-
-    case "content":
-        searchByContentAndTitleLike (search); 
-        break;
-    }    
+function searchItems () {   
+    var search = document.getElementById("searchbox").value;
+    var option = document.getElementById("searchSelection").value;
+    // alert("I am searching");
+    searchItemDispatch[option](search);
 }
 
 
