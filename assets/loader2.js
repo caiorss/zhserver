@@ -582,9 +582,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     $d("#filterbox").setAttr("onkeypress", filterData);
     //    $d("#filterbox").setAttr("onchange",   filterData) ;
-
     $d("#ButtonDoSearch").setAttr("onclick", searchItems);
-    
+
+    $d("#ButtonClean").setAttr("onclick", cleanForm);
     routeDispatcher ();
     
 }, false);
