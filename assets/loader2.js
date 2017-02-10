@@ -569,6 +569,15 @@ function routeDispatcher (){
 }
 
 
+function cleanForm(){
+    document.getElementById("searchbox").value = "";
+    document.getElementById("filterbox").value = "";
+    displayAll();
+}
+
+
+// Entry point: This function is called when the page loads.
+//
 document.addEventListener('DOMContentLoaded', function() {
 
     $d("#filterbox").setAttr("onkeypress", filterData);
