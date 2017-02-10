@@ -114,6 +114,16 @@ type SQLQuery =  [(String, HDBC.SqlValue)]
 type DBConn a = forall conn. (HDBC.IConnection conn) =>  ReaderT conn IO a
 
 
+type ZoteroTagID   = Int
+type ZoteroTagName = String
+
+
+type ZoteroItemID     = Int
+type ZoteroItemString = String
+type ZoteroItemTags   = [(ZoteroTagID, ZoteroTagName)]
+type ZoteroItemMime   = String
+
+
 data ZoteroItem =
   ZoteroItem {    zoteroItemID          :: Int
                 , zoteroItemData        :: [(String, String)]
