@@ -297,6 +297,12 @@ createKey = do
     alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
 
+(<!!>) :: [a] -> Int -> Maybe a
+(<!!>) xs i =
+  if length xs > i
+  then Just $ xs !! i
+  else Nothing
+
 -- sqlQuery :: HDBC.IConnection conn =>  conn
 --      -> String
 --      -> [HDBC.SqlValue]
@@ -565,14 +571,6 @@ itemAttachmentData itemID = do
 
     projection = map fromSqlToString
 
-
-
-(<!!>) :: [a] -> Int -> Maybe a
-(<!!>) xs i =
-  if length xs > i
-  then Just $ xs !! i
-  else Nothing 
-       
 
 
 {-
