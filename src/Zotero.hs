@@ -240,7 +240,7 @@ getZoteroItem itemID = do
                       itemMime
 
 
-
+{- ================== Helper Functions ======================  -}
 
 splitOn delim text =  
    map T.unpack $ T.splitOn (T.pack delim) (T.pack text)
@@ -367,6 +367,9 @@ withConnection ioConn function = do
   result   <- function conn
   return result
 
+
+
+{- ================== Database Functions  ======================  -}
 
 
 -- getCollections :: HDBC.IConnection conn => conn -> IO [(Int, String)]
