@@ -454,19 +454,22 @@ showUserHelp = do
 parseArgs :: [String] -> IO ()
 parseArgs args =
   case args of
-  []                 ->  do
+
+  []                -> showUserHelp
+
+  -- Load server configuration file from environment variable
+  ["--env"]         ->  do
                            putStrLn "Loading default configuration file from ZHSERVER_CONFIG environment variable."
                            conf  <- lookupEnv "ZHSERVER_CONFIG"
                            case conf of
                              Just file -> loadServerConf file
                              Nothing   -> do putStrLn "Error: Configuration file not found"
 
+  -- Load server configuration from a configuration fiel
   ["--conf", file]   -> loadServerConf file
-  ["-c", file]       -> loadServerConf file
 
+  -- Load all sever configuration from command line
   ["--params", host, port, dbUri, staticPath, storagePath] -> runServer host port dbUri staticPath storagePath
-
-  -- ["-listen", host; port; "--dburi"; uri; "--storage"; path]  -> loadServerConf file
   
   _                  -> putStrLn "Error: Invalid option."
 
