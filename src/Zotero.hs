@@ -63,6 +63,7 @@ module Zotero
          ,getCollectionChildJSON
          ,getCollectionTopJSON
          ,itemsWithoutCollectionsJSON
+         ,getZoteroItemIdAsListJSON
 
           
          ,getItemsFromAuthor         
@@ -673,6 +674,11 @@ getZoteroItemsJSON :: [ZoteroItemID] -> DBConn BLI.ByteString
 getZoteroItemsJSON itemIDs = do
   zitems <- mapM getZoteroItem itemIDs
   return $ encode zitems 
+
+
+getZoteroItemIdAsListJSON :: ZoteroItemID -> DBConn BLI.ByteString
+getZoteroItemIdAsListJSON itemID = getZoteroItemsJSON [itemID]
+
 --  encode <$> mapM (getZoteroItem conn) itemIDs 
 
 {-
