@@ -299,7 +299,7 @@ makeRoutes staticPath storagePath = msum
 
 
   -- Single Page App static files
-  , flatten $ serveDirectory EnableBrowsing      ["index.html",
+  , flatten $ serveDirectory DisableBrowsing     ["index.html",
                                                    "style.css",
                                                    "loader.js"
                                                   ]
