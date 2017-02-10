@@ -176,10 +176,15 @@ function jsonToZoteroItemDOM(json){
     })
 
 
+    var itemIdUrl = $h("a").set({
+         href:  ("/#!item?id=" + itemID.toString())
+        ,target: "_blank"
+        ,child:  itemID.toString()
+    })
     
    var table =  htmlTable().setRows(
         [
-            ["id",            itemID.toString()],
+            ["id",            itemIdUrl],
             ["url",           urlLink],          
             ["Download",      downloadLink],
             ["Authors",       bulletList(authorLinks).set({"class": "itemAttribRow"}) ],            
