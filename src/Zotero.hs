@@ -500,8 +500,8 @@ itemCollections  itemID = do
                       ]
 
 
-
-itemsWithoutCollections :: Int -> Int -> DBConn [Int]
+{- | Return all zotero items without collections -}
+itemsWithoutCollections :: Int -> Int -> DBConn [ZoteroItemID]
 itemsWithoutCollections paging offset  =
   
   sqlQueryRow sql [HDBC.SqlInt64 $ fromIntToInt64 paging,
