@@ -280,15 +280,10 @@ insertTags = insertItemTypes(makeTagURL, "id", "name")
 
 
 function showTags () {
-
     console.log("Tags");
-    
     setPageTitle("Tags");
-    
     cleanContentArea();    
-
     doXHR("/api/tags", compose(parseJson, insertTags) , logger);
-
     //console.log("Displayed Collections OK");    
 }
 
@@ -298,15 +293,10 @@ function showTags () {
 
 
 function showTagID (tagURI) {
-
     tagname = tagURI.split("&")[1].split("=")[1]
-    
     setPageTitle("Tag: " + tagname);
-    
     cleanContentArea();    
-    
     showZoteroItemsFromUrl("/api/tags?id=" + tagURI);
-    
 }
 
 
@@ -438,13 +428,9 @@ function searchByTitleLike (search){
 
 
 function searchByContentAndTitleLike (search){
-       
     var url = "/api/search?content=" + search
-    
     setPageTitle("Search: " + search);    
-
     cleanContentArea();        
-
     showZoteroItemsFromUrl(url);       
 }
 
