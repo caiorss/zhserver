@@ -32,7 +32,10 @@ dbtest: $(dbtest)
 $(dbtest): $(dbsrc)
 	mkdir -p testdb
 	mkdir -p testdb/storage
-	cat $(dbsrc) | sqlite3 testdb/zotero.sqlite
+	cat $(dbsrc) | sqlite3 $(dbtest)
+
+dbtest-view: dbtest
+	sqlitebrowser $(dbtest)
 
 run: server
 	./$(app) 
