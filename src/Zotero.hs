@@ -599,7 +599,7 @@ itemAttachmentFile itemID = do
 
 --itemData :: HDBC.IConnection conn => conn -> Int -> IO [(String, String)
 
-itemData ::  Int -> DBConn [(String, String)] 
+itemData ::  ZoteroItemID -> DBConn [(String, String)]
 itemData itemID = do   
   
   let itemID' = fromIntToInt64 itemID 
