@@ -299,7 +299,7 @@ makeRoutes staticPath storagePath = msum
 
 
   -- Single Page App static files
-  , flatten $ serveDirectory EnableBrowsing      ["index.html",
+  , flatten $ serveDirectory DisableBrowsing     ["index.html",
                                                    "style.css",
                                                    "loader.js"
                                                   ]
@@ -315,16 +315,6 @@ stripPrefix prefix str =
  case T.stripPrefix (T.pack prefix) (T.pack str) of
    Just s   -> T.unpack s
    Nothing  -> str
-
-
--- openDBConnection :: HDBC.IConnection conn => String -> IO HDBConn
--- openDBConnection uri = do
---   let driver = T.unpack . (!!0) . T.split (==':') . T.pack $ uri
-
---   case driver of
---     "sqlite"   -> ConnSqlite <$>  Sqlite3.connectSqlite3 (stripPrefix "sqlite://" uri)
---     "postgres" -> ConnPg <$> Pg.connectPostgreSQL uri
---     _          -> error "Error: This driver is not supported"
 
 
 parseDbDriver uri =
@@ -440,34 +430,52 @@ routeItemsWithoutCollection2 = do
 {- ==================== MAIN  ======================== -}
 
 
+showUserHelp = do
+  putStrLn "Zhserver -- Your cloud book shelve web server"
+  putStrLn ""
+  putStrLn "Commands"
+  putStrLn ""
+  putStrLn "  --env                 - Load configuration file from ZHSERVER_CONFIG environment variable"
+  putStrLn "  --conf <config file>  - Load configuration file from <config file>"
+  putStrLn ""
+  putStrLn "Start server with all configuration passed through command line"
+  putStrLn ""
+  putStrLn "  --params [host] [port] [dbUri] [staticPath] [storagePath]"
+  putStrLn ""
+  putStrLn ""
+  putStrLn "           - [host]        - Hostname like 0.0.0.0 to listen all hosts "
+  putStrLn "           - [port]        - Port like 8080"
+  putStrLn "           - [dbUri]       - Database URI"
+  putStrLn "           - [staticPath]  - Path to server static files like index.html *.js files"
+  putStrLn "           - [storagePath] - Path to Zotero storage directory"
+
 --  Server command line switches.
 --
 parseArgs :: [String] -> IO ()
 parseArgs args =
   case args of
-  []                 ->  do
+
+  []                -> showUserHelp
+
+  -- Load server configuration file from environment variable
+  ["--env"]         ->  do
                            putStrLn "Loading default configuration file from ZHSERVER_CONFIG environment variable."
                            conf  <- lookupEnv "ZHSERVER_CONFIG"
                            case conf of
                              Just file -> loadServerConf file
                              Nothing   -> do putStrLn "Error: Configuration file not found"
 
+  -- Load server configuration from a configuration fiel
   ["--conf", file]   -> loadServerConf file
-  ["-c", file]       -> loadServerConf file
 
+  -- Load all sever configuration from command line
   ["--params", host, port, dbUri, staticPath, storagePath] -> runServer host port dbUri staticPath storagePath
-
-  -- ["-listen", host; port; "--dburi"; uri; "--storage"; path]  -> loadServerConf file
   
   _                  -> putStrLn "Error: Invalid option."
 
 
 
 main = do
-  putStrLn "Server Running"
-  putStrLn "------------------"
-  -- getArgs >>= \args -> putStrLn (show args)
-
   getArgs >>= parseArgs
   
   -- loadServerConf "zhserver.conf"
