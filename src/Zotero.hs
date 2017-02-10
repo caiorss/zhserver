@@ -270,11 +270,8 @@ fromSqlToString sv = HDBC.fromSql sv
 
 createKey :: IO String 
 createKey = do
-
   g <- newStdGen
-
   return $ map (alphabet!!) $ take 8 $ randomRs (0, 35) g
-  
   where
     alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
@@ -406,11 +403,8 @@ getCollectionsJSON = encode <$> getCollections
 {- Get only top level collections -}
 getCollectionTop :: DBConn [ZoteroColl]
 getCollectionTop = do
-
   sqlQueryAll sql [] projection
-  
     where
-  
       sql = "SELECT collectionID, collectionName FROM collections \
             \WHERE  parentCollectionID IS NULL"
 
@@ -1017,16 +1011,13 @@ setItemField itemID field value  = do
 
 
 
-{- Note: Only works in PostgresSQL -}
+{- | Note: Only works in PostgresSQL -}
 insertCollection :: String -> DBConn Int 
 insertCollection name = do
-
   key <- liftIO $ createKey
   id <- fromJust <$> sqlQueryOne sql [HDBC.SqlString name, HDBC.SqlString key] fromSqlToInt
   return id 
-
   where
-
     sql = "WITH rows as (\
           \INSERT INTO collections (collectionID, collectionName, key)\
           \VALUES ( (SELECT 1 + max(collectionID) FROM collections), ?, ?)\
