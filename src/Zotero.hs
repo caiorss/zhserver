@@ -527,18 +527,12 @@ itemsWithoutCollectionsJSON paging offset = do
   return json 
   
 
-
-
-
 -- Return all tags in the database
 -- 
 getTags :: DBConn [ZoteroTag]
 getTags = do
-
-  sqlQueryAll sql [] projection 
-  
+  sqlQueryAll sql [] projection
   where
-    
     sql =   "SELECT tagID, name FROM tags \
            \ORDER BY name"
 
