@@ -430,6 +430,25 @@ routeItemsWithoutCollection2 = do
 {- ==================== MAIN  ======================== -}
 
 
+showUserHelp = do
+  putStrLn "Zhserver -- Your cloud book shelve web server"
+  putStrLn ""
+  putStrLn "Commands"
+  putStrLn ""
+  putStrLn "  --env                 - Load configuration file from ZHSERVER_CONFIG environment variable"
+  putStrLn "  --conf <config file>  - Load configuration file from <config file>"
+  putStrLn ""
+  putStrLn "Start server with all configuration passed through command line"
+  putStrLn ""
+  putStrLn "  --params [host] [port] [dbUri] [staticPath] [storagePath]"
+  putStrLn ""
+  putStrLn ""
+  putStrLn "           - [host]        - Hostname like 0.0.0.0 to listen all hosts "
+  putStrLn "           - [port]        - Port like 8080"
+  putStrLn "           - [dbUri]       - Database URI"
+  putStrLn "           - [staticPath]  - Path to server static files like index.html *.js files"
+  putStrLn "           - [storagePath] - Path to Zotero storage directory"
+
 --  Server command line switches.
 --
 parseArgs :: [String] -> IO ()
