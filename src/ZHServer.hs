@@ -235,7 +235,7 @@ makeRoutes staticPath storagePath = msum
 
   [
     -- 
-    flatten $ dir "api" $ dir "item" $  serverRouteParamID "id" Z.getZoteroItemJSON
+    flatten $ dir "api" $ dir "item" $  serverRouteParamID "id" Z.getZoteroItemIdAsListJSON
     
     {- REST API -}
 

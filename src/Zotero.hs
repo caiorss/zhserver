@@ -63,6 +63,7 @@ module Zotero
          ,getCollectionChildJSON
          ,getCollectionTopJSON
          ,itemsWithoutCollectionsJSON
+         ,getZoteroItemIdAsListJSON
 
           
          ,getItemsFromAuthor         
@@ -112,6 +113,16 @@ import System.Random (getStdGen, newStdGen, randomRs)
 type SQLQuery =  [(String, HDBC.SqlValue)] 
 
 type DBConn a = forall conn. (HDBC.IConnection conn) =>  ReaderT conn IO a
+
+
+type ZoteroTagID   = Int
+type ZoteroTagName = String
+
+
+type ZoteroItemID     = Int
+type ZoteroItemString = String
+type ZoteroItemTags   = [(ZoteroTagID, ZoteroTagName)]
+type ZoteroItemMime   = String
 
 
 data ZoteroItem =
@@ -211,26 +222,8 @@ storagePath = "/home/arch/.mozilla/firefox/mwad0hks.zotero/zotero/storage"
 dbConnection = PgSQL.connectPostgreSQL "postgres://postgres@localhost/zotero"
 
 
-getZoteroItem :: Int -> DBConn ZoteroItem 
-getZoteroItem itemID = do
-  
-  itemData    <- itemData itemID
-  itemAuthors <- itemAuthors itemID 
-  itemTags    <- itemTagsData itemID 
-  itemColls   <- itemCollections itemID  
-  itemFile    <- itemAttachmentFile itemID
-  itemMime    <- return Nothing
-  
-  return $ ZoteroItem itemID
-                      itemData
-                      itemAuthors 
-                      itemTags 
-                      itemColls 
-                      itemFile
-                      itemMime
 
-
-
+{- ================== Helper Functions ======================  -}
 
 splitOn delim text =  
    map T.unpack $ T.splitOn (T.pack delim) (T.pack text)
@@ -278,14 +271,17 @@ fromSqlToString sv = HDBC.fromSql sv
 
 createKey :: IO String 
 createKey = do
-
   g <- newStdGen
-
   return $ map (alphabet!!) $ take 8 $ randomRs (0, 35) g
-  
   where
     alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
+
+(<!!>) :: [a] -> Int -> Maybe a
+(<!!>) xs i =
+  if length xs > i
+  then Just $ xs !! i
+  else Nothing
 
 -- sqlQuery :: HDBC.IConnection conn =>  conn
 --      -> String
@@ -359,6 +355,30 @@ withConnection ioConn function = do
 
 
 
+{- ================== Database Functions  ======================  -}
+
+
+
+
+getZoteroItem :: ZoteroItemID -> DBConn ZoteroItem
+getZoteroItem itemID = do
+
+  itemData    <- itemData itemID
+  itemAuthors <- itemAuthors itemID
+  itemTags    <- itemTagsData itemID
+  itemColls   <- itemCollections itemID
+  itemFile    <- itemAttachmentFile itemID
+  itemMime    <- return Nothing
+
+  return $ ZoteroItem itemID
+                      itemData
+                      itemAuthors
+                      itemTags
+                      itemColls
+                      itemFile
+                      itemMime
+
+
 -- getCollections :: HDBC.IConnection conn => conn -> IO [(Int, String)]
 
 {- Get all collections -}
@@ -384,11 +404,8 @@ getCollectionsJSON = encode <$> getCollections
 {- Get only top level collections -}
 getCollectionTop :: DBConn [ZoteroColl]
 getCollectionTop = do
-
   sqlQueryAll sql [] projection
-  
     where
-  
       sql = "SELECT collectionID, collectionName FROM collections \
             \WHERE  parentCollectionID IS NULL"
 
@@ -484,8 +501,8 @@ itemCollections  itemID = do
                       ]
 
 
-
-itemsWithoutCollections :: Int -> Int -> DBConn [Int]
+{- | Return all zotero items without collections -}
+itemsWithoutCollections :: Int -> Int -> DBConn [ZoteroItemID]
 itemsWithoutCollections paging offset  =
   
   sqlQueryRow sql [HDBC.SqlInt64 $ fromIntToInt64 paging,
@@ -508,18 +525,12 @@ itemsWithoutCollectionsJSON paging offset = do
   return json 
   
 
-
-
-
 -- Return all tags in the database
 -- 
 getTags :: DBConn [ZoteroTag]
 getTags = do
-
-  sqlQueryAll sql [] projection 
-  
+  sqlQueryAll sql [] projection
   where
-    
     sql =   "SELECT tagID, name FROM tags \
            \ORDER BY name"
 
@@ -552,14 +563,6 @@ itemAttachmentData itemID = do
 
     projection = map fromSqlToString
 
-
-
-(<!!>) :: [a] -> Int -> Maybe a
-(<!!>) xs i =
-  if length xs > i
-  then Just $ xs !! i
-  else Nothing 
-       
 
 
 {-
@@ -597,7 +600,7 @@ itemAttachmentFile itemID = do
 
 --itemData :: HDBC.IConnection conn => conn -> Int -> IO [(String, String)
 
-itemData ::  Int -> DBConn [(String, String)] 
+itemData ::  ZoteroItemID -> DBConn [(String, String)]
 itemData itemID = do   
   
   let itemID' = fromIntToInt64 itemID 
@@ -618,7 +621,7 @@ itemData itemID = do
       (fromSqlToString $row !! 0, fromSqlToString $ row !! 1)
 
 {-  Query authors given the itemID.-}
-itemAuthors :: Int -> DBConn [ZoteroAuthor]
+itemAuthors :: ZoteroItemID -> DBConn [ZoteroAuthor]
 itemAuthors itemID = do 
 
   let itemID' = fromIntToInt64 itemID
@@ -661,16 +664,21 @@ collection ID and the destiny directory.
 
 -}
 
-getZoteroItemJSON :: Int -> DBConn BLI.ByteString  
+getZoteroItemJSON :: ZoteroItemID -> DBConn BLI.ByteString
 getZoteroItemJSON itemID = do 
   zitem <- getZoteroItem  itemID
   return $ encode zitem 
 
 
-getZoteroItemsJSON :: [Int] -> DBConn BLI.ByteString
+getZoteroItemsJSON :: [ZoteroItemID] -> DBConn BLI.ByteString
 getZoteroItemsJSON itemIDs = do
   zitems <- mapM getZoteroItem itemIDs
   return $ encode zitems 
+
+
+getZoteroItemIdAsListJSON :: ZoteroItemID -> DBConn BLI.ByteString
+getZoteroItemIdAsListJSON itemID = getZoteroItemsJSON [itemID]
+
 --  encode <$> mapM (getZoteroItem conn) itemIDs 
 
 {-
@@ -689,13 +697,11 @@ getCollectionItemsJSON collID = do
   getZoteroItemsJSON itemIDs 
 
 
-getTagItems :: Int -> DBConn [Int]
+{- | Get all items IDs that belong to a given tag specified by its Id -}
+getTagItems :: Int -> DBConn [ZoteroItemID]
 getTagItems tagID = do 
-  
   let tagID' = fromIntToInt64 tagID 
-
   sqlQueryRow sql [HDBC.SqlInt64 tagID'] fromSqlToInt
-                                        
   where
     sql = unlines $ ["SELECT itemID", 
                      "FROM itemTags", 
@@ -1009,16 +1015,13 @@ setItemField itemID field value  = do
 
 
 
-{- Note: Only works in PostgresSQL -}
+{- | Note: Only works in PostgresSQL -}
 insertCollection :: String -> DBConn Int 
 insertCollection name = do
-
   key <- liftIO $ createKey
   id <- fromJust <$> sqlQueryOne sql [HDBC.SqlString name, HDBC.SqlString key] fromSqlToInt
   return id 
-
   where
-
     sql = "WITH rows as (\
           \INSERT INTO collections (collectionID, collectionName, key)\
           \VALUES ( (SELECT 1 + max(collectionID) FROM collections), ?, ?)\

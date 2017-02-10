@@ -114,15 +114,13 @@ function bulletList(alist){
     return lu;
 }
 
-
+/// Display a single Zotero Item given its json data
+///
 function jsonToZoteroItemDOM(json){
     
     var data = arrayToObj(json["data"]);
 
-     
-
    // console.log(data)
-    
     var title = data["title"]
     var url = data["url"]
     var itemID = json["id"] ;
@@ -213,7 +211,7 @@ function jsonToZoteroItemDOM(json){
 
     return div ;
 
-}
+} // End of funtion jsonToZoteroItemDOM
 
 
 
@@ -280,15 +278,10 @@ insertTags = insertItemTypes(makeTagURL, "id", "name")
 
 
 function showTags () {
-
     console.log("Tags");
-    
     setPageTitle("Tags");
-    
     cleanContentArea();    
-
     doXHR("/api/tags", compose(parseJson, insertTags) , logger);
-
     //console.log("Displayed Collections OK");    
 }
 
@@ -298,15 +291,10 @@ function showTags () {
 
 
 function showTagID (tagURI) {
-
     tagname = tagURI.split("&")[1].split("=")[1]
-    
     setPageTitle("Tag: " + tagname);
-    
     cleanContentArea();    
-    
     showZoteroItemsFromUrl("/api/tags?id=" + tagURI);
-    
 }
 
 
@@ -420,52 +408,47 @@ function filterData () {
                            .split(",")
                            .map( w => w.match(new RegExp(input))))))
         .hide()
-    
-}
+
+} // End of function filterData
 
 
 
 function searchByTitleLike (search){
-       
     var url = "/api/search?title=" + "%" + search + "%";
-
     setPageTitle("Search: " + search);
-    
-    cleanContentArea();    
-    
+    cleanContentArea();
     showZoteroItemsFromUrl(url);       
 }
 
 
 function searchByContentAndTitleLike (search){
-       
     var url = "/api/search?content=" + search
-    
     setPageTitle("Search: " + search);    
-
     cleanContentArea();        
-
     showZoteroItemsFromUrl(url);       
 }
 
   
+function searchByItemID (search){
+    var url = "/api/item?id=" + search
+    setPageTitle("Search ItemId = " + search);
+    cleanContentArea();
+    showZoteroItemsFromUrl(url);
+}
 
 
-function searchItems () {
-    
+var searchItemDispatch = {
+    "title":   searchByTitleLike,
+    "content": searchByContentAndTitleLike,
+    "itemID":  searchByItemID
+}
+  
+
+function searchItems () {   
     var search = document.getElementById("searchbox").value;
-    var option = document.getElementById("searchSelection").value;        
-
-    switch (option){
-
-    case "title":
-        searchByTitleLike (search);
-        break;
-
-    case "content":
-        searchByContentAndTitleLike (search); 
-        break;
-    }    
+    var option = document.getElementById("searchSelection").value;
+    // alert("I am searching");
+    searchItemDispatch[option](search);
 }
 
 
@@ -586,27 +569,25 @@ function routeDispatcher (){
 }
 
 
+function cleanForm(){
+    document.getElementById("searchbox").value = "";
+    document.getElementById("filterbox").value = "";
+    displayAll();
+}
+
+
+// Entry point: This function is called when the page loads.
+//
 document.addEventListener('DOMContentLoaded', function() {
 
     $d("#filterbox").setAttr("onkeypress", filterData);
     //    $d("#filterbox").setAttr("onchange",   filterData) ;
-
     $d("#ButtonDoSearch").setAttr("onclick", searchItems);
-    
+
+    $d("#ButtonClean").setAttr("onclick", cleanForm);
     routeDispatcher ();
     
 }, false);
-
-
-function testData (){
-    cleanContentArea();
-    var data = parseJson($d("#testItem").html())
-    var x    = displayZoteroItem(data)
-    $d("#content").append(x.node)
-
-    
-    
-}  // ----------------------------------------//
 
 
 window.addEventListener("hashchange", routeDispatcher)
