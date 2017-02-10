@@ -447,6 +447,12 @@ function searchItems () {
     case "title":
         searchByTitleLike (search);
         break;
+var searchItemDispatch = {
+    "title":   searchByTitleLike,
+    "content": searchByContentAndTitleLike,
+    "itemID":  searchByItemID
+}
+
 
     case "content":
         searchByContentAndTitleLike (search); 
