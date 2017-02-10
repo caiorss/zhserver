@@ -691,13 +691,11 @@ getCollectionItemsJSON collID = do
   getZoteroItemsJSON itemIDs 
 
 
-getTagItems :: Int -> DBConn [Int]
+{- | Get all items IDs that belong to a given tag specified by its Id -}
+getTagItems :: Int -> DBConn [ZoteroItemID]
 getTagItems tagID = do 
-  
   let tagID' = fromIntToInt64 tagID 
-
   sqlQueryRow sql [HDBC.SqlInt64 tagID'] fromSqlToInt
-                                        
   where
     sql = unlines $ ["SELECT itemID", 
                      "FROM itemTags", 
