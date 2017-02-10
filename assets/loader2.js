@@ -557,7 +557,12 @@ function routeDispatcher (){
 
         var id = route.match (/author\?id=(.+)/)[1];
         showAuthorID(id);
+    }
 
+    else if (route.match (/item\?id=(.+)/)){
+
+        var id = route.match (/item\?id=(.+)/)[1];
+         searchByItemID(id);
     }
 
 
@@ -566,7 +571,7 @@ function routeDispatcher (){
         showCollections ();
     }
 
-}
+} // End of function routeDispatcher
 
 
 function cleanForm(){
