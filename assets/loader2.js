@@ -590,17 +590,6 @@ document.addEventListener('DOMContentLoaded', function() {
 }, false);
 
 
-function testData (){
-    cleanContentArea();
-    var data = parseJson($d("#testItem").html())
-    var x    = displayZoteroItem(data)
-    $d("#content").append(x.node)
-
-    
-    
-}  // ----------------------------------------//
-
-
 window.addEventListener("hashchange", routeDispatcher)
 
 
