@@ -221,24 +221,6 @@ storagePath = "/home/arch/.mozilla/firefox/mwad0hks.zotero/zotero/storage"
 dbConnection = PgSQL.connectPostgreSQL "postgres://postgres@localhost/zotero"
 
 
-getZoteroItem :: Int -> DBConn ZoteroItem 
-getZoteroItem itemID = do
-  
-  itemData    <- itemData itemID
-  itemAuthors <- itemAuthors itemID 
-  itemTags    <- itemTagsData itemID 
-  itemColls   <- itemCollections itemID  
-  itemFile    <- itemAttachmentFile itemID
-  itemMime    <- return Nothing
-  
-  return $ ZoteroItem itemID
-                      itemData
-                      itemAuthors 
-                      itemTags 
-                      itemColls 
-                      itemFile
-                      itemMime
-
 
 {- ================== Helper Functions ======================  -}
 
@@ -376,6 +358,27 @@ withConnection ioConn function = do
 
 
 {- ================== Database Functions  ======================  -}
+
+
+
+
+getZoteroItem :: ZoteroItemID -> DBConn ZoteroItem
+getZoteroItem itemID = do
+
+  itemData    <- itemData itemID
+  itemAuthors <- itemAuthors itemID
+  itemTags    <- itemTagsData itemID
+  itemColls   <- itemCollections itemID
+  itemFile    <- itemAttachmentFile itemID
+  itemMime    <- return Nothing
+
+  return $ ZoteroItem itemID
+                      itemData
+                      itemAuthors
+                      itemTags
+                      itemColls
+                      itemFile
+                      itemMime
 
 
 -- getCollections :: HDBC.IConnection conn => conn -> IO [(Int, String)]
