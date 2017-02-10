@@ -663,7 +663,7 @@ collection ID and the destiny directory.
 
 -}
 
-getZoteroItemJSON :: Int -> DBConn BLI.ByteString  
+getZoteroItemJSON :: ZoteroItemID -> DBConn BLI.ByteString
 getZoteroItemJSON itemID = do 
   zitem <- getZoteroItem  itemID
   return $ encode zitem 
