@@ -104,6 +104,31 @@ http://127.0.0.1:8000 or http://localhost:8000 .
 #+END_SRC
 
 ** Usage 
+*** Show Help 
+
+#+BEGIN_SRC sh 
+  $ ./zhserver.bin 
+  Zhserver -- Your cloud book shelve web server
+
+  Commands
+
+    --env                 - Load configuration file from ZHSERVER_CONFIG environment variable
+    --conf <config file>  - Load configuration file from <config file>
+
+  Start server with all configuration passed through command line
+
+    --params [host] [port] [dbUri] [staticPath] [storagePath]
+
+
+             - [host]        - Hostname like 0.0.0.0 to listen all hosts 
+             - [port]        - Port like 8080
+             - [dbUri]       - Database URI
+             - [staticPath]  - Path to server static files like index.html *.js files
+             - [storagePath] - Path to Zotero storage directory
+
+
+#+END_SRC
+
 *** Find the Zotero's databases 
 
 Find the sqlite databases for testing 
@@ -203,7 +228,7 @@ postgres://postgres@localhost/zotero
 Pass the configuration file by enviroment variable: 
 
 #+BEGIN_SRC sh 
-  $ env ZHSERVER_CONFIG=./zhserver.conf ./ZHServer 
+  $ env ZHSERVER_CONFIG=./zhserver.conf ./ZHServer --env 
   Server Running
   ------------------
   Loading default configuration file from ZHSERVER_CONFIG environment variable.
