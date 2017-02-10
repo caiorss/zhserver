@@ -429,6 +429,12 @@ function searchByContentAndTitleLike (search){
 }
 
   
+function searchByItemID (search){
+    var url = "/api/item?id=" + search
+    setPageTitle("Search ItemId = " + search);
+    cleanContentArea();
+    showZoteroItemsFromUrl(url);
+}
 
 
 function searchItems () {
