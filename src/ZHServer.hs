@@ -476,10 +476,6 @@ parseArgs args =
 
 
 main = do
-  putStrLn "Server Running"
-  putStrLn "------------------"
-  -- getArgs >>= \args -> putStrLn (show args)
-
   getArgs >>= parseArgs
   
   -- loadServerConf "zhserver.conf"
