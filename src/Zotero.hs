@@ -620,7 +620,7 @@ itemData itemID = do
       (fromSqlToString $row !! 0, fromSqlToString $ row !! 1)
 
 {-  Query authors given the itemID.-}
-itemAuthors :: Int -> DBConn [ZoteroAuthor]
+itemAuthors :: ZoteroItemID -> DBConn [ZoteroAuthor]
 itemAuthors itemID = do 
 
   let itemID' = fromIntToInt64 itemID
