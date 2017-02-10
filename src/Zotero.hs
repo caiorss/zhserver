@@ -669,7 +669,7 @@ getZoteroItemJSON itemID = do
   return $ encode zitem 
 
 
-getZoteroItemsJSON :: [Int] -> DBConn BLI.ByteString
+getZoteroItemsJSON :: [ZoteroItemID] -> DBConn BLI.ByteString
 getZoteroItemsJSON itemIDs = do
   zitems <- mapM getZoteroItem itemIDs
   return $ encode zitems 
