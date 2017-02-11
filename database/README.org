@@ -1,1 +1,20 @@
-Sample databases for testing and db schema.
+Database scripts and schemas. 
+
+Files: 
+
+ - file:exportables.hs   
+
+Haskell script to build the postgresql database.
+
+ - file:tables.pgsql  
+
+PostgresSQL database Schema 
+
+ - file:zotero-sqlite-schema.sql  
+
+SQLite original database Schema
+
+ - file:zotero-test.sql  
+
+Sample database for testing
+
