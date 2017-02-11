@@ -61,6 +61,17 @@ run-test4: dbtest server
     # - Storage path		: testdb/storage 
 	./$(app) --params 0.0.0.0 9090 "sqlite://testdb/zotero.sqlite" ./assets/ testdb/storage 
 
+
+# Test connection to a PostGres Server 
+run-test5: dbtest server
+	# Run server with
+	# - Listen all hosts	: 0.0.0.0
+	# - Listen port			: 9090
+    # - Database driver		: "sqlite://testdb/zotero.sqlite"
+    # - Static files		: ./assets/
+    # - Storage path		: testdb/storage 
+	./$(app) --params 0.0.0.0 9090 "postgres://postgres@localhost/zotero" ./assets/ testdb/storage 
+
 clean-db:
 	rm -rf ./testdb
 

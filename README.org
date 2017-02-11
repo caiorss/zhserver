@@ -129,7 +129,7 @@ http://127.0.0.1:8000 or http://localhost:8000 .
 
 #+END_SRC
 
-*** Find the Zotero's databases 
+*** Find the Zotero sqlite database 
 
 Find the sqlite databases for testing 
 
