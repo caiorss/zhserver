@@ -10,5 +10,6 @@ Server
 *.zip
 *.tgz
 *.tar.bz2
+*.html
 /my-zhserver.conf
 /ZHServer
