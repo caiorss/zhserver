@@ -37,6 +37,7 @@ $(dbtest): $(dbsrc)
 dbtest-view: dbtest
 	sqlitebrowser $(dbtest)
 
+
 run: server
 	./$(app) 
 
@@ -71,6 +72,22 @@ run-test5: dbtest server
     # - Static files		: ./assets/
     # - Storage path		: testdb/storage 
 	./$(app) --params 0.0.0.0 9090 "postgres://postgres@localhost/zotero" ./assets/ testdb/storage 
+
+
+#========================================#
+
+app: zhserver
+	mkdir -p lib 
+	rm -rf lib/*
+
+	# Copy shared libraries to ./lib directory
+	sh copylibs.sh
+
+
+app-run: dbtest 
+	sh zhserver.sh --params 0.0.0.0 9090 "sqlite://testdb/zotero.sqlite" assets testdb/storage 
+#========= Clean Rules ===================#
+
 
 clean-db:
 	rm -rf ./testdb
