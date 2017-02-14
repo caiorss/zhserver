@@ -2,12 +2,16 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE RecordWildCards #-}
 
-{-
-Description: Zhserver - Zotero/based Web server main file.
-File:        ZHServer.hs  
+
+{- |
+Module      : Main
+Description : Zotero Web Server and REST  API
+License     : Public Domain
+
+Zotero Web Server and Web API.
 
 -}
-
+module Main where 
 
 import Control.Monad.Trans (liftIO, lift)
 import Control.Monad.Trans.Reader 
@@ -208,8 +212,8 @@ serverRouteParam parser paramName err dbFn = do
   let param' = parser param
   maybe (return err) (\p -> runDbQuery $ dbFn p) param'
 
-{- Crates a server route for which the paramter is 
-   an ID (int) - Identification Number for the database query 
+{-| Crsates a server route for which the paramter is
+an ID (int) - Identification Number for the database query 
 -}
 serverRouteParamID :: String
               -> (Int -> DBConn LC.ByteString)
@@ -218,7 +222,7 @@ serverRouteParamID param dbFn =
   serverRouteParam parseInt param LC.empty dbFn
 
 
-{- Crates a server route for which the paramter is 
+{-| Crates a server route for which the paramter is 
    an ID - Identification Number for the database query 
 -}
 serverRouteParamString :: String
@@ -352,9 +356,10 @@ loadServerConf configFile = do
 
 {- ================ HTTP ROUTES ======================== -}
 
-
+{-| Route that displays all collections -}
 routeCollection :: ServerApp LC.ByteString
 routeCollection = runDbQuery Z.getCollectionsJSON
+
 
 routeCollectionID :: ServerApp LC.ByteString 
 routeCollectionID = serverRouteParamID "id" Z.getCollectionItemsJSON
@@ -429,7 +434,7 @@ routeItemsWithoutCollection2 = do
 
 {- ==================== MAIN  ======================== -}
 
-
+{- | Show user help command -}
 showUserHelp = do
   putStrLn "Zhserver -- Your cloud book shelve web server"
   putStrLn ""
@@ -449,8 +454,8 @@ showUserHelp = do
   putStrLn "           - [staticPath]  - Path to server static files like index.html *.js files"
   putStrLn "           - [storagePath] - Path to Zotero storage directory"
 
---  Server command line switches.
---
+
+{- | Handle command line arguments -}
 parseArgs :: [String] -> IO ()
 parseArgs args =
   case args of
