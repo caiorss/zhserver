@@ -212,7 +212,7 @@ serverRouteParam parser paramName err dbFn = do
   let param' = parser param
   maybe (return err) (\p -> runDbQuery $ dbFn p) param'
 
-{-| Crsates a server route for which the paramter is
+{-| Creates a server route for which the paramter is
 an ID (int) - Identification Number for the database query 
 -}
 serverRouteParamID :: String
@@ -222,7 +222,7 @@ serverRouteParamID param dbFn =
   serverRouteParam parseInt param LC.empty dbFn
 
 
-{-| Crates a server route for which the paramter is 
+{-| Creates a server route for which the paramter is 
    an ID - Identification Number for the database query 
 -}
 serverRouteParamString :: String
