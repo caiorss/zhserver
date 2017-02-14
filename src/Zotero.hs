@@ -19,6 +19,13 @@ module Zotero
         ,ZoteroAuthor  (..)
         ,ZoteroTag     (..)
         ,ZoteroColl    (..)
+
+         -- Type Aliases 
+        ,ZoteroItemID
+        ,ZoteroTagID
+        ,ZoteroTagName
+        ,ZoteroItemTags
+        ,ZoteroItemMime
        
          -- * Functions 
          ,withConnection
