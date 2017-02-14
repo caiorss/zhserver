@@ -483,13 +483,3 @@ parseArgs args =
 main = do
   getArgs >>= parseArgs
   
-  -- loadServerConf "zhserver.conf"
-
-  -- withConnServer2 Pg.connectPostgreSQL
-  --                "postgres://postgres@localhost/zotero"
-  --                serverConf
-  --                routes
-
-  -- withConn Pg.connectPostgreSQL
-  --          "postgres://postgres@localhost/zotero"
-          
