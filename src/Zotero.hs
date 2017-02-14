@@ -31,8 +31,7 @@ module Zotero
          ,sqlQuery
          ,sqlQueryAll
          ,sqlQueryRow
-         ,database
-         ,storagePath
+
          ,dbConnection
 
          ,getTagItems
