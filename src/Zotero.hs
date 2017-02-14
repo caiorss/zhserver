@@ -464,8 +464,8 @@ collectionItems collID = do
   where
     sql = "SELECT  itemID FROM collectionItems WHERE collectionID = ?"
 
-{- Returns all tags of a given item -}
-itemTagsData :: Int -> DBConn [(Int, String)]
+{- | Returns all tags of a given item -}
+itemTagsData :: ZoteroItemID -> DBConn ZoteroItemTags
 itemTagsData itemID = do
   
   let itemID' = fromIntToInt64 itemID 
@@ -482,15 +482,14 @@ itemTagsData itemID = do
     projection xs = (fromSqlToInt (xs !! 0), fromSqlToString (xs !! 1))
 
 
-
-itemTags :: Int -> DBConn [String]
+{- | Return only the tag names of a given itemID  -}
+itemTags :: ZoteroItemID -> DBConn [String]
 itemTags itemID =
   map snd <$> itemTagsData itemID 
 
-{- Returns all collections that an item benlongs to
+{-| Returns all collections that an item benlongs to
 
-  itemCollections :: itemID -> [(Collection ID, Collection Name)]
-
+   itemCollections :: itemID -> [(Collection ID, Collection Name)]
 -}
 itemCollections :: Int -> DBConn [(Int, String)]
 itemCollections  itemID = do
@@ -541,15 +540,14 @@ getTags = do
   where
     sql =   "SELECT tagID, name FROM tags \
            \ORDER BY name"
-
     projection row = ZoteroTag (fromSqlToInt (row !! 0))
                                (fromSqlToString (row !! 1))
 
 getTagsJSON :: DBConn BLI.ByteString
 getTagsJSON  =  encode <$> getTags
 
-
-itemAttachmentData :: Int -> DBConn (Maybe [String])
+{- | Get Zotero item attachment file. -}
+itemAttachmentData :: ZoteroItemID -> DBConn (Maybe [String])
 itemAttachmentData itemID = do 
   
   let itemID' = fromIntToInt64 itemID
@@ -677,7 +675,7 @@ getZoteroItemJSON itemID = do
   zitem <- getZoteroItem  itemID
   return $ encode zitem 
 
-
+{- | Get a list of zotero item data as json given its IDs -}
 getZoteroItemsJSON :: [ZoteroItemID] -> DBConn BLI.ByteString
 getZoteroItemsJSON itemIDs = do
   zitems <- mapM getZoteroItem itemIDs
@@ -721,7 +719,7 @@ getTagItems tagID = do
 --   runReaderT (getTagItems tagID) conn
 --   >>= getZoteroItemsJSON conn
 
-getTagItemsJSON :: Int -> DBConn BLI.ByteString
+getTagItemsJSON :: ZoteroTagID -> DBConn BLI.ByteString
 getTagItemsJSON tagID = do
   itemIDs <- getTagItems tagID
   getZoteroItemsJSON itemIDs 
@@ -766,7 +764,7 @@ getItemsFromAuthorJSON authorID = do
   getZoteroItemsJSON itemIDs
 
 
-getRelatedTags :: Int -> DBConn [ZoteroTag]
+getRelatedTags :: ZoteroTagID -> DBConn [ZoteroTag]
 getRelatedTags tagID = do 
 
   let tagID' = fromIntToInt64 tagID
@@ -788,7 +786,7 @@ getRelatedTags tagID = do
                      "AND   tags.tagID != ?             "
                     ]   
 
-getRelatedTagsJSON :: Int -> DBConn BLI.ByteString
+getRelatedTagsJSON :: ZoteroTagID -> DBConn BLI.ByteString
 getRelatedTagsJSON tagID = do 
   tags <- getRelatedTags tagID
   return $ encode tags
