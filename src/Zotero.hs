@@ -84,6 +84,8 @@ module Zotero
          ,itemsWithoutCollectionsJSON
          ,getZoteroItemIdAsListJSON
 
+         ,searchByTitleTagsAndInWords
+
           
          ,getItemsFromAuthor         
          ,getAuthors
@@ -933,8 +935,25 @@ searchByContentAndTitleLikeJSON searchWord = do
   items <- searchByContentAndTitleLike searchWord  
   getZoteroItemsJSON items 
 
-
-
+{- | Search all items which title 'or' tag matches all words in a given list -}
+searchByTitleTagsAndInWords :: [String] -> DBConn [ZoteroItemID]
+searchByTitleTagsAndInWords words = do
+  sqlQueryRow (P.printf sql subquery) [] fromSqlToInt  
+  where
+    tpl word = P.printf "(itemDataValues.value LIKE \"%%s%\" OR tags.Name LIKE \"%s%\")" word word 
+    subquery = joinStrings " AND "  (map tpl  words)
+    sql = unlines $ [
+                   "SELECT itemData.itemID, itemDataValues.value",
+                   "FROM   itemData, itemDataValues, itemAttachments, tags, itemTags",
+                   "WHERE  fieldID = 110",
+                   "AND    itemData.valueID = itemDataValues.valueID",
+                   "AND    itemAttachments.sourceItemID = itemData.itemID",
+                   "AND    itemTags.itemID = itemData.itemID",
+                   "AND    itemTags.tagID = tags.tagID",
+                   "AND    (  %s  )",
+                   "GROUP BY itemData.itemID"                    
+                    ]
+  
 
 replaceTagBy :: Int -> Int -> DBConn ()
 replaceTagBy  tagIDfrom tagIDto = do
