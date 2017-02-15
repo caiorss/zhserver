@@ -266,7 +266,7 @@ function showCollectionID(collUri){
 
     // setPageTitle ("Collection ID: " + collID.toString())
 
-    name = collUri.split("&")[1].split("=")[1]
+    name = decodeURI(collUri.split("&")[1].split("=")[1]);
     
     setPageTitle("Collection: " + name);
     
