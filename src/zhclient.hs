@@ -27,18 +27,13 @@ import System.Directory (copyFile, createDirectoryIfMissing)
 import Text.Printf (printf)
 
 
+
 copyCollectionTo conn collID dest = do
-  
-  items       <- collectionItems conn collID
-
-  attachments <- mapM (itemAttachmentFile conn) items
-  
+  items       <- runReaderT (Z.collectionItems collID) conn
+  attachments <- mapM (\item -> runReaderT (Z.itemAttachmentFile item) conn) items
   createDirectoryIfMissing True dest
-
   mapM_ copyToDest attachments
-
   where
-
     destPath itemFile =
       SF.joinPath [dest, SF.takeFileName itemFile]
 
