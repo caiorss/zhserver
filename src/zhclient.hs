@@ -54,6 +54,13 @@ printItemAuthor conn itemID = do
     printRow author = printf "%s: %s, %s\n" (Z.zoteroAuthorFirstName author)
                                             (Z.zoteroAuthorLastName  author)
                                             (show $ Z.zoteroAuthorID author)
+printCollections :: DBConn ()
+printCollections  = do
+  colls <- Z.getCollections
+  liftIO $ mapM_ printColl colls
+  where
+    printColl coll =
+      Text.Printf.printf "\t%d\t%s\n" (Z.zoteroCollID coll) (Z.zoteroCollName coll)
 
        
 printItem conn itemID = do
