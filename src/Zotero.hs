@@ -319,12 +319,12 @@ fromIntToInt64 :: Int -> Int64
 fromIntToInt64 = fromIntegral
 
 
-
+{- | Join strings by separator -}
 joinStrings :: String -> [String] -> String
-joinStrings common strs =
+joinStrings sep strs =
   case strs of
     [] -> ""
-    _  -> foldr1 (\x acc ->  x ++ common ++  acc) strs 
+    _  -> foldr1 (\x acc ->  x ++ sep ++  acc) strs
 
 lookupString :: String -> SQLQuery -> Maybe String 
 lookupString field row = do 
