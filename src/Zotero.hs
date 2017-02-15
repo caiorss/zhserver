@@ -889,11 +889,8 @@ getTagsFromCollectionJSON collID =
 
 searchByTitleWordLike :: String -> DBConn [Int]
 searchByTitleWordLike  searchWord = do
-  
   sqlQueryRow sql [HDBC.SqlString searchWord]  fromSqlToInt
-    
     where
-
       sql = unlines $ [
 
         "SELECT itemData.itemID"  
