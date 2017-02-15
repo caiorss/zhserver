@@ -305,11 +305,6 @@ stripPrefixStr prefix str =
     Just s  -> s 
  
 
--- dbConnection = SQLite.connectSqlite3 database
-dbConnection = PgSQL.connectPostgreSQL "postgres://postgres@localhost/zotero"
-
-
-
 {- ================== Helper Functions ======================  -}
 
 splitOn delim text =  
