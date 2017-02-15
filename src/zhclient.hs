@@ -19,7 +19,8 @@ import qualified System.Process as P
 import qualified System.FilePath as SF
 import System.Exit  (exitSuccess)
 
-import Zotero
+import qualified Zotero as Z
+import Zotero (DBConn, joinStrings, strip)
 
 import System.Directory (copyFile, createDirectoryIfMissing)
 
