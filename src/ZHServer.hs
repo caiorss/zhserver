@@ -268,7 +268,7 @@ makeRoutes staticPath storagePath = msum
     , flatten $ dir "api" $ dir "colls" $ routeTagsFromCollID
 
 
-    -- Returns all collections from a given tag
+    -- Returns all items from a given tag
     --
     -- End Point: http://localhost:8000/api/tags?id=15
     --            http://localhost:8000/api/tags?id=<tag ID>
@@ -303,9 +303,11 @@ makeRoutes staticPath storagePath = msum
 
 
   -- Single Page App static files
-  , flatten $ serveDirectory DisableBrowsing     ["index.html",
+  , flatten $ serveDirectory DisableBrowsing     [ "index.html",
                                                    "style.css",
-                                                   "loader.js"
+                                                   "loader.js",
+                                                   "*.html",
+                                                   "*.js"
                                                   ]
                                                   staticPath
                                                   
@@ -356,25 +358,39 @@ loadServerConf configFile = do
 
 {- ================ HTTP ROUTES ======================== -}
 
-{-| Route that displays all collections -}
+{-| Route that displays all collections
+    Rest API:   http://localhost:8000/api/colls
+-}
 routeCollection :: ServerApp LC.ByteString
 routeCollection = runDbQuery Z.getCollectionsJSON
 
-
+{- | Show all items from a given collection defined by its ID
+     Rest API -  /api/colls?id=23423 or /api/coll?id={collection ID}
+-}
 routeCollectionID :: ServerApp LC.ByteString 
 routeCollectionID = serverRouteParamID "id" Z.getCollectionItemsJSON
 
-
+{- |  Returns all items from a given tagID
+Rest API - http://localhost:8000/api/tags?id=15  or http://localhost:8000/api/tags?id=[tagID]
+-}
 routeTagID :: ServerApp LC.ByteString
 routeTagID = serverRouteParamID "id" Z.getTagItemsJSON
 
-  
+{- |  Returns all tags 
+Rest API - http://localhost:8000/api/tags 
+-}  
 routeTags :: ServerApp LC.ByteString
 routeTags = runDbQuery  Z.getTagsJSON
 
+{- | Get all items belonging to an author, given its ID
+Rest API - http://localhost:8000/api/authors?id=100 
+-}
 routeAuthorID :: ServerApp LC.ByteString
 routeAuthorID = serverRouteParamID "id"  Z.getItemsFromAuthorJSON
-  
+
+{- | Return all authors data
+Rest API - http://localhost:8000/api/authors
+-}  
 routeAuthors :: ServerApp LC.ByteString
 routeAuthors = runDbQuery Z.getAuthorsJSON
 
@@ -394,7 +410,7 @@ routeSearchByContentAndTitleLike :: ServerApp LC.ByteString
 routeSearchByContentAndTitleLike =
   serverRouteParamString "content" Z.searchByContentAndTitleLikeJSON
 
-
+{- | Server http request with all items without collections. -}
 routeItemsWithoutCollection :: ServerApp LC.ByteString
 routeItemsWithoutCollection = do
   conn <- ask 
@@ -479,7 +495,8 @@ parseArgs args =
   _                  -> putStrLn "Error: Invalid option."
 
 
-
+{- | Main IO Action -}
+main :: IO () 
 main = do
   getArgs >>= parseArgs
   
