@@ -73,17 +73,6 @@ import Zotero (DBConn)
 type ServerApp a =  forall conn. (HDBC.IConnection conn)
                     => ReaderT conn (ServerPartT IO) a
 
--- Database Connection - Objective make the database connection implementation agnostic.
---
-data HDBConn =  HDBConnSqlite   Sqlite3.Connection
-              | HDBConnPostgres Pg.Connection
-              -- deriving (Eq, Read, Show)
-
--- Database URI
---
-data DBUri = DBUriSqlite   String
-           | DBUriPostGres String
-           deriving (Eq, Read, Show)
 
 data ServerConfig = ServerConfig
                     {
@@ -106,29 +95,8 @@ serverConf = Conf
   , threadGroup = Nothing
   }
 
-
-
 parseInt :: String -> Maybe Int 
 parseInt s = readMaybe s
-
-
-
-parseDbDriver2 dbUri =
-  case getDbType dbUri of
-    "sqlite"    -> Just (DBUriSqlite   sqlitePath)
-    "postgres"  -> Just (DBUriPostGres dbUri)
-    _           -> Nothing
-  where
-    sqlitePath = (stripPrefix "sqlite://" dbUri)
-    getDbType dbUri = T.unpack . (!!0) . T.split (==':') . T.pack $ dbUri
-
-
-openDBConnection :: String -> IO (Maybe HDBConn)
-openDBConnection dbUri =
-  case parseDbDriver2 dbUri of
-    Just (DBUriSqlite   uri) -> Sqlite3.connectSqlite3  uri >>= \conn -> return $ Just (HDBConnSqlite conn)
-    Just (DBUriPostGres uri) -> Pg.connectPostgreSQL    uri >>= \conn -> return $ Just ( HDBConnPostgres conn)
-    Nothing                  -> return Nothing
 
 
 withConnServerDB ::  Response.ToMessage a =>
@@ -316,11 +284,6 @@ makeRoutes staticPath storagePath = msum
     
   ]
 
-
-stripPrefix prefix str =
- case T.stripPrefix (T.pack prefix) (T.pack str) of
-   Just s   -> T.unpack s
-   Nothing  -> str
 
 
 parseDbDriver uri =

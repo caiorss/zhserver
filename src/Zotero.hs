@@ -15,6 +15,9 @@ module Zotero
        (
          -- * Types 
          DBConn
+        ,HDBConn
+        ,DBUri
+
         ,ZoteroItem    (..)
         ,ZoteroAuthor  (..)
         ,ZoteroTag     (..)
@@ -27,7 +30,13 @@ module Zotero
         ,ZoteroItemTags
         ,ZoteroItemMime
        
-         -- * Functions 
+         -- * Functions
+
+
+        ,openDBConnection
+        ,withDBConnection
+
+         -- -----------------------
          ,withConnection
          ,getCollections
        --  ,showCollections
@@ -42,7 +51,7 @@ module Zotero
          ,sqlQueryAll
          ,sqlQueryRow
       
-         ,dbConnection
+
 
          ,getTagItems
          ,getRelatedTags
@@ -93,10 +102,12 @@ import Data.Maybe (catMaybes, maybe, fromJust, fromMaybe)
 import Data.List (lookup)
 import Control.Monad
 
-import qualified Database.HDBC.Sqlite3 as SQLite
-import qualified Database.HDBC.PostgreSQL as PgSQL
+import qualified Database.HDBC.Sqlite3 as Sqlite3
+import qualified Database.HDBC.PostgreSQL as Pg
 import qualified Database.HDBC as HDBC
 
+-- import qualified Database.HDBC.PostgreSQL as Pg
+-- import qualified Database.HDBC.Sqlite3    as Sqlite3
 
 
 import qualified System.FilePath as SF
@@ -114,6 +125,9 @@ import GHC.Generics
 -- import Data.ByteString.Char8 (ByteString)
 import qualified Data.ByteString.Lazy.Internal as BLI
 
+import qualified Text.Printf as P
+import qualified Data.Text as T
+
 
 import System.Random (getStdGen, newStdGen, randomRs)
 
@@ -123,6 +137,70 @@ type SQLQuery =  [(String, HDBC.SqlValue)]
 
 {- | Database Connection -> DbConn a = ReaderT conn IO a = conn -> IO a -}
 type DBConn a = forall conn. (HDBC.IConnection conn) =>  ReaderT conn IO a
+
+{- | Database Connection - Objective make the database connection
+    implementation agnostic.
+-}
+data HDBConn =  HDBConnSqlite   Sqlite3.Connection
+              | HDBConnPostgres Pg.Connection
+              -- deriving (Eq, Read, Show)
+
+
+
+{- | Database URI -}
+data DBUri = DBUriSqlite   String
+           | DBUriPostGres String
+           deriving (Eq, Read, Show)
+
+
+
+stripPrefix prefix str =
+ case T.stripPrefix (T.pack prefix) (T.pack str) of
+   Just s   -> T.unpack s
+   Nothing  -> str
+
+parseDbDriver2 dbUri =
+  case getDbType dbUri of
+    "sqlite"    -> Just (DBUriSqlite   sqlitePath)
+    "postgres"  -> Just (DBUriPostGres dbUri)
+    _           -> Nothing
+  where
+    sqlitePath = (stripPrefix "sqlite://" dbUri)
+    getDbType dbUri = T.unpack . (!!0) . T.split (==':') . T.pack $ dbUri
+
+
+openDBConnection :: String -> IO (Maybe HDBConn)
+openDBConnection dbUri =
+  case parseDbDriver2 dbUri of
+    Just (DBUriSqlite   uri) -> Sqlite3.connectSqlite3  uri
+                                >>= \conn -> return $ Just (HDBConnSqlite conn)
+
+    Just (DBUriPostGres uri) -> Pg.connectPostgreSQL    uri
+                                >>= \conn -> return $ Just ( HDBConnPostgres conn)
+
+    Nothing                  -> return Nothing
+
+
+
+-- withDBConnection :: forall conn. (HDBC.IConnection conn) => String -> (conn -> IO ()) -> IO ()
+withDBConnection ::  String -> DBConn () -> IO ()
+withDBConnection dbUri dbAction = do
+  conn <- openDBConnection dbUri
+  case conn of
+    Just (HDBConnSqlite   c)  -> runReaderT dbAction c >> HDBC.disconnect c
+    Just (HDBConnPostgres c)  -> runReaderT dbAction c >> HDBC.disconnect c
+    Nothing                   -> putStrLn "Error: I can't open the database connection"
+
+
+withConnection :: HDBC.IConnection  conn => IO conn -> (conn -> IO r) -> IO r
+withConnection ioConn function = do
+  conn     <- ioConn
+  result   <- function conn
+  HDBC.disconnect conn
+  return result
+
+-- withDBConnection2 dbUri dbAction = do
+--   withDBConnection dbUri (ioToDBConn dbAction)
 
 {- | Zotero Tag ID number -} 
 type ZoteroTagID   = Int
