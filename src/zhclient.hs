@@ -48,14 +48,12 @@ copyCollectionTo conn collID dest = do
    order to make easier to locate the author.
 -}   
 printItemAuthor conn itemID = do
-
-  authorData <- itemAuthors conn itemID
+  authorData <- runReaderT (Z.itemAuthors itemID) conn
   mapM_ printRow authorData
-
   where
-    printRow row = printf "%s: %s, %s\n" (row !! 2) (row !! 1) (row !! 0)
-
-
+    printRow author = printf "%s: %s, %s\n" (Z.zoteroAuthorFirstName author)
+                                            (Z.zoteroAuthorLastName  author)
+                                            (show $ Z.zoteroAuthorID author)
 
        
 printItem conn itemID = do
