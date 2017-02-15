@@ -105,11 +105,10 @@ printCollection conn collID = do
   mapM_ (printItem conn) items 
   
 
+-- repl :: conn -> IO ()
+repl conn = forever $ do
 
---main :: IO ()
-main = forever $ do
-
-  conn <- dbConnection
+  -- conn <- dbConnection
 
   putStrLn "\n"
   putStrLn "Enter 1 to list the collections "
@@ -124,7 +123,7 @@ main = forever $ do
 
   case choice of
     
-    "1" -> showCollections conn 
+    -- "1" -> showCollections conn
     
     "2" -> do
              input <- prompt "Enter a collection ID: "  
@@ -138,7 +137,7 @@ main = forever $ do
              mapM_ (\fid -> printItem conn fid ) itemID
 
              path <- fmap join $ mapM
-               (\itemID -> itemAttachmentFile conn itemID)
+               (\itemID -> runReaderT (Z.itemAttachmentFile itemID) conn)
                itemID
 
              mapM_ (\p -> P.system $ "xdg-open " ++ "\"" ++ p ++ "\"") path
