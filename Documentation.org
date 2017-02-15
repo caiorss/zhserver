@@ -597,6 +597,23 @@ $ curl -s http://localhost:8000/api/search?content=cpp |  python -mjson.tool
 ]
 
 #+END_SRC
+** Haskell Related Documentation 
+
+Happstack Sever Framework 
+
+ - [[https://hackage.haskell.org/package/happstack-server][happstack-server: Web related tools and services.]]
+
+Haskell SQLite Database Driver 
+
+ - [[https://hackage.haskell.org/package/HDBC-sqlite3-2.3.3.1/docs/Database-HDBC-Sqlite3.html][Database.HDBC.Sqlite3]]
+
+Haskell PostgresSQL Database Driver 
+
+ - [[https://hackage.haskell.org/package/HDBC-postgresql][HDBC-postgresql: PostgreSQL driver for HDBC]]
+
+Haskell AESON - Json library 
+
+ - [[https://hackage.haskell.org/package/aeson][aeson: Fast JSON parsing and encoding]]
 ** Database Documentation 
 *** Search Titles that contains a word 
 
@@ -649,7 +666,8 @@ Result:
 "4842"	"Power of mathematics: Reasoning about functional types"
 "6094"	"Discrete mathematics using a computer"
 #+END_SRC
-*** Full text search. 
+*** Text search. 
+**** Search all items which title has a word 
 
 Search all items that have the word "haskell".
 
@@ -659,6 +677,8 @@ FROM   fulltextItemWords, fulltextWords
 WHERE  fulltextItemWords.wordID = fulltextWords.wordID
 AND    fulltextWords.word LIKE "%haskell%"
 #+END_SRC 
+
+**** Search all itesm which title or content has a given word
 
 Search all items that have the word "haskell" in the title or in the
 content.
@@ -676,20 +696,159 @@ AND    (itemDataValues.value LIKE "%haskell%"
 		)	
 
 #+END_SRC
-** Haskell Related Documentation 
 
-Happstack Sever Framework 
+*** Search items which has at least one tag 
 
- - [[https://hackage.haskell.org/package/happstack-server][happstack-server: Web related tools and services.]]
+Search all items which has at least one tag of "haskell", "ffi", "fp", "functional"
 
-Haskell SQLite Database Driver 
+#+BEGIN_SRC sql 
+  SELECT itemTags.itemID, tags.tagID, tags.Name FROM itemTags, tags 
+  WHERE  itemTags.tagID = tags.tagID and tags.Name IN ("haskell", "ffi", "fp", "functional")
+#+END_SRC
 
- - [[https://hackage.haskell.org/package/HDBC-sqlite3-2.3.3.1/docs/Database-HDBC-Sqlite3.html][Database.HDBC.Sqlite3]]
+Sample output: 
 
-Haskell PostgresSQL Database Driver 
+#+BEGIN_SRC text 
+  itemID|tagID|name
+  5766|182|haskell
+  5792|182|haskell
+  5920|182|haskell
+  5928|182|haskell
+  5928|189|fp
+  5936|182|haskell
+  5938|189|fp
+  5943|182|haskell
+  5946|189|fp
+  5948|189|fp
+  5950|189|fp
+  5952|189|fp
+  5954|189|fp
+  5956|189|fp
+  5958|189|fp
+  5960|189|fp
+  5962|189|fp
+  5965|189|fp
+  5907|182|haskell
+  5907|189|fp
+  5935|182|haskell
+  5935|189|fp
+  5969|182|haskell
+  5969|189|fp
+  5970|182|haskell
+  5973|182|haskell
+  5973|189|fp
+  5975|182|haskell
+  5975|189|fp
+  5977|189|fp
+  5979|189|fp
+  5979|182|haskell
+  5167|189|fp
+  5980|182|haskell
+  5980|189|fp
+  5985|182|haskell
+  5985|189|fp
+  5988|182|haskell
+  5988|189|fp
+  5992|189|fp
+  5992|182|haskell
+  5994|182|haskell
+  ... ... ... 
+#+END_SRC
 
- - [[https://hackage.haskell.org/package/HDBC-postgresql][HDBC-postgresql: PostgreSQL driver for HDBC]]
+Refined search return only itemID 
 
-Haskell AESON - Json library 
+#+BEGIN_SRC sql 
+  SELECT DISTINCT itemTags.itemID FROM itemTags, tags 
+  WHERE  itemTags.tagID = tags.tagID and tags.Name IN ("haskell", "ffi", "fp", "functional") ;        
+#+END_SRC
 
- - [[https://hackage.haskell.org/package/aeson][aeson: Fast JSON parsing and encoding]]
+Sample output:
+
+#+BEGIN_SRC text 
+  itemID
+  5167
+  5766
+  5792
+  5815
+  5907
+  5920
+  5928
+  5935
+  5936
+
+  ...
+#+END_SRC
+*** Search all items which title at least match one of the word of a list 
+
+#+BEGIN_SRC sql  
+SELECT itemData.itemID, itemDataValues.value   
+FROM   itemData, itemDataValues, itemAttachments
+WHERE  fieldID = 110 
+AND    itemData.valueID = itemDataValues.valueID
+AND    itemAttachments.sourceItemID = itemData.itemID
+AND    (    itemDataValues.value LIKE "%ocaml%"
+        OR  itemDataValues.value LIKE "%haskell%"
+		OR  itemDataValues.value LIKE "%functional%"
+		OR  itemDataValues.value LIKE "%fsharp%"
+		OR  itemDataValues.value LIKE "%monad%"
+		)
+GROUP BY itemData.itemID
+#+END_SRC
+
+Output:
+
+#+BEGIN_SRC text 
+  itemID|value
+  1936|Functional Programming
+  2688|Currently struggling. Can someone help em transition from functional programming to using OOP? : learnpython
+  2740|Blow your mind - HaskellWiki
+  2750|When to use functional programming languages and techniques - TechRepublic
+  2752|Where functional programming fits in - TechRepublic
+
+  ...  ... ... ...
+
+  3019|Turning to the Functional Side using C# and F#.
+  3703|Functional Programming in Javascript
+  3705|Functional programming and the death of the Unix Way | Dan Newcome, blog
+  4024|Learn Physics by Programming in Haskell [pdf] | Hacker News
+  4027|Learn Physics by Programming in Haskell
+  4030|Well-Typed - The Haskell Consultants: Monads: From Web 2.0 to Hardware Drivers
+
+  .... ... ... ... ... 
+#+END_SRC
+*** Search all items which title contains all words in a list 
+
+
+#+BEGIN_SRC sql  
+SELECT itemData.itemID, itemDataValues.value   
+FROM   itemData, itemDataValues, itemAttachments
+WHERE  fieldID = 110 
+AND    itemData.valueID = itemDataValues.valueID
+AND    itemAttachments.sourceItemID = itemData.itemID
+AND    (    itemDataValues.value LIKE "%ocaml%"
+        OR  itemDataValues.value LIKE "%haskell%"
+		OR  itemDataValues.value LIKE "%functional%"
+		OR  itemDataValues.value LIKE "%fsharp%"
+		OR  itemDataValues.value LIKE "%monad%"
+		)
+GROUP BY itemData.itemID
+#+END_SRC
+*** Search all items which title or tags matches all words in a list 
+
+Selects all items which tag or title matches all "%ocaml%" or "%monad%".
+
+#+BEGIN_SRC sql 
+  SELECT itemData.itemID, itemDataValues.value   
+  FROM   itemData, itemDataValues, itemAttachments, tags, itemTags 
+  WHERE  fieldID = 110 
+  AND    itemData.valueID = itemDataValues.valueID
+  AND    itemAttachments.sourceItemID = itemData.itemID
+  AND    itemTags.itemID = itemData.itemID
+  AND    itemTags.tagID = tags.tagID
+  AND    (     (itemDataValues.value LIKE "%ocaml%" OR tags.Name LIKE "%ocaml%")
+          AND  (itemDataValues.value LIKE "%monad%" OR tags.Name LIKE  "%monad%")
+          
+          )
+  GROUP BY itemData.itemID
+#+END_SRC
+
