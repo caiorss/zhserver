@@ -428,13 +428,6 @@ sqlRun sql sqlvals = do
   liftIO  $ HDBC.execute stmt sqlvals
   liftIO  $ HDBC.commit conn 
     
-        
-withConnection :: HDBC.IConnection  conn => IO conn -> (conn -> IO r) -> IO r
-withConnection ioConn function = do
-  conn     <- ioConn
-  result   <- function conn
-  return result
-
 
 
 {- ================== Database Functions  ======================  -}
