@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Zhserver - Haskell Web Server for Zotero Database</title>
-<!-- 2017-02-14 ter 21:55 -->
+<!-- 2017-02-14 ter 22:09 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Caio Rodrigues" />
@@ -161,6 +161,7 @@ for the JavaScript code in this tag.
 <li><a href="#sec-1-3-5">1.3.5. Run the server</a></li>
 </ul>
 </li>
+<li><a href="#sec-1-4">1.4. Documentation</a></li>
 </ul>
 </li>
 </ul>
@@ -277,6 +278,24 @@ standards, web page snapshots and papers fast.
 <li>[] Implement user friendly URL 
 </li>
 </ul>
+
+<p>
+<b>Repository</b> 
+</p>
+
+<ul class="org-ul">
+<li><a href="https://github.com/caiorss/zhserver">https://github.com/caiorss/zhserver</a>
+</li>
+</ul>
+
+<p>
+<b>Zhserver Web Site</b>
+</p>
+
+<ul class="org-ul">
+<li><a href="https://caiorss.github.io/zhserver">https://caiorss.github.io/zhserver</a>
+</li>
+</ul>
 </div>
 </div>
 
@@ -348,10 +367,10 @@ The server will listen the port 8000 and it can be accessed from
 <div class="org-src-container">
 
 <pre class="src src-sh">$ make run-test 
-stack exec -- ghc --make -o zhserver.bin src/ZHServer.hs src/Zotero.hs
+stack exec -- ghc --make -o <span class="org-keyword">zhserver.bin</span> src/ZHServer.hs src/Zotero.hs
 [2 of 2] Compiling Main             ( src/ZHServer.hs, src/ZHServer.o )
 Linking zhserver.bin ...
-# stack exec -- ghc src/ZHServer.hs -o bin/ZHServer.bin
+<span class="org-comment-delimiter"># </span><span class="org-comment">stack exec -- ghc src/ZHServer.hs -o bin/ZHServer.bin</span>
 ./zhserver.bin --conf src/zhserver.conf
 Server Running
 ------------------
@@ -382,11 +401,11 @@ Start server with all configuration passed through command line
   --params [host] [port] [dbUri] [staticPath] [storagePath]
 
 
-	   - [host]        - Hostname like 0.0.0.0 to listen all hosts 
-	   - [port]        - Port like 8080
-	   - [dbUri]       - Database URI
-	   - [staticPath]  - Path to server static files like index.html *.js files
-	   - [storagePath] - Path to Zotero storage directory
+           - [host]        - Hostname like 0.0.0.0 to listen all hosts 
+           - [port]        - Port like 8080
+           - [dbUri]       - Database URI
+           - [staticPath]  - Path to server static files like index.html *.js files
+           - [storagePath] - Path to Zotero storage directory
 </pre>
 </div>
 </div>
@@ -414,7 +433,7 @@ Find the sqlite databases for testing
 <div class="outline-text-4" id="text-1-3-3">
 <div class="org-src-container">
 
-<pre class="src src-sh">$ find ~/.mozilla -name 'storage' | grep zotero
+<pre class="src src-sh">$ find ~/.mozilla -name <span class="org-string">'storage'</span> | grep zotero
 /home/arch/.mozilla/firefox/dic34vce.default/zotero/storage
 /home/arch/.mozilla/firefox/mwad0hks.zotero/zotero/storage
 /home/arch/.mozilla/firefox/mwad0hks.zotero/storage
@@ -439,7 +458,7 @@ $ ls /home/arch/.mozilla/firefox/mwad0hks.zotero/zotero/storage | head -n16
 
 $ ls /home/arch/.mozilla/firefox/mwad0hks.zotero/zotero/storage/267B6WPX
  3512243057-widgets.js                                           ghosh_cover150.jpg          plusone.js
-'3ZGfnXYPgAVNngtqatUNgAAAABJRU5ErkJggg=='                        gplus-32.png                product.jpg
+<span class="org-string">'3ZGfnXYPgAVNngtqatUNgAAAABJRU5ErkJggg=='</span>                        gplus-32.png                product.jpg
  anon16-rounded.gif                                              gprofile_button-16.png      s_bottom.png
  b16-rounded.gif                                                 gradients_light.png         share_buttons_20_3.png
  body_gradient_tile_light.png                                    icon18_edit_allbkg.gif      shAutoloader.js
@@ -448,13 +467,13 @@ $ ls /home/arch/.mozilla/firefox/mwad0hks.zotero/zotero/storage/267B6WPX
  combinators-as-sublanguage-of-dsl.css                           icon_delete13.gif           stats-flipper.png
  combinators-as-sublanguage-of-dsl.html                          icon_wikipedia_search.png   s_top.png
  diagram-trans.gif                                               KhUMAAAAAElFTkSuQmCC        triangle_ltr.gif
-'DLgASBKnApgkVgXIkhgKiNKJ005s4gDLbCZBiSxfygAAAABJRU5ErkJggg=='   mobile_share_icons4.png     triangle_open.gif
+<span class="org-string">'DLgASBKnApgkVgXIkhgKiNKJ005s4gDLbCZBiSxfygAAAABJRU5ErkJggg=='</span>   mobile_share_icons4.png     triangle_open.gif
  favicon.ico                                                     openid16-rounded.gif        untitled
  feed-icon32x32.png                                              photo.jpg
 
 
 $ ls /home/arch/.mozilla/firefox/mwad0hks.zotero/zotero/storage/26B3KTBR/
-'Translatable Finite State Time Machine.pdf'
+<span class="org-string">'Translatable Finite State Time Machine.pdf'</span>
 </pre>
 </div>
 </div>
@@ -476,11 +495,11 @@ Example:
 <div class="org-src-container">
 
 <pre class="src src-sh">ServerConfig {
-	       serverPort         = 8000
-	     , serverHost         = "0.0.0.0"
-	     , serverStoragePath  = "/home/arch/.mozilla/firefox/mwad0hks.zotero/zotero/zotero" 
-	     , serverDatabase     = "sqlite:///home/arch/.mozilla/firefox/mwad0hks.zotero/zotero/zotero.sqlite"
-	     }
+               serverPort         = 8000
+             , serverHost         = <span class="org-string">"0.0.0.0"</span>
+             , serverStoragePath  = <span class="org-string">"/home/arch/.mozilla/firefox/mwad0hks.zotero/zotero/zotero"</span> 
+             , serverDatabase     = <span class="org-string">"sqlite:///home/arch/.mozilla/firefox/mwad0hks.zotero/zotero/zotero.sqlite"</span>
+             }
 </pre>
 </div>
 
@@ -533,11 +552,11 @@ Pass the configuration file by enviroment variable:
 
 <div class="org-src-container">
 
-<pre class="src src-sh">$ env ZHSERVER_CONFIG=./zhserver.conf ./ZHServer --env 
+<pre class="src src-sh">$ env <span class="org-variable-name">ZHSERVER_CONFIG</span>=./zhserver.conf ./ZHServer --env 
 Server Running
 ------------------
 Loading default configuration file from ZHSERVER_CONFIG environment variable.
-sqlite://testdb/zotero.sqlite
+<span class="org-function-name">sqlite</span>://testdb/zotero.sqlite
 testdb/zotero.sqlite
 </pre>
 </div>
@@ -548,14 +567,14 @@ or
 
 <div class="org-src-container">
 
-<pre class="src src-sh">$ export ZHSERVER_CONFIG=./zhserver.conf
+<pre class="src src-sh">$ export <span class="org-variable-name">ZHSERVER_CONFIG</span>=./zhserver.conf
 
 
 $ ./ZHServer 
 Server Running
 ------------------
 Loading default configuration file from ZHSERVER_CONFIG environment variable.
-sqlite://testdb/zotero.sqlite
+<span class="org-function-name">sqlite</span>://testdb/zotero.sqlite
 testdb/zotero.sqlite
 </pre>
 </div>
@@ -568,7 +587,7 @@ testdb/zotero.sqlite
 <pre class="src src-sh">$ ./ZHServer --conf zhserver.conf 
 Server Running
 ------------------
-sqlite://testdb/zotero.sqlite
+<span class="org-function-name">sqlite</span>://testdb/zotero.sqlite
 testdb/zotero.sqlite
 </pre>
 </div>
@@ -578,7 +597,7 @@ testdb/zotero.sqlite
 <li><a id="sec-1-3-5-3" name="sec-1-3-5-3"></a>Run with all server parameters passed by command line<br  /><div class="outline-text-5" id="text-1-3-5-3">
 <div class="org-src-container">
 
-<pre class="src src-sh">$ ./zhserver.bin --params 0.0.0.0 9090 "sqlite://testdb/zotero.sqlite" ./assets/ testdb/storage 
+<pre class="src src-sh">$ ./zhserver.bin --params 0.0.0.0 9090 <span class="org-string">"sqlite://testdb/zotero.sqlite"</span> ./assets/ testdb/storage 
 Server Running
 ------------------
 </pre>
@@ -587,11 +606,34 @@ Server Running
 </li></ol>
 </div>
 </div>
+
+<div id="outline-container-sec-1-4" class="outline-3">
+<h3 id="sec-1-4"><span class="section-number-3">1.4</span> Documentation</h3>
+<div class="outline-text-3" id="text-1-4">
+<p>
+Development Documentation and Design Notes:
+</p>
+
+<ul class="org-ul">
+<li><a href="Documentation.html">Documentation.html</a> 
+</li>
+</ul>
+
+<p>
+API Documentation generated by Haddock 
+</p>
+
+<ul class="org-ul">
+<li><a href="https://caiorss.github.io/zhserver/docs/index.html">API Documentation</a>
+</li>
+</ul>
+</div>
+</div>
 </div>
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Caio Rodrigues</p>
-<p class="date">Created: 2017-02-14 ter 21:55</p>
+<p class="date">Created: 2017-02-14 ter 22:09</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.1.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
