@@ -4,10 +4,10 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Development Documentation</title>
-<!-- 2017-02-14 ter 21:55 -->
+<!-- 2017-02-14 ter 22:10 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
-<meta  name="author" content="arch" />
+<meta  name="author" content="Caio Rodrigues Soares Silva" />
 <meta  name="description" content="Documentation for Developers"
  />
 <style type="text/css">
@@ -242,41 +242,41 @@ The API has the following scheme:
 </div><ol class="org-ol"><li><a id="sec-1-1-2-1" name="sec-1-1-2-1"></a>Get item by Id<br  /><div class="outline-text-5" id="text-1-1-2-1">
 <div class="org-src-container">
 
-<pre class="src src-json">$ curl -s http://localhost:8000/api/item?id=17 |  python -mjson.tool
+<pre class="src src-json">$ curl -s http://localhost:<span class="org-constant">8000</span>/api/item?id=<span class="org-constant">17</span> |  python -mjson.tool
 {
-    "mime": null,
-    "colls": [
-	[
-	    7,
-	    "Linux"
-	]
+    <span class="org-keyword">"mime"</span>: <span class="org-constant">null</span>,
+    <span class="org-keyword">"colls"</span>: [
+        [
+            <span class="org-constant">7</span>,
+            <span class="org-string">"Linux"</span>
+        ]
     ],
-    "data": [
-	[
-	    "url",
-	    "http://www.digilife.be/quickreferences/QRC/LINUX%20Admin%20Quick%20Reference.pdf"
-	],
-	[
-	    "accessDate",
-	    "2016-11-07 22:06:48"
-	],
-	[
-	    "title",
-	    "inux/Unix Command Line Cheat Sheet"
-	]
+    <span class="org-keyword">"data"</span>: [
+        [
+            <span class="org-string">"url"</span>,
+            <span class="org-string">"http://www.digilife.be/quickreferences/QRC/LINUX%20Admin%20Quick%20Reference.pdf"</span>
+        ],
+        [
+            <span class="org-string">"accessDate"</span>,
+            <span class="org-string">"2016-11-07 22:06:48"</span>
+        ],
+        [
+            <span class="org-string">"title"</span>,
+            <span class="org-string">"inux/Unix Command Line Cheat Sheet"</span>
+        ]
     ],
-    "authors": [],
-    "id": 17,
-    "file": "6DHDAQAP/LINUX Admin Quick Reference.pdf",
-    "tags": [
-	[
-	    8,
-	    "quickref"
-	],
-	[
-	    9,
-	    "linux"
-	]
+    <span class="org-keyword">"authors"</span>: [],
+    <span class="org-keyword">"id"</span>: <span class="org-constant">17</span>,
+    <span class="org-keyword">"file"</span>: <span class="org-string">"6DHDAQAP/LINUX Admin Quick Reference.pdf"</span>,
+    <span class="org-keyword">"tags"</span>: [
+        [
+            <span class="org-constant">8</span>,
+            <span class="org-string">"quickref"</span>
+        ],
+        [
+            <span class="org-constant">9</span>,
+            <span class="org-string">"linux"</span>
+        ]
     ]
 }
 </pre>
@@ -295,31 +295,31 @@ Get collections:
 
 <div class="org-src-container">
 
-<pre class="src src-json">$ curl -s http://localhost:8000/api/colls |  python -mjson.tool
+<pre class="src src-json">$ curl -s http://localhost:<span class="org-constant">8000</span>/api/colls |  python -mjson.tool
 [
     {
-	"name": "C++/CPP",
-	"id": 8
+        <span class="org-keyword">"name"</span>: <span class="org-string">"C++/CPP"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">8</span>
     },
     {
-	"name": "Fsharp",
-	"id": 6
+        <span class="org-keyword">"name"</span>: <span class="org-string">"Fsharp"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">6</span>
     },
     {
-	"name": "Haskell",
-	"id": 2
+        <span class="org-keyword">"name"</span>: <span class="org-string">"Haskell"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">2</span>
     },
     {
-	"name": "Haskell Tutorials",
-	"id": 5
+        <span class="org-keyword">"name"</span>: <span class="org-string">"Haskell Tutorials"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">5</span>
     },
     {
-	"name": "Haskell doc",
-	"id": 3
+        <span class="org-keyword">"name"</span>: <span class="org-string">"Haskell doc"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">3</span>
     },
     {
-	"name": "Linux",
-	"id": 7
+        <span class="org-keyword">"name"</span>: <span class="org-string">"Linux"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">7</span>
     }
 ]
 </pre>
@@ -334,113 +334,113 @@ Query all items wich belongs to collection Fsharp which id=6.
 
 <div class="org-src-container">
 
-<pre class="src src-json">$ curl -s http://localhost:8000/api/colls?id=6 |  python -mjson.tool
+<pre class="src src-json">$ curl -s http://localhost:<span class="org-constant">8000</span>/api/colls?id=<span class="org-constant">6</span> |  python -mjson.tool
 [
     {
-	"mime": null,
-	"colls": [
-	    [
-		6,
-		"Fsharp"
-	    ]
-	],
-	"data": [
-	    [
-		"url",
-		"http://tomasp.net/articles/fsharp-i-introduction/article.pdf"
-	    ],
-	    [
-		"accessDate",
-		"2016-11-07 22:01:04"
-	    ],
-	    [
-		"title",
-		"F# Language Overview"
-	    ]
-	],
-	"authors": [
-	    {
-		"first": "Tomas",
-		"last": "Petriceck",
-		"id": 4
-	    }
-	],
-	"id": 12,
-	"file": "678BV2HV/article.pdf",
-	"tags": [
-	    [
-		2,
-		"fp"
-	    ],
-	    [
-		3,
-		"fsharp"
-	    ],
-	    [
-		4,
-		"doc"
-	    ],
-	    [
-		5,
-		"overview"
-	    ]
-	]
+        <span class="org-keyword">"mime"</span>: <span class="org-constant">null</span>,
+        <span class="org-keyword">"colls"</span>: [
+            [
+                <span class="org-constant">6</span>,
+                <span class="org-string">"Fsharp"</span>
+            ]
+        ],
+        <span class="org-keyword">"data"</span>: [
+            [
+                <span class="org-string">"url"</span>,
+                <span class="org-string">"http://tomasp.net/articles/fsharp-i-introduction/article.pdf"</span>
+            ],
+            [
+                <span class="org-string">"accessDate"</span>,
+                <span class="org-string">"2016-11-07 22:01:04"</span>
+            ],
+            [
+                <span class="org-string">"title"</span>,
+                <span class="org-string">"F# Language Overview"</span>
+            ]
+        ],
+        <span class="org-keyword">"authors"</span>: [
+            {
+                <span class="org-keyword">"first"</span>: <span class="org-string">"Tomas"</span>,
+                <span class="org-keyword">"last"</span>: <span class="org-string">"Petriceck"</span>,
+                <span class="org-keyword">"id"</span>: <span class="org-constant">4</span>
+            }
+        ],
+        <span class="org-keyword">"id"</span>: <span class="org-constant">12</span>,
+        <span class="org-keyword">"file"</span>: <span class="org-string">"678BV2HV/article.pdf"</span>,
+        <span class="org-keyword">"tags"</span>: [
+            [
+                <span class="org-constant">2</span>,
+                <span class="org-string">"fp"</span>
+            ],
+            [
+                <span class="org-constant">3</span>,
+                <span class="org-string">"fsharp"</span>
+            ],
+            [
+                <span class="org-constant">4</span>,
+                <span class="org-string">"doc"</span>
+            ],
+            [
+                <span class="org-constant">5</span>,
+                <span class="org-string">"overview"</span>
+            ]
+        ]
     },
     {
-	"mime": null,
-	"colls": [
-	    [
-		6,
-		"Fsharp"
-	    ]
-	],
-	"data": [
-	    [
-		"url",
-		"http://fsharp.org/specs/language-spec/4.0/FSharpSpec-4.0-latest.pdf"
-	    ],
-	    [
-		"accessDate",
-		"2016-11-07 22:00:06"
-	    ],
-	    [
-		"title",
-		"The F# 4.0 Language Specification"
-	    ]
-	],
-	"authors": [
-	    {
-		"first": "Syme",
-		"last": "Don",
-		"id": 5
-	    },
-	    {
-		"first": "Alimov",
-		"last": "Anar",
-		"id": 6
-	    },
-	    {
-		"first": "Fischer",
-		"last": "Jomo",
-		"id": 7
-	    }
-	],
-	"id": 13,
-	"file": "A3APBZAZ/FSharpSpec-4.0-latest.pdf",
-	"tags": [
-	    [
-		2,
-		"fp"
-	    ],
-	    [
-		3,
-		"fsharp"
-	    ],
-	    [
-		4,
-		"doc"
-	    ]
-	]
+        <span class="org-keyword">"mime"</span>: <span class="org-constant">null</span>,
+        <span class="org-keyword">"colls"</span>: [
+            [
+                <span class="org-constant">6</span>,
+                <span class="org-string">"Fsharp"</span>
+            ]
+        ],
+        <span class="org-keyword">"data"</span>: [
+            [
+                <span class="org-string">"url"</span>,
+                <span class="org-string">"http://fsharp.org/specs/language-spec/4.0/FSharpSpec-4.0-latest.pdf"</span>
+            ],
+            [
+                <span class="org-string">"accessDate"</span>,
+                <span class="org-string">"2016-11-07 22:00:06"</span>
+            ],
+            [
+                <span class="org-string">"title"</span>,
+                <span class="org-string">"The F# 4.0 Language Specification"</span>
+            ]
+        ],
+        <span class="org-keyword">"authors"</span>: [
+            {
+                <span class="org-keyword">"first"</span>: <span class="org-string">"Syme"</span>,
+                <span class="org-keyword">"last"</span>: <span class="org-string">"Don"</span>,
+                <span class="org-keyword">"id"</span>: <span class="org-constant">5</span>
+            },
+            {
+                <span class="org-keyword">"first"</span>: <span class="org-string">"Alimov"</span>,
+                <span class="org-keyword">"last"</span>: <span class="org-string">"Anar"</span>,
+                <span class="org-keyword">"id"</span>: <span class="org-constant">6</span>
+            },
+            {
+                <span class="org-keyword">"first"</span>: <span class="org-string">"Fischer"</span>,
+                <span class="org-keyword">"last"</span>: <span class="org-string">"Jomo"</span>,
+                <span class="org-keyword">"id"</span>: <span class="org-constant">7</span>
+            }
+        ],
+        <span class="org-keyword">"id"</span>: <span class="org-constant">13</span>,
+        <span class="org-keyword">"file"</span>: <span class="org-string">"A3APBZAZ/FSharpSpec-4.0-latest.pdf"</span>,
+        <span class="org-keyword">"tags"</span>: [
+            [
+                <span class="org-constant">2</span>,
+                <span class="org-string">"fp"</span>
+            ],
+            [
+                <span class="org-constant">3</span>,
+                <span class="org-string">"fsharp"</span>
+            ],
+            [
+                <span class="org-constant">4</span>,
+                <span class="org-string">"doc"</span>
+            ]
+        ]
     }
 ]
 </pre>
@@ -451,84 +451,84 @@ Query all items wich belongs to collection Fsharp which id=6.
 <li><a id="sec-1-1-2-4" name="sec-1-1-2-4"></a>Get all authors<br  /><div class="outline-text-5" id="text-1-1-2-4">
 <div class="org-src-container">
 
-<pre class="src src-json">$ curl -s http://localhost:8000/api/authors |  python -mjson.tool
+<pre class="src src-json">$ curl -s http://localhost:<span class="org-constant">8000</span>/api/authors |  python -mjson.tool
 [
     {
-	"first": "",
-	"last": "Center for History and New Media",
-	"id": 1
+        <span class="org-keyword">"first"</span>: <span class="org-string">""</span>,
+        <span class="org-keyword">"last"</span>: <span class="org-string">"Center for History and New Media"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">1</span>
     },
     {
-	"first": "Alimov",
-	"last": "Anar",
-	"id": 6
+        <span class="org-keyword">"first"</span>: <span class="org-string">"Alimov"</span>,
+        <span class="org-keyword">"last"</span>: <span class="org-string">"Anar"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">6</span>
     },
     {
-	"first": "Alwyn",
-	"last": "Goodloe",
-	"id": 20
+        <span class="org-keyword">"first"</span>: <span class="org-string">"Alwyn"</span>,
+        <span class="org-keyword">"last"</span>: <span class="org-string">"Goodloe"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">20</span>
     },
     {
-	"first": "Andrew D.",
-	"last": "Gordon",
-	"id": 15
+        <span class="org-keyword">"first"</span>: <span class="org-string">"Andrew D."</span>,
+        <span class="org-keyword">"last"</span>: <span class="org-string">"Gordon"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">15</span>
     },
     {
-	"first": "Dennis M.",
-	"last": "Ritchie",
-	"id": 9
+        <span class="org-keyword">"first"</span>: <span class="org-string">"Dennis M."</span>,
+        <span class="org-keyword">"last"</span>: <span class="org-string">"Ritchie"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">9</span>
     },
     {
-	"first": "Fischer",
-	"last": "Jomo",
-	"id": 7
+        <span class="org-keyword">"first"</span>: <span class="org-string">"Fischer"</span>,
+        <span class="org-keyword">"last"</span>: <span class="org-string">"Jomo"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">7</span>
     },
 
 ...     ...      ...  ... 
     {
-	"first": "Marc",
-	"last": "Pouzet",
-	"id": 23
+        <span class="org-keyword">"first"</span>: <span class="org-string">"Marc"</span>,
+        <span class="org-keyword">"last"</span>: <span class="org-string">"Pouzet"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">23</span>
     },
     {
-	"first": "ONDREJ",
-	"last": "\u0160UCH",
-	"id": 17
+        <span class="org-keyword">"first"</span>: <span class="org-string">"ONDREJ"</span>,
+        <span class="org-keyword">"last"</span>: <span class="org-string">"\u0160UCH"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">17</span>
     },
     {
-	"first": "Ondrej",
-	"last": "\u0160uch",
-	"id": 22
+        <span class="org-keyword">"first"</span>: <span class="org-string">"Ondrej"</span>,
+        <span class="org-keyword">"last"</span>: <span class="org-string">"\u0160uch"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">22</span>
     },
     {
-	"first": "Paul",
-	"last": "Cobbat",
-	"id": 8
+        <span class="org-keyword">"first"</span>: <span class="org-string">"Paul"</span>,
+        <span class="org-keyword">"last"</span>: <span class="org-string">"Cobbat"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">8</span>
     },
     {
-	"first": "Peter",
-	"last": "Jankovic",
-	"id": 21
+        <span class="org-keyword">"first"</span>: <span class="org-string">"Peter"</span>,
+        <span class="org-keyword">"last"</span>: <span class="org-string">"Jankovic"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">21</span>
     },
     {
-	"first": "R",
-	"last": "Hiptmar",
-	"id": 13
+        <span class="org-keyword">"first"</span>: <span class="org-string">"R"</span>,
+        <span class="org-keyword">"last"</span>: <span class="org-string">"Hiptmar"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">13</span>
     },
     {
-	"first": "Syme",
-	"last": "Don",
-	"id": 5
+        <span class="org-keyword">"first"</span>: <span class="org-string">"Syme"</span>,
+        <span class="org-keyword">"last"</span>: <span class="org-string">"Don"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">5</span>
     },
     {
-	"first": "Tomas",
-	"last": "Petriceck",
-	"id": 4
+        <span class="org-keyword">"first"</span>: <span class="org-string">"Tomas"</span>,
+        <span class="org-keyword">"last"</span>: <span class="org-string">"Petriceck"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">4</span>
     },
     {
-	"first": "Wayne L.",
-	"last": "Winston",
-	"id": 11
+        <span class="org-keyword">"first"</span>: <span class="org-string">"Wayne L."</span>,
+        <span class="org-keyword">"last"</span>: <span class="org-string">"Winston"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">11</span>
     }
 ]
 </pre>
@@ -539,60 +539,60 @@ Query all items wich belongs to collection Fsharp which id=6.
 <li><a id="sec-1-1-2-5" name="sec-1-1-2-5"></a>Get all items that belongs to an author<br  /><div class="outline-text-5" id="text-1-1-2-5">
 <div class="org-src-container">
 
-<pre class="src src-json">$ curl -s http://localhost:8000/api/authors?id=10 |  python -mjson.tool
+<pre class="src src-json">$ curl -s http://localhost:<span class="org-constant">8000</span>/api/authors?id=<span class="org-constant">10</span> |  python -mjson.tool
 [
     {
-	"mime": null,
-	"colls": [],
-	"data": [
-	    [
-		"url",
-		"http://jetsonhacks.com/wp-content/uploads/2016/08/unix.pdf"
-	    ],
-	    [
-		"volume",
-		"17"
-	    ],
-	    [
-		"issue",
-		"7"
-	    ],
-	    [
-		"publicationTitle",
-		"Communications of the ACM"
-	    ],
-	    [
-		"date",
-		"1974-00-00 1974"
-	    ],
-	    [
-		"accessDate",
-		"2016-11-07 22:11:16"
-	    ],
-	    [
-		"libraryCatalog",
-		"Google Scholar"
-	    ],
-	    [
-		"title",
-		"The UNIX time-sharing system"
-	    ]
-	],
-	"authors": [
-	    {
-		"first": "Dennis M.",
-		"last": "Ritchie",
-		"id": 9
-	    },
-	    {
-		"first": "Ken",
-		"last": "Thompson",
-		"id": 10
-	    }
-	],
-	"id": 21,
-	"file": "9NAZ5GJT/unix.pdf",
-	"tags": []
+        <span class="org-keyword">"mime"</span>: <span class="org-constant">null</span>,
+        <span class="org-keyword">"colls"</span>: [],
+        <span class="org-keyword">"data"</span>: [
+            [
+                <span class="org-string">"url"</span>,
+                <span class="org-string">"http://jetsonhacks.com/wp-content/uploads/2016/08/unix.pdf"</span>
+            ],
+            [
+                <span class="org-string">"volume"</span>,
+                <span class="org-string">"17"</span>
+            ],
+            [
+                <span class="org-string">"issue"</span>,
+                <span class="org-string">"7"</span>
+            ],
+            [
+                <span class="org-string">"publicationTitle"</span>,
+                <span class="org-string">"Communications of the ACM"</span>
+            ],
+            [
+                <span class="org-string">"date"</span>,
+                <span class="org-string">"1974-00-00 1974"</span>
+            ],
+            [
+                <span class="org-string">"accessDate"</span>,
+                <span class="org-string">"2016-11-07 22:11:16"</span>
+            ],
+            [
+                <span class="org-string">"libraryCatalog"</span>,
+                <span class="org-string">"Google Scholar"</span>
+            ],
+            [
+                <span class="org-string">"title"</span>,
+                <span class="org-string">"The UNIX time-sharing system"</span>
+            ]
+        ],
+        <span class="org-keyword">"authors"</span>: [
+            {
+                <span class="org-keyword">"first"</span>: <span class="org-string">"Dennis M."</span>,
+                <span class="org-keyword">"last"</span>: <span class="org-string">"Ritchie"</span>,
+                <span class="org-keyword">"id"</span>: <span class="org-constant">9</span>
+            },
+            {
+                <span class="org-keyword">"first"</span>: <span class="org-string">"Ken"</span>,
+                <span class="org-keyword">"last"</span>: <span class="org-string">"Thompson"</span>,
+                <span class="org-keyword">"id"</span>: <span class="org-constant">10</span>
+            }
+        ],
+        <span class="org-keyword">"id"</span>: <span class="org-constant">21</span>,
+        <span class="org-keyword">"file"</span>: <span class="org-string">"9NAZ5GJT/unix.pdf"</span>,
+        <span class="org-keyword">"tags"</span>: []
     }
 ]
 </pre>
@@ -603,61 +603,61 @@ Query all items wich belongs to collection Fsharp which id=6.
 <li><a id="sec-1-1-2-6" name="sec-1-1-2-6"></a>Get all tags<br  /><div class="outline-text-5" id="text-1-1-2-6">
 <div class="org-src-container">
 
-<pre class="src src-json">$ curl -s http://localhost:8000/api/tags |  python -mjson.tool
+<pre class="src src-json">$ curl -s http://localhost:<span class="org-constant">8000</span>/api/tags |  python -mjson.tool
 [
     {
-	"name": "c++",
-	"id": 10
+        <span class="org-keyword">"name"</span>: <span class="org-string">"c++"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">10</span>
     },
     {
-	"name": "cpp",
-	"id": 14
+        <span class="org-keyword">"name"</span>: <span class="org-string">"cpp"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">14</span>
     },
     {
-	"name": "doc",
-	"id": 4
+        <span class="org-keyword">"name"</span>: <span class="org-string">"doc"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">4</span>
     },
     {
-	"name": "fp",
-	"id": 2
+        <span class="org-keyword">"name"</span>: <span class="org-string">"fp"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">2</span>
     },
     {
-	"name": "frp",
-	"id": 16
+        <span class="org-keyword">"name"</span>: <span class="org-string">"frp"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">16</span>
     },
     {
-	"name": "fsharp",
-	"id": 3
+        <span class="org-keyword">"name"</span>: <span class="org-string">"fsharp"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">3</span>
     },
     ... ... ...
 
     {
-	"name": "numerical",
-	"id": 11
+        <span class="org-keyword">"name"</span>: <span class="org-string">"numerical"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">11</span>
     },
     {
-	"name": "numerical methods",
-	"id": 12
+        <span class="org-keyword">"name"</span>: <span class="org-string">"numerical methods"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">12</span>
     },
     {
-	"name": "overview",
-	"id": 5
+        <span class="org-keyword">"name"</span>: <span class="org-string">"overview"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">5</span>
     },
     {
-	"name": "quickref",
-	"id": 8
+        <span class="org-keyword">"name"</span>: <span class="org-string">"quickref"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">8</span>
     },
     {
-	"name": "reactive",
-	"id": 17
+        <span class="org-keyword">"name"</span>: <span class="org-string">"reactive"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">17</span>
     },
     {
-	"name": "simulation",
-	"id": 15
+        <span class="org-keyword">"name"</span>: <span class="org-string">"simulation"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">15</span>
     },
     {
-	"name": "tutorial",
-	"id": 7
+        <span class="org-keyword">"name"</span>: <span class="org-string">"tutorial"</span>,
+        <span class="org-keyword">"id"</span>: <span class="org-constant">7</span>
     }
 ]
 </pre>
@@ -672,79 +672,79 @@ Get all items which contains the tag 'Linux' which Id=9.
 
 <div class="org-src-container">
 
-<pre class="src src-json">$ curl -s http://localhost:8000/api/tags?id=9 |  python -mjson.tool
+<pre class="src src-json">$ curl -s http://localhost:<span class="org-constant">8000</span>/api/tags?id=<span class="org-constant">9</span> |  python -mjson.tool
 [
     {
-	"mime": null,
-	"colls": [
-	    [
-		7,
-		"Linux"
-	    ]
-	],
-	"data": [
-	    [
-		"url",
-		"http://www.linuxdevcenter.com/excerpt/LinuxPG_quickref/linux.pdf"
-	    ],
-	    [
-		"accessDate",
-		"2016-11-07 22:05:40"
-	    ],
-	    [
-		"title",
-		"Linux Quick Reference"
-	    ]
-	],
-	"authors": [],
-	"id": 15,
-	"file": "ZJMVV5V8/linux.pdf",
-	"tags": [
-	    [
-		8,
-		"quickref"
-	    ],
-	    [
-		9,
-		"linux"
-	    ]
-	]
+        <span class="org-keyword">"mime"</span>: <span class="org-constant">null</span>,
+        <span class="org-keyword">"colls"</span>: [
+            [
+                <span class="org-constant">7</span>,
+                <span class="org-string">"Linux"</span>
+            ]
+        ],
+        <span class="org-keyword">"data"</span>: [
+            [
+                <span class="org-string">"url"</span>,
+                <span class="org-string">"http://www.linuxdevcenter.com/excerpt/LinuxPG_quickref/linux.pdf"</span>
+            ],
+            [
+                <span class="org-string">"accessDate"</span>,
+                <span class="org-string">"2016-11-07 22:05:40"</span>
+            ],
+            [
+                <span class="org-string">"title"</span>,
+                <span class="org-string">"Linux Quick Reference"</span>
+            ]
+        ],
+        <span class="org-keyword">"authors"</span>: [],
+        <span class="org-keyword">"id"</span>: <span class="org-constant">15</span>,
+        <span class="org-keyword">"file"</span>: <span class="org-string">"ZJMVV5V8/linux.pdf"</span>,
+        <span class="org-keyword">"tags"</span>: [
+            [
+                <span class="org-constant">8</span>,
+                <span class="org-string">"quickref"</span>
+            ],
+            [
+                <span class="org-constant">9</span>,
+                <span class="org-string">"linux"</span>
+            ]
+        ]
     },
     {
-	"mime": null,
-	"colls": [
-	    [
-		7,
-		"Linux"
-	    ]
-	],
-	"data": [
-	    [
-		"url",
-		"http://www.digilife.be/quickreferences/QRC/LINUX%20Admin%20Quick%20Reference.pdf"
-	    ],
-	    [
-		"accessDate",
-		"2016-11-07 22:06:48"
-	    ],
-	    [
-		"title",
-		"inux/Unix Command Line Cheat Sheet"
-	    ]
-	],
-	"authors": [],
-	"id": 17,
-	"file": "6DHDAQAP/LINUX Admin Quick Reference.pdf",
-	"tags": [
-	    [
-		8,
-		"quickref"
-	    ],
-	    [
-		9,
-		"linux"
-	    ]
-	]
+        <span class="org-keyword">"mime"</span>: <span class="org-constant">null</span>,
+        <span class="org-keyword">"colls"</span>: [
+            [
+                <span class="org-constant">7</span>,
+                <span class="org-string">"Linux"</span>
+            ]
+        ],
+        <span class="org-keyword">"data"</span>: [
+            [
+                <span class="org-string">"url"</span>,
+                <span class="org-string">"http://www.digilife.be/quickreferences/QRC/LINUX%20Admin%20Quick%20Reference.pdf"</span>
+            ],
+            [
+                <span class="org-string">"accessDate"</span>,
+                <span class="org-string">"2016-11-07 22:06:48"</span>
+            ],
+            [
+                <span class="org-string">"title"</span>,
+                <span class="org-string">"inux/Unix Command Line Cheat Sheet"</span>
+            ]
+        ],
+        <span class="org-keyword">"authors"</span>: [],
+        <span class="org-keyword">"id"</span>: <span class="org-constant">17</span>,
+        <span class="org-keyword">"file"</span>: <span class="org-string">"6DHDAQAP/LINUX Admin Quick Reference.pdf"</span>,
+        <span class="org-keyword">"tags"</span>: [
+            [
+                <span class="org-constant">8</span>,
+                <span class="org-string">"quickref"</span>
+            ],
+            [
+                <span class="org-constant">9</span>,
+                <span class="org-string">"linux"</span>
+            ]
+        ]
     }
 ]
 </pre>
@@ -759,83 +759,83 @@ Search all items which contais the word 'cpp'
 
 <div class="org-src-container">
 
-<pre class="src src-sh">$ curl -s http://localhost:8000/api/search?content=cpp |  python -mjson.tool
+<pre class="src src-sh">$ curl -s http://localhost:8000/api/search?<span class="org-variable-name">content</span>=cpp |  python -mjson.tool
 [
     {
-	"mime": null,
-	"colls": [
-	    [
-		8,
-		"C++/CPP"
-	    ]
-	],
-	"data": [
-	    [
-		"url",
-		"http://www.artima.com/samples/cpp11-14NotesSample.pdf"
-	    ],
-	    [
-		"accessDate",
-		"2016-11-07 22:16:31"
-	    ],
-	    [
-		"title",
-		"Overview of the New C++ (C++11) - cpp11-14NotesSample.pdf"
-	    ]
-	],
-	"authors": [],
-	"id": 23,
-	"file": "NUGHRAQW/cpp11-14NotesSample.pdf",
-	"tags": [
-	    [
-		10,
-		"c++"
-	    ]
-	]
+        <span class="org-string">"mime"</span>: null,
+        <span class="org-string">"colls"</span>: [
+            [
+                8,
+                <span class="org-string">"C++/CPP"</span>
+            ]
+        ],
+        <span class="org-string">"data"</span>: [
+            [
+                <span class="org-string">"url"</span>,
+                <span class="org-string">"http://www.artima.com/samples/cpp11-14NotesSample.pdf"</span>
+            ],
+            [
+                <span class="org-string">"accessDate"</span>,
+                <span class="org-string">"2016-11-07 22:16:31"</span>
+            ],
+            [
+                <span class="org-string">"title"</span>,
+                <span class="org-string">"Overview of the New C++ (C++11) - cpp11-14NotesSample.pdf"</span>
+            ]
+        ],
+        <span class="org-string">"authors"</span>: [],
+        <span class="org-string">"id"</span>: 23,
+        <span class="org-string">"file"</span>: <span class="org-string">"NUGHRAQW/cpp11-14NotesSample.pdf"</span>,
+        <span class="org-string">"tags"</span>: [
+            [
+                10,
+                <span class="org-string">"c++"</span>
+            ]
+        ]
     },
     {
-	"mime": null,
-	"colls": [],
-	"data": [
-	    [
-		"url",
-		"http://www.sam.math.ethz.ch/~hiptmair/tmp/NumCSE/NumCSE15.pdf"
-	    ],
-	    [
-		"accessDate",
-		"2016-11-07 22:18:20"
-	    ],
-	    [
-		"title",
-		"NumCSE15.pdf"
-	    ]
-	],
-	"authors": [],
-	"id": 26,
-	"file": "CGZ9CXT8/NumCSE15.pdf",
-	"tags": []
+        <span class="org-string">"mime"</span>: null,
+        <span class="org-string">"colls"</span>: [],
+        <span class="org-string">"data"</span>: [
+            [
+                <span class="org-string">"url"</span>,
+                <span class="org-string">"http://www.sam.math.ethz.ch/~hiptmair/tmp/NumCSE/NumCSE15.pdf"</span>
+            ],
+            [
+                <span class="org-string">"accessDate"</span>,
+                <span class="org-string">"2016-11-07 22:18:20"</span>
+            ],
+            [
+                <span class="org-string">"title"</span>,
+                <span class="org-string">"NumCSE15.pdf"</span>
+            ]
+        ],
+        <span class="org-string">"authors"</span>: [],
+        <span class="org-string">"id"</span>: 26,
+        <span class="org-string">"file"</span>: <span class="org-string">"CGZ9CXT8/NumCSE15.pdf"</span>,
+        <span class="org-string">"tags"</span>: []
     },
     {
-	"mime": null,
-	"colls": [],
-	"data": [
-	    [
-		"url",
-		"http://www.sam.math.ethz.ch/~hiptmair/tmp/NumCSE/NumCSE15.pdf"
-	    ],
-	    [
-		"accessDate",
-		"2016-11-07 22:19:28"
-	    ],
-	    [
-		"title",
-		"NumCSE15.pdf"
-	    ]
-	],
-	"authors": [],
-	"id": 28,
-	"file": "N8SXGHMN/NumCSE15.pdf",
-	"tags": []
+        <span class="org-string">"mime"</span>: null,
+        <span class="org-string">"colls"</span>: [],
+        <span class="org-string">"data"</span>: [
+            [
+                <span class="org-string">"url"</span>,
+                <span class="org-string">"http://www.sam.math.ethz.ch/~hiptmair/tmp/NumCSE/NumCSE15.pdf"</span>
+            ],
+            [
+                <span class="org-string">"accessDate"</span>,
+                <span class="org-string">"2016-11-07 22:19:28"</span>
+            ],
+            [
+                <span class="org-string">"title"</span>,
+                <span class="org-string">"NumCSE15.pdf"</span>
+            ]
+        ],
+        <span class="org-string">"authors"</span>: [],
+        <span class="org-string">"id"</span>: 28,
+        <span class="org-string">"file"</span>: <span class="org-string">"N8SXGHMN/NumCSE15.pdf"</span>,
+        <span class="org-string">"tags"</span>: []
     }
 ]
 </pre>
@@ -856,12 +856,12 @@ Search all titles that contains the string "functional".
 
 <div class="org-src-container">
 
-<pre class="src src-sql">SELECT itemData.itemID, itemDataValues.value  
-FROM   itemData, itemDataValues, itemAttachments
-WHERE  fieldID = 110 
-AND    itemData.valueID = itemDataValues.valueID
-AND    itemAttachments.sourceItemID = itemData.itemID
-AND    itemDataValues.value LIKE "%functional%"
+<pre class="src src-sql"><span class="org-keyword">SELECT</span> itemData.itemID, itemDataValues.<span class="org-keyword">value</span>  
+<span class="org-keyword">FROM</span>   itemData, itemDataValues, itemAttachments
+<span class="org-keyword">WHERE</span>  fieldID = 110 
+<span class="org-keyword">AND</span>    itemData.valueID = itemDataValues.valueID
+<span class="org-keyword">AND</span>    itemAttachments.sourceItemID = itemData.itemID
+<span class="org-keyword">AND</span>    itemDataValues.<span class="org-keyword">value</span> <span class="org-keyword">LIKE</span> "%functional%"
 </pre>
 </div>
 
@@ -869,21 +869,21 @@ AND    itemDataValues.value LIKE "%functional%"
 <div class="org-src-container">
 
 <pre class="src src-sql">sqlite&gt; 
-sqlite&gt; SELECT itemData.itemID, itemDataValues.value  
-   ...&gt; FROM   itemData, itemDataValues, itemAttachments
-   ...&gt; WHERE  fieldID = 110 
-   ...&gt; AND    itemData.valueID = itemDataValues.valueID
-   ...&gt; AND    itemAttachments.sourceItemID = itemData.itemID
-   ...&gt; AND    itemDataValues.value LIKE "%functional%" 
+sqlite&gt; <span class="org-keyword">SELECT</span> itemData.itemID, itemDataValues.<span class="org-keyword">value</span>  
+   ...&gt; <span class="org-keyword">FROM</span>   itemData, itemDataValues, itemAttachments
+   ...&gt; <span class="org-keyword">WHERE</span>  fieldID = 110 
+   ...&gt; <span class="org-keyword">AND</span>    itemData.valueID = itemDataValues.valueID
+   ...&gt; <span class="org-keyword">AND</span>    itemAttachments.sourceItemID = itemData.itemID
+   ...&gt; <span class="org-keyword">AND</span>    itemDataValues.<span class="org-keyword">value</span> <span class="org-keyword">LIKE</span> "%functional%" 
    ...&gt; ;
 1936|Functional Programming
-2688|Currently struggling. Can someone help em transition from functional programming to using OOP? : learnpython
-2750|When to use functional programming languages and techniques - TechRepublic
-2752|Where functional programming fits in - TechRepublic
-2754|Commercial Uses: Going functional on exotic trades
-2772|Functional Programming in the Financial Industry | Open Parallel
-2794|An introduction to functional programming
-2798|functional programming | Math ∩ Programming
+2688|Currently struggling. Can someone help em transition <span class="org-keyword">from</span> functional programming <span class="org-keyword">to</span> <span class="org-keyword">using</span> OOP? : learnpython
+2750|<span class="org-keyword">When</span> <span class="org-keyword">to</span> use functional programming languages <span class="org-keyword">and</span> techniques - TechRepublic
+2752|<span class="org-keyword">Where</span> functional programming fits <span class="org-keyword">in</span> - TechRepublic
+2754|Commercial Uses: Going functional <span class="org-keyword">on</span> exotic trades
+2772|Functional Programming <span class="org-keyword">in</span> the Financial Industry | <span class="org-keyword">Open</span> Parallel
+2794|An introduction <span class="org-keyword">to</span> functional programming
+2798|functional programming | Math &#8745; Programming
 ...
 </pre>
 </div>
@@ -894,12 +894,12 @@ sqlite&gt; SELECT itemData.itemID, itemDataValues.value
 <div class="outline-text-4" id="text-1-2-2">
 <div class="org-src-container">
 
-<pre class="src src-sql">SELECT itemData.itemID, itemDataValues.value  
-FROM   itemData, itemDataValues, itemAttachments
-WHERE  fieldID = 110 
-AND    itemData.valueID = itemDataValues.valueID
-AND    itemAttachments.sourceItemID = itemData.itemID
-AND    itemDataValues.value REGEXP "math.*"
+<pre class="src src-sql"><span class="org-keyword">SELECT</span> itemData.itemID, itemDataValues.<span class="org-keyword">value</span>  
+<span class="org-keyword">FROM</span>   itemData, itemDataValues, itemAttachments
+<span class="org-keyword">WHERE</span>  fieldID = 110 
+<span class="org-keyword">AND</span>    itemData.valueID = itemDataValues.valueID
+<span class="org-keyword">AND</span>    itemAttachments.sourceItemID = itemData.itemID
+<span class="org-keyword">AND</span>    itemDataValues.<span class="org-keyword">value</span> REGEXP "math.*"
 </pre>
 </div>
 
@@ -909,9 +909,9 @@ Result:
 
 <div class="org-src-container">
 
-<pre class="src src-sql">"2987"  "Functional Patterns for the non-mathematician"
-"4842"  "Power of mathematics: Reasoning about functional types"
-"6094"  "Discrete mathematics using a computer"
+<pre class="src src-sql">"2987"  "Functional Patterns <span class="org-keyword">for</span> the non-mathematician"
+"4842"  "Power <span class="org-keyword">of</span> mathematics: Reasoning about functional types"
+"6094"  "Discrete mathematics <span class="org-keyword">using</span> a computer"
 </pre>
 </div>
 </div>
@@ -925,10 +925,10 @@ Search all items that have the word "haskell".
 
 <div class="org-src-container">
 
-<pre class="src src-sql">SELECT DISTINCT itemID 
-FROM   fulltextItemWords, fulltextWords
-WHERE  fulltextItemWords.wordID = fulltextWords.wordID
-AND    fulltextWords.word LIKE "%haskell%"
+<pre class="src src-sql"><span class="org-keyword">SELECT</span> <span class="org-keyword">DISTINCT</span> itemID 
+<span class="org-keyword">FROM</span>   fulltextItemWords, fulltextWords
+<span class="org-keyword">WHERE</span>  fulltextItemWords.wordID = fulltextWords.wordID
+<span class="org-keyword">AND</span>    fulltextWords.word <span class="org-keyword">LIKE</span> "%haskell%"
 </pre>
 </div>
 
@@ -939,16 +939,16 @@ content.
 
 <div class="org-src-container">
 
-<pre class="src src-sql">SELECT itemData.itemID
-FROM   itemData, itemDataValues, fulltextItemWords, fulltextWords
-WHERE  itemData.fieldID = 110 
-AND    itemDataValues.valueID = itemData.valueID
-AND    fulltextItemWords.wordID = fulltextWords.wordID
-AND    fulltextItemWords.itemID = itemData.itemID
-AND    (itemDataValues.value LIKE "%haskell%"
-	    OR  
-		fulltextWords.word LIKE "%haskell%"
-		)
+<pre class="src src-sql"><span class="org-keyword">SELECT</span> itemData.itemID
+<span class="org-keyword">FROM</span>   itemData, itemDataValues, fulltextItemWords, fulltextWords
+<span class="org-keyword">WHERE</span>  itemData.fieldID = 110 
+<span class="org-keyword">AND</span>    itemDataValues.valueID = itemData.valueID
+<span class="org-keyword">AND</span>    fulltextItemWords.wordID = fulltextWords.wordID
+<span class="org-keyword">AND</span>    fulltextItemWords.itemID = itemData.itemID
+<span class="org-keyword">AND</span>    (itemDataValues.<span class="org-keyword">value</span> <span class="org-keyword">LIKE</span> "%haskell%"
+        <span class="org-keyword">OR</span>  
+        fulltextWords.word <span class="org-keyword">LIKE</span> "%haskell%"
+        )
 </pre>
 </div>
 </div>
@@ -997,8 +997,8 @@ Haskell AESON - Json library
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="author">Author: arch</p>
-<p class="date">Created: 2017-02-14 ter 21:55</p>
+<p class="author">Author: Caio Rodrigues Soares Silva</p>
+<p class="date">Created: 2017-02-14 ter 22:10</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.1.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
