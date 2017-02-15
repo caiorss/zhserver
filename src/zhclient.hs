@@ -177,8 +177,12 @@ parseArgs args = do
   conn <- ask
   case args of
     ["item", "-id",  itemID] -> liftIO $ printItem       conn (read itemID :: Int)
+
     ["coll", "-id",  collID] -> liftIO $ printCollection conn (read collID :: Int)
     ["coll", "-all"]         -> printCollections
+
+    ["tag",  "-all"]         -> printTags  
+    
     []                       -> liftIO $ putStrLn "Show help"
     _                        -> liftIO $ putStrLn "Error: Invalid command."
 
