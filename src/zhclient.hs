@@ -26,6 +26,7 @@ import System.Directory (copyFile, createDirectoryIfMissing)
 
 import Text.Printf (printf)
 
+import qualified System.Environment as Env
 
 
 copyCollectionTo conn collID dest = do
