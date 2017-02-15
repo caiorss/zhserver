@@ -69,7 +69,6 @@ printItem conn itemID = do
   tags     <- runReaderT (Z.itemTags itemID) conn
 
   let  printField label field = do        
-         
          mapM_ (\value -> do
                            putStr label
                            putStr value
@@ -77,10 +76,9 @@ printItem conn itemID = do
                )
            (lookup field itemdata)
          
-
-  putStrLn   ("Item ID: " ++ show itemID)
-  putStrLn ""
   printField "Title: "      "title"
+  putStrLn ""
+  putStrLn   ("Item ID: " ++ show itemID)
   printField "Publisher: "  "publisher"
   printField "Book Title: " "bookTitle"
   printField "Url: "        "url"
