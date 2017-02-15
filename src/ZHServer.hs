@@ -254,19 +254,25 @@ makeRoutes staticPath storagePath = msum
   --
   , flatten $ dir "api" $ dir "authors" $ routeAuthorID
 
-    
+  -- Return all authors
+  -- API End point  /api/authors 
+  -- 
   , flatten $ dir "api" $ dir "authors" $ routeAuthors
 
-
+  
   , flatten $ dir "api" $ dir "relatedtags" $ routeRealatedTags                 
 
-
+  -- Search items which title contains a word
+  -- API End Point - /api/search?title=<search word>
   , flatten $ dir "api" $ dir "search" $ routeSearchByTitleLike
-    
+
+  -- Search items which content contains word   
   , flatten $ dir "api" $ dir "search" $ routeSearchByContentAndTitleLike 
    
     
-    -- Zotero Attachment Files
+    -- Zotero Attachment Files - Serve attachment files in storagePath directory 
+    -- API End Point /api/search?content=<search word>
+    -- 
   , flatten $ dir "attachment" $ serveDirectory DisableBrowsing [] storagePath
 
 
