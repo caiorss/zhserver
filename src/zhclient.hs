@@ -11,6 +11,9 @@ File:        zhclient.hs
 -- let destPath itemFile = SF.joinPath ["/tmp/test", SF.takeFileName itemFile]    
 
 import Control.Monad
+import Control.Monad.Trans
+import Control.Monad.Trans.Reader
+
 import Text.Read (readMaybe)
 import qualified System.Process as P
 import qualified System.FilePath as SF
