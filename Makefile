@@ -88,6 +88,11 @@ app-run: dbtest
 	sh zhserver.sh --params 0.0.0.0 9090 "sqlite://testdb/zotero.sqlite" assets testdb/storage 
 #========= Clean Rules ===================#
 
+doc:
+	stack exec -- haddock --html src/Zotero.hs src/ZHServer.hs --hyperlinked-source --odir=dist/docs
+
+doc-show:
+	firefox docs/index.html
 
 clean-db:
 	rm -rf ./testdb

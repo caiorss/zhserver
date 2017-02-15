@@ -2,22 +2,32 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 
-{-
+{- |
+Module      : Zotero
+Description : Interface to Zotero Database
+License     : Public Domain
 
-Description: Database interface for Zotero database.
-File:        Zotero.hs
+
+Interface to Zotero database to query and manipulate the database.
 
 -}
-
-
-
-{- # LANGUAGE DeriveDataTypeable #-}
-
-
-module Zotero
+module Zotero 
        (
+         -- * Types 
+         DBConn
+        ,ZoteroItem    (..)
+        ,ZoteroAuthor  (..)
+        ,ZoteroTag     (..)
+        ,ZoteroColl    (..)
 
-         DBConn 
+         -- Type Aliases 
+        ,ZoteroItemID
+        ,ZoteroTagID
+        ,ZoteroTagName
+        ,ZoteroItemTags
+        ,ZoteroItemMime
+       
+         -- * Functions 
          ,withConnection
          ,getCollections
        --  ,showCollections
@@ -31,8 +41,7 @@ module Zotero
          ,sqlQuery
          ,sqlQueryAll
          ,sqlQueryRow
-         ,database
-         ,storagePath
+      
          ,dbConnection
 
          ,getTagItems
@@ -112,10 +121,13 @@ import System.Random (getStdGen, newStdGen, randomRs)
 
 type SQLQuery =  [(String, HDBC.SqlValue)] 
 
+{- | Database Connection -> DbConn a = ReaderT conn IO a = conn -> IO a -}
 type DBConn a = forall conn. (HDBC.IConnection conn) =>  ReaderT conn IO a
 
-
+{- | Zotero Tag ID number -} 
 type ZoteroTagID   = Int
+
+{- | Tag Name  -}
 type ZoteroTagName = String
 
 
@@ -124,7 +136,7 @@ type ZoteroItemString = String
 type ZoteroItemTags   = [(ZoteroTagID, ZoteroTagName)]
 type ZoteroItemMime   = String
 
-
+{- | ZoteroItem  data -}
 data ZoteroItem =
   ZoteroItem {    zoteroItemID          :: Int
                 , zoteroItemData        :: [(String, String)]
@@ -133,7 +145,8 @@ data ZoteroItem =
                 , zoteroItemCollections :: [(Int, String)] -- (collID, collection)
                                            
                 , zoteroItemFile        :: Maybe String    -- File attachment
-                , zoteroItemMime        :: Maybe String    -- Mime Type                                                                           
+                , zoteroItemMime        :: Maybe String    -- Mime Type
+                
              } deriving (Eq, Show, Read,  Generic)
 
 
@@ -212,11 +225,6 @@ stripPrefixStr prefix str =
     Nothing -> str
     Just s  -> s 
  
-
-database =  "/home/archmaster/zotero.sqlite"
-
-storagePath = "/home/arch/.mozilla/firefox/mwad0hks.zotero/zotero/storage"
-
 
 -- dbConnection = SQLite.connectSqlite3 database
 dbConnection = PgSQL.connectPostgreSQL "postgres://postgres@localhost/zotero"
@@ -359,7 +367,7 @@ withConnection ioConn function = do
 
 
 
-
+{- | getZoteroItem - Get Zotero Item from the database -}
 getZoteroItem :: ZoteroItemID -> DBConn ZoteroItem
 getZoteroItem itemID = do
 
@@ -381,7 +389,7 @@ getZoteroItem itemID = do
 
 -- getCollections :: HDBC.IConnection conn => conn -> IO [(Int, String)]
 
-{- Get all collections -}
+{- | Get all collections -}
 getCollections :: DBConn [ZoteroColl]
 getCollections = do
 
@@ -397,11 +405,11 @@ getCollections = do
       projection  row =  ZoteroColl (fromSqlToInt $ row !! 0)
                                     (fromSqlToString $ row !! 1)
 
-
+{- | Get all collections as JSON -}
 getCollectionsJSON :: DBConn BLI.ByteString
 getCollectionsJSON = encode <$> getCollections
 
-{- Get only top level collections -}
+{- | Get only top level collections -}
 getCollectionTop :: DBConn [ZoteroColl]
 getCollectionTop = do
   sqlQueryAll sql [] projection
@@ -416,7 +424,7 @@ getCollectionTop = do
 getCollectionTopJSON :: DBConn BLI.ByteString
 getCollectionTopJSON = encode <$> getCollectionTop
 
-{- Get sub-collections of a collection -}
+{- | Get sub-collections of a collection -}
 getCollectionChild :: Int -> DBConn [ZoteroColl]
 getCollectionChild collID = do
 
@@ -456,8 +464,8 @@ collectionItems collID = do
   where
     sql = "SELECT  itemID FROM collectionItems WHERE collectionID = ?"
 
-{- Returns all tags of a given item -}
-itemTagsData :: Int -> DBConn [(Int, String)]
+{- | Returns all tags of a given item -}
+itemTagsData :: ZoteroItemID -> DBConn ZoteroItemTags
 itemTagsData itemID = do
   
   let itemID' = fromIntToInt64 itemID 
@@ -474,15 +482,14 @@ itemTagsData itemID = do
     projection xs = (fromSqlToInt (xs !! 0), fromSqlToString (xs !! 1))
 
 
-
-itemTags :: Int -> DBConn [String]
+{- | Return only the tag names of a given itemID  -}
+itemTags :: ZoteroItemID -> DBConn [String]
 itemTags itemID =
   map snd <$> itemTagsData itemID 
 
-{- Returns all collections that an item benlongs to
+{-| Returns all collections that an item benlongs to
 
-  itemCollections :: itemID -> [(Collection ID, Collection Name)]
-
+   itemCollections :: itemID -> [(Collection ID, Collection Name)]
 -}
 itemCollections :: Int -> DBConn [(Int, String)]
 itemCollections  itemID = do
@@ -533,15 +540,14 @@ getTags = do
   where
     sql =   "SELECT tagID, name FROM tags \
            \ORDER BY name"
-
     projection row = ZoteroTag (fromSqlToInt (row !! 0))
                                (fromSqlToString (row !! 1))
 
 getTagsJSON :: DBConn BLI.ByteString
 getTagsJSON  =  encode <$> getTags
 
-
-itemAttachmentData :: Int -> DBConn (Maybe [String])
+{- | Get Zotero item attachment file. -}
+itemAttachmentData :: ZoteroItemID -> DBConn (Maybe [String])
 itemAttachmentData itemID = do 
   
   let itemID' = fromIntToInt64 itemID
@@ -669,7 +675,7 @@ getZoteroItemJSON itemID = do
   zitem <- getZoteroItem  itemID
   return $ encode zitem 
 
-
+{- | Get a list of zotero item data as json given its IDs -}
 getZoteroItemsJSON :: [ZoteroItemID] -> DBConn BLI.ByteString
 getZoteroItemsJSON itemIDs = do
   zitems <- mapM getZoteroItem itemIDs
@@ -713,7 +719,7 @@ getTagItems tagID = do
 --   runReaderT (getTagItems tagID) conn
 --   >>= getZoteroItemsJSON conn
 
-getTagItemsJSON :: Int -> DBConn BLI.ByteString
+getTagItemsJSON :: ZoteroTagID -> DBConn BLI.ByteString
 getTagItemsJSON tagID = do
   itemIDs <- getTagItems tagID
   getZoteroItemsJSON itemIDs 
@@ -758,7 +764,7 @@ getItemsFromAuthorJSON authorID = do
   getZoteroItemsJSON itemIDs
 
 
-getRelatedTags :: Int -> DBConn [ZoteroTag]
+getRelatedTags :: ZoteroTagID -> DBConn [ZoteroTag]
 getRelatedTags tagID = do 
 
   let tagID' = fromIntToInt64 tagID
@@ -780,7 +786,7 @@ getRelatedTags tagID = do
                      "AND   tags.tagID != ?             "
                     ]   
 
-getRelatedTagsJSON :: Int -> DBConn BLI.ByteString
+getRelatedTagsJSON :: ZoteroTagID -> DBConn BLI.ByteString
 getRelatedTagsJSON tagID = do 
   tags <- getRelatedTags tagID
   return $ encode tags
@@ -887,16 +893,12 @@ replaceTagBy  tagIDfrom tagIDto = do
 
 removeAuthor :: Int -> DBConn ()
 removeAuthor id = do 
-
   let id' = fromIntToInt64 id
-
   row  <-  sqlQuery sql0 [HDBC.SqlInt64 id'] (\x -> x)
   let dataId = fmap head row
                      
   case dataId of
-
     Nothing      -> return ()
-    
     Just dataId' -> do
                         sqlRun sql1 [HDBC.SqlInt64 id']
                         sqlRun sql2 [HDBC.SqlInt64 id']
@@ -932,13 +934,9 @@ replaceAuthorBy fromId toId = do
 
 renameTag :: Int -> String -> DBConn ()
 renameTag id name = do
-  
   let id' = fromIntToInt64 id
-
   sqlRun sql [HDBC.SqlString name, HDBC.SqlInt64 id']
-  
   where
-
     sql = "UPDATE tags \
           \SET    name = ? \
           \WHERE  tagID = ?"
@@ -947,18 +945,13 @@ renameTag id name = do
 
 renameCollection :: Int -> String -> DBConn ()
 renameCollection id name = do
-  
   let id' = fromIntToInt64 id
-
   sqlRun sql [HDBC.SqlString name, HDBC.SqlInt64 id']
-  
   where
-
     sql = "UPDATE collections \
           \SET    collectionName = ? \
           \WHERE  collectionID = ?"
           
-      
 
 deleteTag :: Int -> DBConn ()
 deleteTag id = do

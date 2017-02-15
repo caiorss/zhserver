@@ -2,12 +2,16 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE RecordWildCards #-}
 
-{-
-Description: Zhserver - Zotero/based Web server main file.
-File:        ZHServer.hs  
+
+{- |
+Module      : Main
+Description : Zotero Web Server and REST  API
+License     : Public Domain
+
+Zotero Web Server and Web API.
 
 -}
-
+module Main where 
 
 import Control.Monad.Trans (liftIO, lift)
 import Control.Monad.Trans.Reader 
@@ -208,8 +212,8 @@ serverRouteParam parser paramName err dbFn = do
   let param' = parser param
   maybe (return err) (\p -> runDbQuery $ dbFn p) param'
 
-{- Crates a server route for which the paramter is 
-   an ID (int) - Identification Number for the database query 
+{-| Creates a server route for which the paramter is
+an ID (int) - Identification Number for the database query 
 -}
 serverRouteParamID :: String
               -> (Int -> DBConn LC.ByteString)
@@ -218,7 +222,7 @@ serverRouteParamID param dbFn =
   serverRouteParam parseInt param LC.empty dbFn
 
 
-{- Crates a server route for which the paramter is 
+{-| Creates a server route for which the paramter is 
    an ID - Identification Number for the database query 
 -}
 serverRouteParamString :: String
@@ -264,7 +268,7 @@ makeRoutes staticPath storagePath = msum
     , flatten $ dir "api" $ dir "colls" $ routeTagsFromCollID
 
 
-    -- Returns all collections from a given tag
+    -- Returns all items from a given tag
     --
     -- End Point: http://localhost:8000/api/tags?id=15
     --            http://localhost:8000/api/tags?id=<tag ID>
@@ -299,9 +303,11 @@ makeRoutes staticPath storagePath = msum
 
 
   -- Single Page App static files
-  , flatten $ serveDirectory DisableBrowsing     ["index.html",
+  , flatten $ serveDirectory DisableBrowsing     [ "index.html",
                                                    "style.css",
-                                                   "loader.js"
+                                                   "loader.js",
+                                                   "*.html",
+                                                   "*.js"
                                                   ]
                                                   staticPath
                                                   
@@ -352,24 +358,39 @@ loadServerConf configFile = do
 
 {- ================ HTTP ROUTES ======================== -}
 
-
+{-| Route that displays all collections
+    Rest API:   http://localhost:8000/api/colls
+-}
 routeCollection :: ServerApp LC.ByteString
 routeCollection = runDbQuery Z.getCollectionsJSON
 
+{- | Show all items from a given collection defined by its ID
+     Rest API -  /api/colls?id=23423 or /api/coll?id={collection ID}
+-}
 routeCollectionID :: ServerApp LC.ByteString 
 routeCollectionID = serverRouteParamID "id" Z.getCollectionItemsJSON
 
-
+{- |  Returns all items from a given tagID
+Rest API - http://localhost:8000/api/tags?id=15  or http://localhost:8000/api/tags?id=[tagID]
+-}
 routeTagID :: ServerApp LC.ByteString
 routeTagID = serverRouteParamID "id" Z.getTagItemsJSON
 
-  
+{- |  Returns all tags 
+Rest API - http://localhost:8000/api/tags 
+-}  
 routeTags :: ServerApp LC.ByteString
 routeTags = runDbQuery  Z.getTagsJSON
 
+{- | Get all items belonging to an author, given its ID
+Rest API - http://localhost:8000/api/authors?id=100 
+-}
 routeAuthorID :: ServerApp LC.ByteString
 routeAuthorID = serverRouteParamID "id"  Z.getItemsFromAuthorJSON
-  
+
+{- | Return all authors data
+Rest API - http://localhost:8000/api/authors
+-}  
 routeAuthors :: ServerApp LC.ByteString
 routeAuthors = runDbQuery Z.getAuthorsJSON
 
@@ -389,7 +410,7 @@ routeSearchByContentAndTitleLike :: ServerApp LC.ByteString
 routeSearchByContentAndTitleLike =
   serverRouteParamString "content" Z.searchByContentAndTitleLikeJSON
 
-
+{- | Server http request with all items without collections. -}
 routeItemsWithoutCollection :: ServerApp LC.ByteString
 routeItemsWithoutCollection = do
   conn <- ask 
@@ -429,7 +450,7 @@ routeItemsWithoutCollection2 = do
 
 {- ==================== MAIN  ======================== -}
 
-
+{- | Show user help command -}
 showUserHelp = do
   putStrLn "Zhserver -- Your cloud book shelve web server"
   putStrLn ""
@@ -449,8 +470,8 @@ showUserHelp = do
   putStrLn "           - [staticPath]  - Path to server static files like index.html *.js files"
   putStrLn "           - [storagePath] - Path to Zotero storage directory"
 
---  Server command line switches.
---
+
+{- | Handle command line arguments -}
 parseArgs :: [String] -> IO ()
 parseArgs args =
   case args of
@@ -474,17 +495,8 @@ parseArgs args =
   _                  -> putStrLn "Error: Invalid option."
 
 
-
+{- | Main IO Action -}
+main :: IO () 
 main = do
   getArgs >>= parseArgs
   
-  -- loadServerConf "zhserver.conf"
-
-  -- withConnServer2 Pg.connectPostgreSQL
-  --                "postgres://postgres@localhost/zotero"
-  --                serverConf
-  --                routes
-
-  -- withConn Pg.connectPostgreSQL
-  --          "postgres://postgres@localhost/zotero"
-          
