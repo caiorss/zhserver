@@ -13,3 +13,5 @@ Server
 *.html
 /my-zhserver.conf
 /ZHServer
+dist/*
+docs/*
