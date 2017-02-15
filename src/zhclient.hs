@@ -163,3 +163,13 @@ repl conn = forever $ do
     _  -> putStrLn "Error Enter with another option"
             
             
+
+parseArgs :: [String] -> DBConn ()
+parseArgs args = do
+  conn <- ask
+  case args of
+    ["item", "-id",  itemID] -> liftIO $ printItem       conn (read itemID :: Int)
+    ["coll", "-id",  collID] -> liftIO $ printCollection conn (read collID :: Int)
+    ["coll", "-all"]         -> printCollections
+    []                       -> liftIO $ putStrLn "Show help"
+    _                        -> liftIO $ putStrLn "Error: Invalid command."
