@@ -173,3 +173,13 @@ parseArgs args = do
     ["coll", "-all"]         -> printCollections
     []                       -> liftIO $ putStrLn "Show help"
     _                        -> liftIO $ putStrLn "Error: Invalid command."
+
+main :: IO ()
+main = do
+  dbUri  <- Env.lookupEnv "ZOTERO_DB"
+  case dbUri of
+    Nothing  -> do putStrLn "Error: I can't open the database connection."
+                   putStrLn "Set the environment variable ZOTERO_DB."
+
+    Just db   -> do args <- Env.getArgs
+                    Z.withDBConnection db (parseArgs args)
