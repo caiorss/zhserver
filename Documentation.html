@@ -1,0 +1,1006 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Development Documentation</title>
+<!-- 2017-02-14 ter 21:55 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="arch" />
+<meta  name="description" content="Documentation for Developers"
+ />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Development Documentation</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. Development Documentation</a>
+<ul>
+<li><a href="#sec-1-1">1.1. REST API doc</a>
+<ul>
+<li><a href="#sec-1-1-1">1.1.1. End Points</a></li>
+<li><a href="#sec-1-1-2">1.1.2. Examples</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-2">1.2. Database Documentation</a>
+<ul>
+<li><a href="#sec-1-2-1">1.2.1. Search Titles that contains a word</a></li>
+<li><a href="#sec-1-2-2">1.2.2. Search by a Regex Pattern</a></li>
+<li><a href="#sec-1-2-3">1.2.3. Full text search.</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-3">1.3. Haskell Related Documentation</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Development Documentation</h2>
+<div class="outline-text-2" id="text-1">
+</div><div id="outline-container-sec-1-1" class="outline-3">
+<h3 id="sec-1-1"><span class="section-number-3">1.1</span> REST API doc</h3>
+<div class="outline-text-3" id="text-1-1">
+</div><div id="outline-container-sec-1-1-1" class="outline-4">
+<h4 id="sec-1-1-1"><span class="section-number-4">1.1.1</span> End Points</h4>
+<div class="outline-text-4" id="text-1-1-1">
+<p>
+The API has the following scheme:
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="left" />
+
+<col  class="left" />
+
+<col  class="left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">URL Route</th>
+<th scope="col" class="left">Description</th>
+<th scope="col" class="left">&#xa0;</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left"><code>/api</code></td>
+<td class="left">Display the API documentation</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="left"><code>/api/colls</code></td>
+<td class="left">Returns all collections names and collections IDs</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="left"><code>/api/coll?id=20</code></td>
+<td class="left">Returns all items from collection which ID is 20</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="left"><code>/api/item?id=10</code></td>
+<td class="left">Return the item which ID is 10</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="left"><code>/api/attachment?id=20</code></td>
+<td class="left">Return a link to file of item  which ID is 10</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="left">&#xa0;</td>
+<td class="left">&#xa0;</td>
+<td class="left">&#xa0;</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="outline-container-sec-1-1-2" class="outline-4">
+<h4 id="sec-1-1-2"><span class="section-number-4">1.1.2</span> Examples</h4>
+<div class="outline-text-4" id="text-1-1-2">
+</div><ol class="org-ol"><li><a id="sec-1-1-2-1" name="sec-1-1-2-1"></a>Get item by Id<br  /><div class="outline-text-5" id="text-1-1-2-1">
+<div class="org-src-container">
+
+<pre class="src src-json">$ curl -s http://localhost:8000/api/item?id=17 |  python -mjson.tool
+{
+    "mime": null,
+    "colls": [
+	[
+	    7,
+	    "Linux"
+	]
+    ],
+    "data": [
+	[
+	    "url",
+	    "http://www.digilife.be/quickreferences/QRC/LINUX%20Admin%20Quick%20Reference.pdf"
+	],
+	[
+	    "accessDate",
+	    "2016-11-07 22:06:48"
+	],
+	[
+	    "title",
+	    "inux/Unix Command Line Cheat Sheet"
+	]
+    ],
+    "authors": [],
+    "id": 17,
+    "file": "6DHDAQAP/LINUX Admin Quick Reference.pdf",
+    "tags": [
+	[
+	    8,
+	    "quickref"
+	],
+	[
+	    9,
+	    "linux"
+	]
+    ]
+}
+</pre>
+</div>
+</div>
+</li>
+
+<li><a id="sec-1-1-2-2" name="sec-1-1-2-2"></a>Get Collections<br  /><div class="outline-text-5" id="text-1-1-2-2">
+<p>
+Example: Querying the REST api with curl: 
+</p>
+
+<p>
+Get collections:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-json">$ curl -s http://localhost:8000/api/colls |  python -mjson.tool
+[
+    {
+	"name": "C++/CPP",
+	"id": 8
+    },
+    {
+	"name": "Fsharp",
+	"id": 6
+    },
+    {
+	"name": "Haskell",
+	"id": 2
+    },
+    {
+	"name": "Haskell Tutorials",
+	"id": 5
+    },
+    {
+	"name": "Haskell doc",
+	"id": 3
+    },
+    {
+	"name": "Linux",
+	"id": 7
+    }
+]
+</pre>
+</div>
+</div>
+</li>
+
+<li><a id="sec-1-1-2-3" name="sec-1-1-2-3"></a>Get all Items from a Collection<br  /><div class="outline-text-5" id="text-1-1-2-3">
+<p>
+Query all items wich belongs to collection Fsharp which id=6.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-json">$ curl -s http://localhost:8000/api/colls?id=6 |  python -mjson.tool
+[
+    {
+	"mime": null,
+	"colls": [
+	    [
+		6,
+		"Fsharp"
+	    ]
+	],
+	"data": [
+	    [
+		"url",
+		"http://tomasp.net/articles/fsharp-i-introduction/article.pdf"
+	    ],
+	    [
+		"accessDate",
+		"2016-11-07 22:01:04"
+	    ],
+	    [
+		"title",
+		"F# Language Overview"
+	    ]
+	],
+	"authors": [
+	    {
+		"first": "Tomas",
+		"last": "Petriceck",
+		"id": 4
+	    }
+	],
+	"id": 12,
+	"file": "678BV2HV/article.pdf",
+	"tags": [
+	    [
+		2,
+		"fp"
+	    ],
+	    [
+		3,
+		"fsharp"
+	    ],
+	    [
+		4,
+		"doc"
+	    ],
+	    [
+		5,
+		"overview"
+	    ]
+	]
+    },
+    {
+	"mime": null,
+	"colls": [
+	    [
+		6,
+		"Fsharp"
+	    ]
+	],
+	"data": [
+	    [
+		"url",
+		"http://fsharp.org/specs/language-spec/4.0/FSharpSpec-4.0-latest.pdf"
+	    ],
+	    [
+		"accessDate",
+		"2016-11-07 22:00:06"
+	    ],
+	    [
+		"title",
+		"The F# 4.0 Language Specification"
+	    ]
+	],
+	"authors": [
+	    {
+		"first": "Syme",
+		"last": "Don",
+		"id": 5
+	    },
+	    {
+		"first": "Alimov",
+		"last": "Anar",
+		"id": 6
+	    },
+	    {
+		"first": "Fischer",
+		"last": "Jomo",
+		"id": 7
+	    }
+	],
+	"id": 13,
+	"file": "A3APBZAZ/FSharpSpec-4.0-latest.pdf",
+	"tags": [
+	    [
+		2,
+		"fp"
+	    ],
+	    [
+		3,
+		"fsharp"
+	    ],
+	    [
+		4,
+		"doc"
+	    ]
+	]
+    }
+]
+</pre>
+</div>
+</div>
+</li>
+
+<li><a id="sec-1-1-2-4" name="sec-1-1-2-4"></a>Get all authors<br  /><div class="outline-text-5" id="text-1-1-2-4">
+<div class="org-src-container">
+
+<pre class="src src-json">$ curl -s http://localhost:8000/api/authors |  python -mjson.tool
+[
+    {
+	"first": "",
+	"last": "Center for History and New Media",
+	"id": 1
+    },
+    {
+	"first": "Alimov",
+	"last": "Anar",
+	"id": 6
+    },
+    {
+	"first": "Alwyn",
+	"last": "Goodloe",
+	"id": 20
+    },
+    {
+	"first": "Andrew D.",
+	"last": "Gordon",
+	"id": 15
+    },
+    {
+	"first": "Dennis M.",
+	"last": "Ritchie",
+	"id": 9
+    },
+    {
+	"first": "Fischer",
+	"last": "Jomo",
+	"id": 7
+    },
+
+...     ...      ...  ... 
+    {
+	"first": "Marc",
+	"last": "Pouzet",
+	"id": 23
+    },
+    {
+	"first": "ONDREJ",
+	"last": "\u0160UCH",
+	"id": 17
+    },
+    {
+	"first": "Ondrej",
+	"last": "\u0160uch",
+	"id": 22
+    },
+    {
+	"first": "Paul",
+	"last": "Cobbat",
+	"id": 8
+    },
+    {
+	"first": "Peter",
+	"last": "Jankovic",
+	"id": 21
+    },
+    {
+	"first": "R",
+	"last": "Hiptmar",
+	"id": 13
+    },
+    {
+	"first": "Syme",
+	"last": "Don",
+	"id": 5
+    },
+    {
+	"first": "Tomas",
+	"last": "Petriceck",
+	"id": 4
+    },
+    {
+	"first": "Wayne L.",
+	"last": "Winston",
+	"id": 11
+    }
+]
+</pre>
+</div>
+</div>
+</li>
+
+<li><a id="sec-1-1-2-5" name="sec-1-1-2-5"></a>Get all items that belongs to an author<br  /><div class="outline-text-5" id="text-1-1-2-5">
+<div class="org-src-container">
+
+<pre class="src src-json">$ curl -s http://localhost:8000/api/authors?id=10 |  python -mjson.tool
+[
+    {
+	"mime": null,
+	"colls": [],
+	"data": [
+	    [
+		"url",
+		"http://jetsonhacks.com/wp-content/uploads/2016/08/unix.pdf"
+	    ],
+	    [
+		"volume",
+		"17"
+	    ],
+	    [
+		"issue",
+		"7"
+	    ],
+	    [
+		"publicationTitle",
+		"Communications of the ACM"
+	    ],
+	    [
+		"date",
+		"1974-00-00 1974"
+	    ],
+	    [
+		"accessDate",
+		"2016-11-07 22:11:16"
+	    ],
+	    [
+		"libraryCatalog",
+		"Google Scholar"
+	    ],
+	    [
+		"title",
+		"The UNIX time-sharing system"
+	    ]
+	],
+	"authors": [
+	    {
+		"first": "Dennis M.",
+		"last": "Ritchie",
+		"id": 9
+	    },
+	    {
+		"first": "Ken",
+		"last": "Thompson",
+		"id": 10
+	    }
+	],
+	"id": 21,
+	"file": "9NAZ5GJT/unix.pdf",
+	"tags": []
+    }
+]
+</pre>
+</div>
+</div>
+</li>
+
+<li><a id="sec-1-1-2-6" name="sec-1-1-2-6"></a>Get all tags<br  /><div class="outline-text-5" id="text-1-1-2-6">
+<div class="org-src-container">
+
+<pre class="src src-json">$ curl -s http://localhost:8000/api/tags |  python -mjson.tool
+[
+    {
+	"name": "c++",
+	"id": 10
+    },
+    {
+	"name": "cpp",
+	"id": 14
+    },
+    {
+	"name": "doc",
+	"id": 4
+    },
+    {
+	"name": "fp",
+	"id": 2
+    },
+    {
+	"name": "frp",
+	"id": 16
+    },
+    {
+	"name": "fsharp",
+	"id": 3
+    },
+    ... ... ...
+
+    {
+	"name": "numerical",
+	"id": 11
+    },
+    {
+	"name": "numerical methods",
+	"id": 12
+    },
+    {
+	"name": "overview",
+	"id": 5
+    },
+    {
+	"name": "quickref",
+	"id": 8
+    },
+    {
+	"name": "reactive",
+	"id": 17
+    },
+    {
+	"name": "simulation",
+	"id": 15
+    },
+    {
+	"name": "tutorial",
+	"id": 7
+    }
+]
+</pre>
+</div>
+</div>
+</li>
+
+<li><a id="sec-1-1-2-7" name="sec-1-1-2-7"></a>Get all items with a tag<br  /><div class="outline-text-5" id="text-1-1-2-7">
+<p>
+Get all items which contains the tag 'Linux' which Id=9.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-json">$ curl -s http://localhost:8000/api/tags?id=9 |  python -mjson.tool
+[
+    {
+	"mime": null,
+	"colls": [
+	    [
+		7,
+		"Linux"
+	    ]
+	],
+	"data": [
+	    [
+		"url",
+		"http://www.linuxdevcenter.com/excerpt/LinuxPG_quickref/linux.pdf"
+	    ],
+	    [
+		"accessDate",
+		"2016-11-07 22:05:40"
+	    ],
+	    [
+		"title",
+		"Linux Quick Reference"
+	    ]
+	],
+	"authors": [],
+	"id": 15,
+	"file": "ZJMVV5V8/linux.pdf",
+	"tags": [
+	    [
+		8,
+		"quickref"
+	    ],
+	    [
+		9,
+		"linux"
+	    ]
+	]
+    },
+    {
+	"mime": null,
+	"colls": [
+	    [
+		7,
+		"Linux"
+	    ]
+	],
+	"data": [
+	    [
+		"url",
+		"http://www.digilife.be/quickreferences/QRC/LINUX%20Admin%20Quick%20Reference.pdf"
+	    ],
+	    [
+		"accessDate",
+		"2016-11-07 22:06:48"
+	    ],
+	    [
+		"title",
+		"inux/Unix Command Line Cheat Sheet"
+	    ]
+	],
+	"authors": [],
+	"id": 17,
+	"file": "6DHDAQAP/LINUX Admin Quick Reference.pdf",
+	"tags": [
+	    [
+		8,
+		"quickref"
+	    ],
+	    [
+		9,
+		"linux"
+	    ]
+	]
+    }
+]
+</pre>
+</div>
+</div>
+</li>
+
+<li><a id="sec-1-1-2-8" name="sec-1-1-2-8"></a>Search all items which title or word contains a string<br  /><div class="outline-text-5" id="text-1-1-2-8">
+<p>
+Search all items which contais the word 'cpp'
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">$ curl -s http://localhost:8000/api/search?content=cpp |  python -mjson.tool
+[
+    {
+	"mime": null,
+	"colls": [
+	    [
+		8,
+		"C++/CPP"
+	    ]
+	],
+	"data": [
+	    [
+		"url",
+		"http://www.artima.com/samples/cpp11-14NotesSample.pdf"
+	    ],
+	    [
+		"accessDate",
+		"2016-11-07 22:16:31"
+	    ],
+	    [
+		"title",
+		"Overview of the New C++ (C++11) - cpp11-14NotesSample.pdf"
+	    ]
+	],
+	"authors": [],
+	"id": 23,
+	"file": "NUGHRAQW/cpp11-14NotesSample.pdf",
+	"tags": [
+	    [
+		10,
+		"c++"
+	    ]
+	]
+    },
+    {
+	"mime": null,
+	"colls": [],
+	"data": [
+	    [
+		"url",
+		"http://www.sam.math.ethz.ch/~hiptmair/tmp/NumCSE/NumCSE15.pdf"
+	    ],
+	    [
+		"accessDate",
+		"2016-11-07 22:18:20"
+	    ],
+	    [
+		"title",
+		"NumCSE15.pdf"
+	    ]
+	],
+	"authors": [],
+	"id": 26,
+	"file": "CGZ9CXT8/NumCSE15.pdf",
+	"tags": []
+    },
+    {
+	"mime": null,
+	"colls": [],
+	"data": [
+	    [
+		"url",
+		"http://www.sam.math.ethz.ch/~hiptmair/tmp/NumCSE/NumCSE15.pdf"
+	    ],
+	    [
+		"accessDate",
+		"2016-11-07 22:19:28"
+	    ],
+	    [
+		"title",
+		"NumCSE15.pdf"
+	    ]
+	],
+	"authors": [],
+	"id": 28,
+	"file": "N8SXGHMN/NumCSE15.pdf",
+	"tags": []
+    }
+]
+</pre>
+</div>
+</div>
+</li></ol>
+</div>
+</div>
+<div id="outline-container-sec-1-2" class="outline-3">
+<h3 id="sec-1-2"><span class="section-number-3">1.2</span> Database Documentation</h3>
+<div class="outline-text-3" id="text-1-2">
+</div><div id="outline-container-sec-1-2-1" class="outline-4">
+<h4 id="sec-1-2-1"><span class="section-number-4">1.2.1</span> Search Titles that contains a word</h4>
+<div class="outline-text-4" id="text-1-2-1">
+<p>
+Search all titles that contains the string "functional".
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sql">SELECT itemData.itemID, itemDataValues.value  
+FROM   itemData, itemDataValues, itemAttachments
+WHERE  fieldID = 110 
+AND    itemData.valueID = itemDataValues.valueID
+AND    itemAttachments.sourceItemID = itemData.itemID
+AND    itemDataValues.value LIKE "%functional%"
+</pre>
+</div>
+
+
+<div class="org-src-container">
+
+<pre class="src src-sql">sqlite&gt; 
+sqlite&gt; SELECT itemData.itemID, itemDataValues.value  
+   ...&gt; FROM   itemData, itemDataValues, itemAttachments
+   ...&gt; WHERE  fieldID = 110 
+   ...&gt; AND    itemData.valueID = itemDataValues.valueID
+   ...&gt; AND    itemAttachments.sourceItemID = itemData.itemID
+   ...&gt; AND    itemDataValues.value LIKE "%functional%" 
+   ...&gt; ;
+1936|Functional Programming
+2688|Currently struggling. Can someone help em transition from functional programming to using OOP? : learnpython
+2750|When to use functional programming languages and techniques - TechRepublic
+2752|Where functional programming fits in - TechRepublic
+2754|Commercial Uses: Going functional on exotic trades
+2772|Functional Programming in the Financial Industry | Open Parallel
+2794|An introduction to functional programming
+2798|functional programming | Math ∩ Programming
+...
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-1-2-2" class="outline-4">
+<h4 id="sec-1-2-2"><span class="section-number-4">1.2.2</span> Search by a Regex Pattern</h4>
+<div class="outline-text-4" id="text-1-2-2">
+<div class="org-src-container">
+
+<pre class="src src-sql">SELECT itemData.itemID, itemDataValues.value  
+FROM   itemData, itemDataValues, itemAttachments
+WHERE  fieldID = 110 
+AND    itemData.valueID = itemDataValues.valueID
+AND    itemAttachments.sourceItemID = itemData.itemID
+AND    itemDataValues.value REGEXP "math.*"
+</pre>
+</div>
+
+<p>
+Result: 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sql">"2987"  "Functional Patterns for the non-mathematician"
+"4842"  "Power of mathematics: Reasoning about functional types"
+"6094"  "Discrete mathematics using a computer"
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-1-2-3" class="outline-4">
+<h4 id="sec-1-2-3"><span class="section-number-4">1.2.3</span> Full text search.</h4>
+<div class="outline-text-4" id="text-1-2-3">
+<p>
+Search all items that have the word "haskell".
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sql">SELECT DISTINCT itemID 
+FROM   fulltextItemWords, fulltextWords
+WHERE  fulltextItemWords.wordID = fulltextWords.wordID
+AND    fulltextWords.word LIKE "%haskell%"
+</pre>
+</div>
+
+<p>
+Search all items that have the word "haskell" in the title or in the
+content.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sql">SELECT itemData.itemID
+FROM   itemData, itemDataValues, fulltextItemWords, fulltextWords
+WHERE  itemData.fieldID = 110 
+AND    itemDataValues.valueID = itemData.valueID
+AND    fulltextItemWords.wordID = fulltextWords.wordID
+AND    fulltextItemWords.itemID = itemData.itemID
+AND    (itemDataValues.value LIKE "%haskell%"
+	    OR  
+		fulltextWords.word LIKE "%haskell%"
+		)
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-1-3" class="outline-3">
+<h3 id="sec-1-3"><span class="section-number-3">1.3</span> Haskell Related Documentation</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+Happstack Sever Framework 
+</p>
+
+<ul class="org-ul">
+<li><a href="https://hackage.haskell.org/package/happstack-server">happstack-server: Web related tools and services.</a>
+</li>
+</ul>
+
+<p>
+Haskell SQLite Database Driver 
+</p>
+
+<ul class="org-ul">
+<li><a href="https://hackage.haskell.org/package/HDBC-sqlite3-2.3.3.1/docs/Database-HDBC-Sqlite3.html">Database.HDBC.Sqlite3</a>
+</li>
+</ul>
+
+<p>
+Haskell PostgresSQL Database Driver 
+</p>
+
+<ul class="org-ul">
+<li><a href="https://hackage.haskell.org/package/HDBC-postgresql">HDBC-postgresql: PostgreSQL driver for HDBC</a>
+</li>
+</ul>
+
+<p>
+Haskell AESON - Json library 
+</p>
+
+<ul class="org-ul">
+<li><a href="https://hackage.haskell.org/package/aeson">aeson: Fast JSON parsing and encoding</a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: arch</p>
+<p class="date">Created: 2017-02-14 ter 21:55</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.1.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>
