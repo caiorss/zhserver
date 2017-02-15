@@ -64,13 +64,9 @@ printCollections  = do
 
        
 printItem conn itemID = do
-  
-  itemdata <- itemData conn itemID
-
-  path <- itemAttachmentFile conn itemID
-
-  tags <- itemTags conn itemID
-  
+  itemdata <- runReaderT (Z.itemData itemID) conn
+  path     <- runReaderT (Z.itemAttachmentFile itemID) conn
+  tags     <- runReaderT (Z.itemTags itemID) conn
 
   let  printField label field = do        
          
