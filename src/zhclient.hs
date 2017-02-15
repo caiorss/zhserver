@@ -100,10 +100,8 @@ prompt msg = do
   line    <- getLine
   return line 
 
-
-
 printCollection conn collID = do
-  items <- collectionItems conn collID
+  items <- runReaderT (Z.collectionItems collID) conn
   mapM_ (printItem conn) items 
   
 
