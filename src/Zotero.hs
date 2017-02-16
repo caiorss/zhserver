@@ -61,7 +61,7 @@ module Zotero
          ,searchByContentAndTitleLike
 
           ,getCollectionChild
-          ,getCollectionTop
+          ,getCollectionsTop
 
            , itemsWithoutCollections
 
@@ -80,7 +80,7 @@ module Zotero
          ,searchByTitleWordLikeJSON
          ,searchByContentAndTitleLikeJSON
          ,getCollectionChildJSON
-         ,getCollectionTopJSON
+         ,getCollectionsTopJSON
          ,itemsWithoutCollectionsJSON
          ,getZoteroItemIdAsListJSON
 
@@ -479,8 +479,8 @@ getCollectionsJSON :: DBConn BLI.ByteString
 getCollectionsJSON = encode <$> getCollections
 
 {- | Get only top level collections -}
-getCollectionTop :: DBConn [ZoteroColl]
-getCollectionTop = do
+getCollectionsTop :: DBConn [ZoteroColl]
+getCollectionsTop = do
   sqlQueryAll sql [] projection
     where
       sql = "SELECT collectionID, collectionName FROM collections \
