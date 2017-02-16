@@ -119,63 +119,7 @@ printCollection collID = do
 --   searchByTitleTagsAndInWords words
   
 
--- repl :: conn -> IO ()
-repl conn = forever $ do
 
-  -- conn <- dbConnection
-
-  putStrLn "\n"
-  putStrLn "Enter 1 to list the collections "
-  putStrLn "Enter 2 to list a collection given collectionID"
-  putStrLn "Enter 3 to open a itemID"
-  putStrLn "Enter 4 Copy the a collection to a given directory"
-  putStrLn "Enter 5 to exit the library"
-  putStrLn "\n"
-  putStrLn "--------------------"
-
-  choice <- strip <$> getLine
-
-  case choice of
-    
-    -- "1" -> showCollections conn
-    
-    "2" -> do
-             input <- prompt "Enter a collection ID: "  
-             mapM_ (printCollection conn) (readMaybe input :: Maybe Int)
-
-    "3" -> do
-             input <- prompt "Enter a item ID: "
-
-             let itemID = readMaybe input :: Maybe Int 
-
-             mapM_ (\fid -> printItem conn fid ) itemID
-
-             path <- fmap join $ mapM
-               (\itemID -> runReaderT (Z.itemAttachmentFile itemID) conn)
-               itemID
-
-             mapM_ (\p -> P.system $ "xdg-open " ++ "\"" ++ p ++ "\"") path
-
-
-    "4"  -> do  collID  <- prompt "Enter a collection ID: "                
-
-                let collID' = readMaybe collID :: Maybe Int
-
-                case collID' of
-                  
-                  Just collid -> do
-                               destDir <- prompt "Enter the destination directory "
-                               copyCollectionTo conn collid destDir
-                               putStrLn "Collection Copied OK."
-
-                  Nothing -> putStrLn "Failed not a valid collection number"
-
-    "5"  -> exitSuccess
-            
-             
-  
-    _  -> putStrLn "Error Enter with another option"
-            
             
 
 parseArgs :: [String] -> DBConn ()
