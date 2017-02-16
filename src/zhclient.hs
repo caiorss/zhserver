@@ -114,6 +114,9 @@ printCollection collID = do
   items <- Z.collectionItems collID
   mapM_ printItem items
 
+-- printSearchWordsTagsAnd [String] -> DBConn ()
+-- printSearchWordsTagsAnd words =
+--   searchByTitleTagsAndInWords words
   
 
 -- repl :: conn -> IO ()
