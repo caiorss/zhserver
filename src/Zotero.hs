@@ -84,10 +84,13 @@ module Zotero
          ,itemsWithoutCollectionsJSON
          ,getZoteroItemIdAsListJSON
 
+         ,getItemsFromAuthor
+
          ,searchByTitleTagsAndInWords
+         ,searchByTitleTagsOrInWords
 
           
-         ,getItemsFromAuthor
+      
          ,getAuthors
 
 
