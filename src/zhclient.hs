@@ -119,22 +119,27 @@ printCollection collID = do
 --   searchByTitleTagsAndInWords words
   
 
-
+        
             
 
 parseArgs :: [String] -> DBConn ()
 parseArgs args = do
   conn <- ask
   case args of
-    ["item", "-id",  itemID] -> liftIO $ printItem       conn (read itemID :: Int)
+    ["item", "-id",  itemID]            -> printItem (read itemID :: Int)
 
-    ["coll", "-id",  collID] -> liftIO $ printCollection conn (read collID :: Int)
-    ["coll", "-all"]         -> printCollections
+    ["coll", "-id",  collID]            -> printCollection (read collID :: Int)
+    ["coll", "-all"]                    -> printCollections
 
-    ["tag",  "-all"]         -> printTags  
+    ["tag",  "-all"]                    -> printTags
+
+    "search-tag-title":"and":"--":words -> Z.searchByTitleTagsAndInWords words >>= mapM_ printItem
+
+    ["search-title", word]              -> Z.searchByTitleWordLike ("%" ++ word ++ "%") >>= mapM_ printItem
     
-    []                       -> liftIO $ putStrLn "Show help"
-    _                        -> liftIO $ putStrLn "Error: Invalid command."
+    []                                  -> liftIO $ putStrLn "Show help"
+    _                                   -> liftIO $ putStrLn "Error: Invalid command."
+
 
 main :: IO ()
 main = do
