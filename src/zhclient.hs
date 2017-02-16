@@ -109,9 +109,11 @@ prompt msg = do
   line    <- getLine
   return line 
 
-printCollection conn collID = do
-  items <- runReaderT (Z.collectionItems collID) conn
-  mapM_ (printItem conn) items 
+printCollection :: Int -> DBConn ()
+printCollection collID = do
+  items <- Z.collectionItems collID
+  mapM_ printItem items
+
   
 
 -- repl :: conn -> IO ()
