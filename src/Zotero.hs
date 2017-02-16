@@ -53,7 +53,7 @@ module Zotero
          ,sqlQueryRow
       
 
-
+         ,getTags
          ,getTagItems
          ,getRelatedTags
          ,getTagsFromCollection
