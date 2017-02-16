@@ -929,7 +929,7 @@ searchByTitleTagsAndInWords :: [String] -> DBConn [ZoteroItemID]
 searchByTitleTagsAndInWords words = do
   sqlQueryRow (P.printf sql subquery) [] fromSqlToInt  
   where
-    tpl word = P.printf "(itemDataValues.value LIKE \"%%s%\" OR tags.Name LIKE \"%s%\")" word word 
+    tpl word = P.printf "(itemDataValues.value LIKE \"%%%s%%\" OR tags.Name LIKE \"%%%s%%\")" word word 
     subquery = joinStrings " AND "  (map tpl  words)
     sql = unlines $ [
                    "SELECT itemData.itemID, itemDataValues.value",
