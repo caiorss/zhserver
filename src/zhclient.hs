@@ -1,3 +1,6 @@
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE OverloadedStrings #-}
+
 {-
 
 Description: Command line interactive client to access the database.  
@@ -8,30 +11,30 @@ File:        zhclient.hs
 -- let destPath itemFile = SF.joinPath ["/tmp/test", SF.takeFileName itemFile]    
 
 import Control.Monad
+import Control.Monad.Trans
+import Control.Monad.Trans.Reader
+
 import Text.Read (readMaybe)
 import qualified System.Process as P
 import qualified System.FilePath as SF
 import System.Exit  (exitSuccess)
 
-import Zotero
+import qualified Zotero as Z
+import Zotero (DBConn, joinStrings, strip)
 
 import System.Directory (copyFile, createDirectoryIfMissing)
 
 import Text.Printf (printf)
 
+import qualified System.Environment as Env
+
 
 copyCollectionTo conn collID dest = do
-  
-  items       <- collectionItems conn collID
-
-  attachments <- mapM (itemAttachmentFile conn) items
-  
+  items       <- runReaderT (Z.collectionItems collID) conn
+  attachments <- mapM (\item -> runReaderT (Z.itemAttachmentFile item) conn) items
   createDirectoryIfMissing True dest
-
   mapM_ copyToDest attachments
-
   where
-
     destPath itemFile =
       SF.joinPath [dest, SF.takeFileName itemFile]
 
@@ -45,52 +48,81 @@ copyCollectionTo conn collID dest = do
    order to make easier to locate the author.
 -}   
 printItemAuthor conn itemID = do
-
-  authorData <- itemAuthors conn itemID
+  authorData <- runReaderT (Z.itemAuthors itemID) conn
   mapM_ printRow authorData
-
   where
-    printRow row = printf "%s: %s, %s\n" (row !! 2) (row !! 1) (row !! 0)
+    printRow author = printf "%s: %s, %s\n" (Z.zoteroAuthorFirstName author)
+                                            (Z.zoteroAuthorLastName  author)
+                                            (show $ Z.zoteroAuthorID author)
+printCollections :: DBConn ()
+printCollections  = do
+  colls <- Z.getCollections
+  liftIO $ mapM_ printColl colls
+  where
+    printColl coll =
+      Text.Printf.printf "\t%d\t%s\n" (Z.zoteroCollID coll) (Z.zoteroCollName coll)
+
+printCollectionsTop :: DBConn ()
+printCollectionsTop  = do
+  colls <- Z.getCollectionsTop
+  liftIO $ mapM_ printColl colls
+  where
+    printColl coll =
+      Text.Printf.printf "\t%d\t%s\n" (Z.zoteroCollID coll) (Z.zoteroCollName coll)
 
 
+printTags :: DBConn ()
+printTags = do
+  tags    <- Z.getTags
+  liftIO  $  mapM_ printTag tags
+  where
+    printTag tag =
+      Text.Printf.printf "\t%d\t%s\n" (Z.zoteroTagID tag) (Z.zoteroTagName tag)
 
-       
-printItem conn itemID = do
-  
-  itemdata <- itemData conn itemID
 
-  path <- itemAttachmentFile conn itemID
+printAuthors :: DBConn ()
+printAuthors = do
+  authors <- Z.getAuthors
+  liftIO  $ mapM_ printOne authors
+  where
+    printOne a =
+      Text.Printf.printf "\t%d\t%s - \t\t%s\n" (Z.zoteroAuthorID a)
+                                               (Z.zoteroAuthorLastName a)
+                                               (Z.zoteroAuthorFirstName a)
 
-  tags <- itemTags conn itemID
-  
 
-  let  printField label field = do        
-         
-         mapM_ (\value -> do
-                           putStr label
-                           putStr value
-                           putStr "\n"                          
+printItem :: Int -> DBConn ()
+printItem itemID = do
+  conn     <- ask
+  itemdata <- Z.itemData itemID
+  path     <- Z.itemAttachmentFile itemID
+  tags     <- Z.itemTags itemID
+
+  let printField label field = do
+        mapM_ (\value -> do
+                         putStr label
+                         putStr value
+                         putStr "\n"
                )
-           (lookup field itemdata)
-         
+              (lookup field itemdata)
 
-  putStrLn   ("Item ID: " ++ show itemID)
-  putStrLn ""
-  printField "Title: "      "title"
-  printField "Publisher: "  "publisher"
-  printField "Book Title: " "bookTitle"
-  printField "Url: "        "url"
-  printField "DOI: "        "DOI"
 
-  printItemAuthor conn itemID 
-  
-  printField "Abstract :\n" "abstractNote"
-  putStrLn ""
-  mapM_ putStrLn path
+  liftIO $ do printField  "Title: "      "title"
+              putStrLn ""
+              putStrLn   ("Item ID: " ++ show itemID)
+              printField  "Publisher: "  "publisher"
+              printField  "Book Title: " "bookTitle"
+              printField  "Url: "        "url"
+              printField  "DOI: "        "DOI"
 
-  putStrLn $ "Tags: " ++ joinStrings ", " tags
+              printItemAuthor conn itemID
 
-  putStrLn "--------------------------------------------"
+              printField  "Abstract :\n" "abstractNote"
+              putStrLn ""
+              mapM_ putStrLn path
+              putStrLn $ "Tags: " ++ joinStrings ", " tags
+              putStrLn "--------------------------------------------\n\n"
+
 
 
 prompt msg = do
@@ -98,69 +130,50 @@ prompt msg = do
   line    <- getLine
   return line 
 
+printCollection :: Int -> DBConn ()
+printCollection collID = do
+  items <- Z.collectionItems collID
+  mapM_ printItem items
 
-
-printCollection conn collID = do
-  items <- collectionItems conn collID
-  mapM_ (printItem conn) items 
+-- printSearchWordsTagsAnd [String] -> DBConn ()
+-- printSearchWordsTagsAnd words =
+--   searchByTitleTagsAndInWords words
   
 
+        
+            
+-- @HERE
+parseArgs :: [String] -> DBConn ()
+parseArgs args = do
+  conn <- ask
+  case args of
+    ["item", "-id",  itemID]            -> printItem (read itemID :: Int)
+    ["item", "-open", itemID]           -> undefined 
 
---main :: IO ()
-main = forever $ do
+    ["coll", "-id",  collID]            -> printCollection (read collID :: Int)
+    ["coll", "-all"]                    -> printCollections
+    ["coll", "-top"]                    -> printCollectionsTop
 
-  conn <- dbConnection
+    ["tag",  "-all"]                    -> printTags
 
-  putStrLn "\n"
-  putStrLn "Enter 1 to list the collections "
-  putStrLn "Enter 2 to list a collection given collectionID"
-  putStrLn "Enter 3 to open a itemID"
-  putStrLn "Enter 4 Copy the a collection to a given directory"
-  putStrLn "Enter 5 to exit the library"
-  putStrLn "\n"
-  putStrLn "--------------------"
+    ["author", "-all"]                  -> printAuthors
+    ["author", "-items", authorID]      -> Z.getItemsFromAuthor (read authorID :: Int) >>= mapM_ printItem 
 
-  choice <- strip <$> getLine
+    "search-tag-title":"and":"--":words -> Z.searchByTitleTagsAndInWords words >>= mapM_ printItem
+    "search-tag-title":"or":"--":words  -> Z.searchByTitleTagsOrInWords  words >>= mapM_ printItem
 
-  case choice of
+    ["search-title", word]              -> Z.searchByTitleWordLike ("%" ++ word ++ "%") >>= mapM_ printItem
     
-    "1" -> showCollections conn 
-    
-    "2" -> do
-             input <- prompt "Enter a collection ID: "  
-             mapM_ (printCollection conn) (readMaybe input :: Maybe Int)
-
-    "3" -> do
-             input <- prompt "Enter a item ID: "
-
-             let itemID = readMaybe input :: Maybe Int 
-
-             mapM_ (\fid -> printItem conn fid ) itemID
-
-             path <- fmap join $ mapM
-               (\itemID -> itemAttachmentFile conn itemID)
-               itemID
-
-             mapM_ (\p -> P.system $ "xdg-open " ++ "\"" ++ p ++ "\"") path
+    []                                  -> liftIO $ putStrLn "Show help"
+    _                                   -> liftIO $ putStrLn "Error: Invalid command."
 
 
-    "4"  -> do  collID  <- prompt "Enter a collection ID: "                
+main :: IO ()
+main = do
+  dbUri  <- Env.lookupEnv "ZOTERO_DB"
+  case dbUri of
+    Nothing  -> do putStrLn "Error: I can't open the database connection."
+                   putStrLn "Set the environment variable ZOTERO_DB."
 
-                let collID' = readMaybe collID :: Maybe Int
-
-                case collID' of
-                  
-                  Just collid -> do
-                               destDir <- prompt "Enter the destination directory "
-                               copyCollectionTo conn collid destDir
-                               putStrLn "Collection Copied OK."
-
-                  Nothing -> putStrLn "Failed not a valid collection number"
-
-    "5"  -> exitSuccess
-            
-             
-  
-    _  -> putStrLn "Error Enter with another option"
-            
-            
+    Just db   -> do args <- Env.getArgs
+                    Z.withDBConnection db (parseArgs args)

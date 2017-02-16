@@ -1,6 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 {- |
 Module      : Zotero
@@ -15,6 +16,9 @@ module Zotero
        (
          -- * Types 
          DBConn
+        ,HDBConn (..)
+        ,DBUri   (..)
+
         ,ZoteroItem    (..)
         ,ZoteroAuthor  (..)
         ,ZoteroTag     (..)
@@ -27,7 +31,13 @@ module Zotero
         ,ZoteroItemTags
         ,ZoteroItemMime
        
-         -- * Functions 
+         -- * Functions
+
+
+        ,openDBConnection
+        ,withDBConnection
+
+         -- -----------------------
          ,withConnection
          ,getCollections
        --  ,showCollections
@@ -42,8 +52,8 @@ module Zotero
          ,sqlQueryAll
          ,sqlQueryRow
       
-         ,dbConnection
 
+         ,getTags
          ,getTagItems
          ,getRelatedTags
          ,getTagsFromCollection
@@ -51,7 +61,7 @@ module Zotero
          ,searchByContentAndTitleLike
 
           ,getCollectionChild
-          ,getCollectionTop
+          ,getCollectionsTop
 
            , itemsWithoutCollections
 
@@ -70,12 +80,17 @@ module Zotero
          ,searchByTitleWordLikeJSON
          ,searchByContentAndTitleLikeJSON
          ,getCollectionChildJSON
-         ,getCollectionTopJSON
+         ,getCollectionsTopJSON
          ,itemsWithoutCollectionsJSON
          ,getZoteroItemIdAsListJSON
 
+         ,getItemsFromAuthor
+
+         ,searchByTitleTagsAndInWords
+         ,searchByTitleTagsOrInWords
+
           
-         ,getItemsFromAuthor         
+      
          ,getAuthors
 
 
@@ -93,10 +108,12 @@ import Data.Maybe (catMaybes, maybe, fromJust, fromMaybe)
 import Data.List (lookup)
 import Control.Monad
 
-import qualified Database.HDBC.Sqlite3 as SQLite
-import qualified Database.HDBC.PostgreSQL as PgSQL
+import qualified Database.HDBC.Sqlite3 as Sqlite3
+import qualified Database.HDBC.PostgreSQL as Pg
 import qualified Database.HDBC as HDBC
 
+-- import qualified Database.HDBC.PostgreSQL as Pg
+-- import qualified Database.HDBC.Sqlite3    as Sqlite3
 
 
 import qualified System.FilePath as SF
@@ -114,6 +131,9 @@ import GHC.Generics
 -- import Data.ByteString.Char8 (ByteString)
 import qualified Data.ByteString.Lazy.Internal as BLI
 
+import qualified Text.Printf as P
+import qualified Data.Text as T
+
 
 import System.Random (getStdGen, newStdGen, randomRs)
 
@@ -123,6 +143,70 @@ type SQLQuery =  [(String, HDBC.SqlValue)]
 
 {- | Database Connection -> DbConn a = ReaderT conn IO a = conn -> IO a -}
 type DBConn a = forall conn. (HDBC.IConnection conn) =>  ReaderT conn IO a
+
+{- | Database Connection - Objective make the database connection
+    implementation agnostic.
+-}
+data HDBConn =  HDBConnSqlite   Sqlite3.Connection
+              | HDBConnPostgres Pg.Connection
+              -- deriving (Eq, Read, Show)
+
+
+
+{- | Database URI -}
+data DBUri = DBUriSqlite   String
+           | DBUriPostGres String
+           deriving (Eq, Read, Show)
+
+
+
+stripPrefix prefix str =
+ case T.stripPrefix (T.pack prefix) (T.pack str) of
+   Just s   -> T.unpack s
+   Nothing  -> str
+
+parseDbDriver2 dbUri =
+  case getDbType dbUri of
+    "sqlite"    -> Just (DBUriSqlite   sqlitePath)
+    "postgres"  -> Just (DBUriPostGres dbUri)
+    _           -> Nothing
+  where
+    sqlitePath = (stripPrefix "sqlite://" dbUri)
+    getDbType dbUri = T.unpack . (!!0) . T.split (==':') . T.pack $ dbUri
+
+
+openDBConnection :: String -> IO (Maybe HDBConn)
+openDBConnection dbUri =
+  case parseDbDriver2 dbUri of
+    Just (DBUriSqlite   uri) -> Sqlite3.connectSqlite3  uri
+                                >>= \conn -> return $ Just (HDBConnSqlite conn)
+
+    Just (DBUriPostGres uri) -> Pg.connectPostgreSQL    uri
+                                >>= \conn -> return $ Just ( HDBConnPostgres conn)
+
+    Nothing                  -> return Nothing
+
+
+
+-- withDBConnection :: forall conn. (HDBC.IConnection conn) => String -> (conn -> IO ()) -> IO ()
+withDBConnection ::  String -> DBConn () -> IO ()
+withDBConnection dbUri dbAction = do
+  conn <- openDBConnection dbUri
+  case conn of
+    Just (HDBConnSqlite   c)  -> runReaderT dbAction c >> HDBC.disconnect c
+    Just (HDBConnPostgres c)  -> runReaderT dbAction c >> HDBC.disconnect c
+    Nothing                   -> putStrLn "Error: I can't open the database connection"
+
+
+withConnection :: HDBC.IConnection  conn => IO conn -> (conn -> IO r) -> IO r
+withConnection ioConn function = do
+  conn     <- ioConn
+  result   <- function conn
+  HDBC.disconnect conn
+  return result
+
+-- withDBConnection2 dbUri dbAction = do
+--   withDBConnection dbUri (ioToDBConn dbAction)
 
 {- | Zotero Tag ID number -} 
 type ZoteroTagID   = Int
@@ -226,11 +310,6 @@ stripPrefixStr prefix str =
     Just s  -> s 
  
 
--- dbConnection = SQLite.connectSqlite3 database
-dbConnection = PgSQL.connectPostgreSQL "postgres://postgres@localhost/zotero"
-
-
-
 {- ================== Helper Functions ======================  -}
 
 splitOn delim text =  
@@ -245,12 +324,12 @@ fromIntToInt64 :: Int -> Int64
 fromIntToInt64 = fromIntegral
 
 
-
+{- | Join strings by separator -}
 joinStrings :: String -> [String] -> String
-joinStrings common strs =
+joinStrings sep strs =
   case strs of
     [] -> ""
-    _  -> foldr1 (\x acc ->  x ++ common ++  acc) strs 
+    _  -> foldr1 (\x acc ->  x ++ sep ++  acc) strs
 
 lookupString :: String -> SQLQuery -> Maybe String 
 lookupString field row = do 
@@ -354,13 +433,6 @@ sqlRun sql sqlvals = do
   liftIO  $ HDBC.execute stmt sqlvals
   liftIO  $ HDBC.commit conn 
     
-        
-withConnection :: HDBC.IConnection  conn => IO conn -> (conn -> IO r) -> IO r
-withConnection ioConn function = do
-  conn     <- ioConn
-  result   <- function conn
-  return result
-
 
 
 {- ================== Database Functions  ======================  -}
@@ -410,8 +482,8 @@ getCollectionsJSON :: DBConn BLI.ByteString
 getCollectionsJSON = encode <$> getCollections
 
 {- | Get only top level collections -}
-getCollectionTop :: DBConn [ZoteroColl]
-getCollectionTop = do
+getCollectionsTop :: DBConn [ZoteroColl]
+getCollectionsTop = do
   sqlQueryAll sql [] projection
     where
       sql = "SELECT collectionID, collectionName FROM collections \
@@ -421,8 +493,8 @@ getCollectionTop = do
                                     (fromSqlToString $ row !! 1)        
 
 
-getCollectionTopJSON :: DBConn BLI.ByteString
-getCollectionTopJSON = encode <$> getCollectionTop
+getCollectionsTopJSON :: DBConn BLI.ByteString
+getCollectionsTopJSON = encode <$> getCollectionsTop
 
 {- | Get sub-collections of a collection -}
 getCollectionChild :: Int -> DBConn [ZoteroColl]
@@ -444,17 +516,6 @@ getCollectionChild collID = do
 getCollectionChildJSON :: Int -> DBConn BLI.ByteString
 getCollectionChildJSON collID = encode <$> getCollectionChild collID
 
---showCollections :: DBConn ()  
--- showCollections conn = do
---   mapM_ print =<< runReaderT getCollections conn 
-
--- showCollections2 :: DBConn ()
--- showCollections2 = do
---   colls <- getCollections
---   liftIO  (mapM_ print colls)
-
-
---collectionItems :: HDBC.IConnection conn => conn -> Int -> IO [Int]
 collectionItems :: Int -> DBConn [Int]
 collectionItems collID = do
   
@@ -822,11 +883,8 @@ getTagsFromCollectionJSON collID =
 
 searchByTitleWordLike :: String -> DBConn [Int]
 searchByTitleWordLike  searchWord = do
-  
   sqlQueryRow sql [HDBC.SqlString searchWord]  fromSqlToInt
-    
     where
-
       sql = unlines $ [
 
         "SELECT itemData.itemID"  
@@ -869,8 +927,45 @@ searchByContentAndTitleLikeJSON searchWord = do
   items <- searchByContentAndTitleLike searchWord  
   getZoteroItemsJSON items 
 
+{- | Search all items which title 'or' tag matches all words in a given list -}
+searchByTitleTagsAndInWords :: [String] -> DBConn [ZoteroItemID]
+searchByTitleTagsAndInWords words = do
+  sqlQueryRow (P.printf sql subquery) [] fromSqlToInt  
+  where
+    tpl word = P.printf "(itemDataValues.value LIKE \"%%%s%%\" OR tags.Name LIKE \"%%%s%%\")" word word 
+    subquery = joinStrings " AND "  (map tpl  words)
+    sql = unlines $ [
+                   "SELECT itemData.itemID, itemDataValues.value",
+                   "FROM   itemData, itemDataValues, itemAttachments, tags, itemTags",
+                   "WHERE  fieldID = 110",
+                   "AND    itemData.valueID = itemDataValues.valueID",
+                   "AND    itemAttachments.sourceItemID = itemData.itemID",
+                   "AND    itemTags.itemID = itemData.itemID",
+                   "AND    itemTags.tagID = tags.tagID",
+                   "AND    (  %s  )",
+                   "GROUP BY itemData.itemID"                    
+                    ]
 
+{- | Search all items for which title 'or' tag matches at least one words in a given list -}
+searchByTitleTagsOrInWords :: [String] -> DBConn [ZoteroItemID]
+searchByTitleTagsOrInWords words = do
+  sqlQueryRow (P.printf sql subquery) [] fromSqlToInt
+  where
+    tpl word = P.printf "(itemDataValues.value LIKE \"%%%s%%\" OR tags.Name LIKE \"%%%s%%\")" word word
+    subquery = joinStrings " OR "  (map tpl  words)
+    sql = unlines $ [
+                   "SELECT itemData.itemID, itemDataValues.value",
+                   "FROM   itemData, itemDataValues, itemAttachments, tags, itemTags",
+                   "WHERE  fieldID = 110",
+                   "AND    itemData.valueID = itemDataValues.valueID",
+                   "AND    itemAttachments.sourceItemID = itemData.itemID",
+                   "AND    itemTags.itemID = itemData.itemID",
+                   "AND    itemTags.tagID = tags.tagID",
+                   "AND    (  %s  )",
+                   "GROUP BY itemData.itemID"
+                    ]
 
+  
 
 replaceTagBy :: Int -> Int -> DBConn ()
 replaceTagBy  tagIDfrom tagIDto = do

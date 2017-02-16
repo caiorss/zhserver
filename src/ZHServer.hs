@@ -73,17 +73,6 @@ import Zotero (DBConn)
 type ServerApp a =  forall conn. (HDBC.IConnection conn)
                     => ReaderT conn (ServerPartT IO) a
 
--- Database Connection - Objective make the database connection implementation agnostic.
---
-data HDBConn =  HDBConnSqlite   Sqlite3.Connection
-              | HDBConnPostgres Pg.Connection
-              -- deriving (Eq, Read, Show)
-
--- Database URI
---
-data DBUri = DBUriSqlite   String
-           | DBUriPostGres String
-           deriving (Eq, Read, Show)
 
 data ServerConfig = ServerConfig
                     {
@@ -106,29 +95,8 @@ serverConf = Conf
   , threadGroup = Nothing
   }
 
-
-
 parseInt :: String -> Maybe Int 
 parseInt s = readMaybe s
-
-
-
-parseDbDriver2 dbUri =
-  case getDbType dbUri of
-    "sqlite"    -> Just (DBUriSqlite   sqlitePath)
-    "postgres"  -> Just (DBUriPostGres dbUri)
-    _           -> Nothing
-  where
-    sqlitePath = (stripPrefix "sqlite://" dbUri)
-    getDbType dbUri = T.unpack . (!!0) . T.split (==':') . T.pack $ dbUri
-
-
-openDBConnection :: String -> IO (Maybe HDBConn)
-openDBConnection dbUri =
-  case parseDbDriver2 dbUri of
-    Just (DBUriSqlite   uri) -> Sqlite3.connectSqlite3  uri >>= \conn -> return $ Just (HDBConnSqlite conn)
-    Just (DBUriPostGres uri) -> Pg.connectPostgreSQL    uri >>= \conn -> return $ Just ( HDBConnPostgres conn)
-    Nothing                  -> return Nothing
 
 
 withConnServerDB ::  Response.ToMessage a =>
@@ -137,12 +105,12 @@ withConnServerDB ::  Response.ToMessage a =>
                   -> ServerApp a    -- Server Monad
                   -> IO ()
 withConnServerDB dbUri conf serverApp = do
-  maybeConn <- openDBConnection dbUri
+  maybeConn <- Z.openDBConnection dbUri
 
   case maybeConn of
 
-    Just (HDBConnSqlite conn)   ->  withConn conn conf serverApp
-    Just (HDBConnPostgres conn) ->  withConn conn conf serverApp
+    Just (Z.HDBConnSqlite conn)   ->  withConn conn conf serverApp
+    Just (Z.HDBConnPostgres conn) ->  withConn conn conf serverApp
     Nothing                     ->  putStrLn $ "Error: Invalid database URI " ++ dbUri
 
   where
@@ -286,19 +254,25 @@ makeRoutes staticPath storagePath = msum
   --
   , flatten $ dir "api" $ dir "authors" $ routeAuthorID
 
-    
+  -- Return all authors
+  -- API End point  /api/authors 
+  -- 
   , flatten $ dir "api" $ dir "authors" $ routeAuthors
 
-
+  
   , flatten $ dir "api" $ dir "relatedtags" $ routeRealatedTags                 
 
-
+  -- Search items which title contains a word
+  -- API End Point - /api/search?title=<search word>
   , flatten $ dir "api" $ dir "search" $ routeSearchByTitleLike
-    
+
+  -- Search items which content contains word   
   , flatten $ dir "api" $ dir "search" $ routeSearchByContentAndTitleLike 
    
     
-    -- Zotero Attachment Files
+    -- Zotero Attachment Files - Serve attachment files in storagePath directory 
+    -- API End Point /api/search?content=<search word>
+    -- 
   , flatten $ dir "attachment" $ serveDirectory DisableBrowsing [] storagePath
 
 
@@ -316,11 +290,6 @@ makeRoutes staticPath storagePath = msum
     
   ]
 
-
-stripPrefix prefix str =
- case T.stripPrefix (T.pack prefix) (T.pack str) of
-   Just s   -> T.unpack s
-   Nothing  -> str
 
 
 parseDbDriver uri =
