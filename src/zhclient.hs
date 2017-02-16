@@ -70,37 +70,38 @@ printTags = do
     printTag tag =
       Text.Printf.printf "\t%d\t%s\n" (Z.zoteroTagID tag) (Z.zoteroTagName tag)
 
-       
-printItem conn itemID = do
-  itemdata <- runReaderT (Z.itemData itemID) conn
-  path     <- runReaderT (Z.itemAttachmentFile itemID) conn
-  tags     <- runReaderT (Z.itemTags itemID) conn
+printItem :: Int -> DBConn ()
+printItem itemID = do
+  conn     <- ask
+  itemdata <- Z.itemData itemID
+  path     <- Z.itemAttachmentFile itemID
+  tags     <- Z.itemTags itemID
 
-  let  printField label field = do        
-         mapM_ (\value -> do
-                           putStr label
-                           putStr value
-                           putStr "\n"                          
+  let printField label field = do
+        mapM_ (\value -> do
+                         putStr label
+                         putStr value
+                         putStr "\n"
                )
-           (lookup field itemdata)
-         
-  printField "Title: "      "title"
-  putStrLn ""
-  putStrLn   ("Item ID: " ++ show itemID)
-  printField "Publisher: "  "publisher"
-  printField "Book Title: " "bookTitle"
-  printField "Url: "        "url"
-  printField "DOI: "        "DOI"
+              (lookup field itemdata)
 
-  printItemAuthor conn itemID 
-  
-  printField "Abstract :\n" "abstractNote"
-  putStrLn ""
-  mapM_ putStrLn path
 
-  putStrLn $ "Tags: " ++ joinStrings ", " tags
+  liftIO $ do printField  "Title: "      "title"
+              putStrLn ""
+              putStrLn   ("Item ID: " ++ show itemID)
+              printField  "Publisher: "  "publisher"
+              printField  "Book Title: " "bookTitle"
+              printField  "Url: "        "url"
+              printField  "DOI: "        "DOI"
 
-  putStrLn "--------------------------------------------"
+              printItemAuthor conn itemID
+
+              printField  "Abstract :\n" "abstractNote"
+              putStrLn ""
+              mapM_ putStrLn path
+              putStrLn $ "Tags: " ++ joinStrings ", " tags
+              putStrLn "--------------------------------------------"
+
 
 
 prompt msg = do
