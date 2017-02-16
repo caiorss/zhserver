@@ -142,19 +142,25 @@ printCollection collID = do
 
         
             
-
+-- @HERE
 parseArgs :: [String] -> DBConn ()
 parseArgs args = do
   conn <- ask
   case args of
     ["item", "-id",  itemID]            -> printItem (read itemID :: Int)
+    ["item", "-open", itemID]           -> undefined 
 
     ["coll", "-id",  collID]            -> printCollection (read collID :: Int)
     ["coll", "-all"]                    -> printCollections
+    ["coll", "-top"]                    -> printCollectionsTop
 
     ["tag",  "-all"]                    -> printTags
 
+    ["author", "-all"]                  -> printAuthors
+    ["author", "-items", authorID]      -> Z.getItemsFromAuthor (read authorID :: Int) >>= mapM_ printItem 
+
     "search-tag-title":"and":"--":words -> Z.searchByTitleTagsAndInWords words >>= mapM_ printItem
+    "search-tag-title":"or":"--":words  -> Z.searchByTitleTagsOrInWords  words >>= mapM_ printItem
 
     ["search-title", word]              -> Z.searchByTitleWordLike ("%" ++ word ++ "%") >>= mapM_ printItem
     
