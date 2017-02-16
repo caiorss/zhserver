@@ -79,6 +79,18 @@ printTags = do
     printTag tag =
       Text.Printf.printf "\t%d\t%s\n" (Z.zoteroTagID tag) (Z.zoteroTagName tag)
 
+
+printAuthors :: DBConn ()
+printAuthors = do
+  authors <- Z.getAuthors
+  liftIO  $ mapM_ printOne authors
+  where
+    printOne a =
+      Text.Printf.printf "\t%d\t%s - \t\t%s\n" (Z.zoteroAuthorID a)
+                                               (Z.zoteroAuthorLastName a)
+                                               (Z.zoteroAuthorFirstName a)
+
+
 printItem :: Int -> DBConn ()
 printItem itemID = do
   conn     <- ask
