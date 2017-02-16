@@ -87,7 +87,7 @@ module Zotero
          ,searchByTitleTagsAndInWords
 
           
-         ,getItemsFromAuthor         
+         ,getItemsFromAuthor
          ,getAuthors
 
 
@@ -490,8 +490,8 @@ getCollectionsTop = do
                                     (fromSqlToString $ row !! 1)        
 
 
-getCollectionTopJSON :: DBConn BLI.ByteString
-getCollectionTopJSON = encode <$> getCollectionTop
+getCollectionsTopJSON :: DBConn BLI.ByteString
+getCollectionsTopJSON = encode <$> getCollectionsTop
 
 {- | Get sub-collections of a collection -}
 getCollectionChild :: Int -> DBConn [ZoteroColl]
