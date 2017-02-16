@@ -105,12 +105,12 @@ withConnServerDB ::  Response.ToMessage a =>
                   -> ServerApp a    -- Server Monad
                   -> IO ()
 withConnServerDB dbUri conf serverApp = do
-  maybeConn <- openDBConnection dbUri
+  maybeConn <- Z.openDBConnection dbUri
 
   case maybeConn of
 
-    Just (HDBConnSqlite conn)   ->  withConn conn conf serverApp
-    Just (HDBConnPostgres conn) ->  withConn conn conf serverApp
+    Just (Z.HDBConnSqlite conn)   ->  withConn conn conf serverApp
+    Just (Z.HDBConnPostgres conn) ->  withConn conn conf serverApp
     Nothing                     ->  putStrLn $ "Error: Invalid database URI " ++ dbUri
 
   where

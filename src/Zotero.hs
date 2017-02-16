@@ -16,8 +16,8 @@ module Zotero
        (
          -- * Types 
          DBConn
-        ,HDBConn
-        ,DBUri
+        ,HDBConn (..)
+        ,DBUri   (..)
 
         ,ZoteroItem    (..)
         ,ZoteroAuthor  (..)
