@@ -100,7 +100,7 @@ printItem itemID = do
               putStrLn ""
               mapM_ putStrLn path
               putStrLn $ "Tags: " ++ joinStrings ", " tags
-              putStrLn "--------------------------------------------"
+              putStrLn "--------------------------------------------\n\n"
 
 
 
