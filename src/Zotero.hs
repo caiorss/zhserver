@@ -513,17 +513,6 @@ getCollectionChild collID = do
 getCollectionChildJSON :: Int -> DBConn BLI.ByteString
 getCollectionChildJSON collID = encode <$> getCollectionChild collID
 
---showCollections :: DBConn ()  
--- showCollections conn = do
---   mapM_ print =<< runReaderT getCollections conn 
-
--- showCollections2 :: DBConn ()
--- showCollections2 = do
---   colls <- getCollections
---   liftIO  (mapM_ print colls)
-
-
---collectionItems :: HDBC.IConnection conn => conn -> Int -> IO [Int]
 collectionItems :: Int -> DBConn [Int]
 collectionItems collID = do
   
