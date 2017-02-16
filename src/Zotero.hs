@@ -942,6 +942,26 @@ searchByTitleTagsAndInWords words = do
                    "AND    (  %s  )",
                    "GROUP BY itemData.itemID"                    
                     ]
+
+{- | Search all items for which title 'or' tag matches at least one words in a given list -}
+searchByTitleTagsOrInWords :: [String] -> DBConn [ZoteroItemID]
+searchByTitleTagsOrInWords words = do
+  sqlQueryRow (P.printf sql subquery) [] fromSqlToInt
+  where
+    tpl word = P.printf "(itemDataValues.value LIKE \"%%%s%%\" OR tags.Name LIKE \"%%%s%%\")" word word
+    subquery = joinStrings " OR "  (map tpl  words)
+    sql = unlines $ [
+                   "SELECT itemData.itemID, itemDataValues.value",
+                   "FROM   itemData, itemDataValues, itemAttachments, tags, itemTags",
+                   "WHERE  fieldID = 110",
+                   "AND    itemData.valueID = itemDataValues.valueID",
+                   "AND    itemAttachments.sourceItemID = itemData.itemID",
+                   "AND    itemTags.itemID = itemData.itemID",
+                   "AND    itemTags.tagID = tags.tagID",
+                   "AND    (  %s  )",
+                   "GROUP BY itemData.itemID"
+                    ]
+
   
 
 replaceTagBy :: Int -> Int -> DBConn ()
