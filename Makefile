@@ -5,8 +5,8 @@ src = src/ZHServer.hs src/Zotero.hs
 
 config = src/zhserver.conf
 
-zotero:
-	stack exec -- ghc --make Zotero 
+zhclient:
+	stack exec -- ghc --make -o zhclient.bin src/zhclient.hs src/Zotero.hs
 
 server: $(src)
 	stack exec -- ghc --make -o $(app) $(src)
