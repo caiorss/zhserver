@@ -7,24 +7,38 @@
 * User Guide 
 ** Overview 
 
-Zhserver is an application server that provides a json REST API to
+_Zhserver_ is an application server that provides a json REST API to
 interface [[https://www.zotero.org/][Zotero]] database and allows multiple users and third party
 apps to search documents by collections, tags, author and so on. 
 
-Basic functionality:
-
- - Query the database by
-   - Collection
-   - Tag
-   - Author
-   - Document ID
-   - Download Zotero files. 
+Disclaimer: It is still a work in progress.
 
 *Benefits*
 
 Find, classify information, books, magazines, laws, patents, technical
 standards, web page snapshots and papers fast. 
 
+
+*Features*
+
+ - Manage collections of documents like pdf files, books, magazines,
+   thesis, papers, patents, technical documentation and any type of
+   file.
+
+ - Find documents by author.
+
+ - Find documents by collections. Any item or document can belong to
+   multiple collections.
+
+ - Find documents by tags.
+
+ - Search documents by content, title and tags.
+
+ - Single page web application with URLs that can be bookmarked.
+
+ - Web Application and REST API.
+
+ 
 *Screenshots*
 
 [[file:images/collections.png][file:images/collections.png]]
