@@ -620,6 +620,16 @@ getSubcollections collID = do
     sql = unlines [ "SELECT collectionID FROM collections"
                   ,"WHERE  parentCollectionID = ?"
                   ]
+{- | Get subcollecotions ID and Name from a parent collection. -}
+getSubcollectionsIDNames :: ZoteroCollectionID -> DBConn [(Int, String)]
+getSubcollectionsIDNames collID = do
+  sqlQueryAll sql [HDBC.SqlInt64  $ fromIntToInt64 collID ] projection
+  where
+    projection row = (fromSqlToInt (row !! 0) , fromSqlToString (row !! 1))
+
+    sql = unlines [ "SELECT collectionID, collectionName FROM collections"
+                  ,"WHERE  parentCollectionID = ?"
+                  ]
 
 
 -- Return all tags in the database
