@@ -254,14 +254,13 @@ type ZoteroCollectionID = Int
 
 {- | ZoteroItem  data -}
 data ZoteroItem =
-  ZoteroItem {    zoteroItemID          :: Int
-                , zoteroItemData        :: [(String, String)]
-                , zoteroItemAuthors     :: [ZoteroAuthor]  -- (AuthorID, [firstName, lastName]) 
-                , zoteroItemTags        :: [(Int, String)] -- (tagID, tag)
-                , zoteroItemCollections :: [(Int, String)] -- (collID, collection)
-                                           
-                , zoteroItemFile        :: Maybe String    -- File attachment
-                , zoteroItemMime        :: Maybe String    -- Mime Type
+  ZoteroItem {    zoteroItemID          :: Int                  --  Item ID number
+                , zoteroItemData        :: [(String, String)]   --  Item data (key, value) pair list
+                , zoteroItemAuthors     :: [ZoteroAuthor]       --  (AuthorID, [firstName, lastName])
+                , zoteroItemTags        :: [(Int, String)]      --  (tagID, tag)
+                , zoteroItemCollections :: [(Int, String)]      --  (collID, collection)
+                , zoteroItemFile        :: Maybe String         --  File attachment
+                , zoteroItemMime        :: Maybe String         --  Mime Type
                 
              } deriving (Eq, Show, Read,  Generic)
 
