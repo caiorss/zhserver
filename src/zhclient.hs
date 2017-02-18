@@ -104,10 +104,12 @@ printAuthors = do
 
 printItem :: Int -> DBConn ()
 printItem itemID = do
-  conn     <- ask
-  itemdata <- Z.itemData itemID
-  path     <- Z.itemAttachmentFile itemID
-  tags     <- Z.itemTags itemID
+  conn         <- ask
+  item         <- Z.getZoteroItem itemID
+  let itemdata = Z.zoteroItemData item
+  let path     = Z.zoteroItemFile item
+  let tags     = Z.zoteroItemTags item
+  let colls    = Z.zoteroItemCollections item
 
   let printField label field = do
         mapM_ (\value -> do
@@ -118,20 +120,21 @@ printItem itemID = do
               (lookup field itemdata)
 
 
-  liftIO $ do printField  "Title: "      "title"
-              putStrLn ""
-              putStrLn   ("Item ID: " ++ show itemID)
-              printField  "Publisher: "  "publisher"
-              printField  "Book Title: " "bookTitle"
-              printField  "Url: "        "url"
-              printField  "DOI: "        "DOI"
+  liftIO $ do printField  "Title: "     "title"
+              putStrLn    ""
+              putStrLn $  "Item ID:     " ++ show itemID
+              putStrLn $  "Tags:        " ++ joinStrings ", " (map show tags)
+              putStrLn $  "Collections: " ++ joinStrings ", " (map show colls)
+              printField  "Publisher:   " "publisher"
+              printField  "Book Title:  " "bookTitle"
+              printField  "Url:         " "url"
+              printField  "DOI:         " "DOI"
 
               printItemAuthor conn itemID
 
               printField  "Abstract :\n" "abstractNote"
               putStrLn ""
               mapM_ putStrLn path
-              putStrLn $ "Tags: " ++ joinStrings ", " tags
               putStrLn "--------------------------------------------\n\n"
 
 
