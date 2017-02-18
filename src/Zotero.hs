@@ -65,7 +65,9 @@ module Zotero
           ,getCollectionChild
           ,getCollectionsTop
 
-           , itemsWithoutCollections
+          ,itemsWithoutCollections
+
+          ,getSubcollections
           ,getSubcollectionsIDNames
           ,getAllSubCollections
           ,getAllSubCollectionsItems
