@@ -70,6 +70,12 @@ printCollectionsTop  = do
     printColl coll =
       Text.Printf.printf "\t%d\t%s\n" (Z.zoteroCollID coll) (Z.zoteroCollName coll)
 
+printSubCollections :: Int -> DBConn ()
+printSubCollections collID = do
+  colls <- Z.getSubcollectionsIDNames collID
+  liftIO $ mapM_ print colls
+
+
 
 printTags :: DBConn ()
 printTags = do
