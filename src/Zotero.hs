@@ -35,6 +35,7 @@ module Zotero
 
 
         ,openDBConnection
+        ,runDBConn
         ,withDBConnection
 
          -- -----------------------
@@ -186,6 +187,12 @@ openDBConnection dbUri =
 
     Nothing                  -> return Nothing
 
+
+runDBConn :: HDBConn -> DBConn a -> IO a
+runDBConn hdbconn dbAction =
+  case hdbconn of
+    HDBConnSqlite   c  -> runReaderT dbAction c
+    HDBConnPostgres c  -> runReaderT dbAction c
 
 
 -- withDBConnection :: forall conn. (HDBC.IConnection conn) => String -> (conn -> IO ()) -> IO ()
