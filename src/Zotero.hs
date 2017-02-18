@@ -37,6 +37,7 @@ module Zotero
         ,openDBConnection
         ,runDBConn
         ,withDBConnection
+        ,withDBConnection2
 
          -- -----------------------
          ,withConnection
@@ -203,6 +204,22 @@ withDBConnection dbUri dbAction = do
     Just (HDBConnSqlite   c)  -> runReaderT dbAction c >> HDBC.disconnect c
     Just (HDBConnPostgres c)  -> runReaderT dbAction c >> HDBC.disconnect c
     Nothing                   -> putStrLn "Error: I can't open the database connection"
+
+
+
+withDBConnection2 ::  String -> DBConn a -> IO (Maybe a)
+withDBConnection2 dbUri dbAction = do
+  conn <- openDBConnection dbUri
+  case conn of
+    Just (HDBConnSqlite   c)  -> do out <- runReaderT dbAction c
+                                    HDBC.disconnect c
+                                    return (Just out)
+
+    Just (HDBConnPostgres c)  -> do out <- runReaderT dbAction c
+                                    HDBC.disconnect c
+                                    return (Just out)
+
+    Nothing                   -> return Nothing
 
 
 withConnection :: HDBC.IConnection  conn => IO conn -> (conn -> IO r) -> IO r
