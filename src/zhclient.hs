@@ -165,6 +165,10 @@ parseArgs args = do
     ["coll", "-all"]                    -> printCollections
     ["coll", "-top"]                    -> printCollectionsTop
 
+    ["subcoll", collID]                 -> printSubCollections (read collID :: Int)
+    ["subcoll", "-all",   collID]      -> printAllSubCollections (read collID :: Int)
+    ["subcoll", "-items", collID]      -> Z.getAllSubCollectionsItems (read collID :: Int) >>= mapM_ printItem
+
     ["tag",  "-all"]                    -> printTags
 
     ["author", "-all"]                  -> printAuthors
