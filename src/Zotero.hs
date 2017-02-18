@@ -551,12 +551,9 @@ collectionItems collID = do
 {- | Returns all tags of a given item -}
 itemTagsData :: ZoteroItemID -> DBConn ZoteroItemTags
 itemTagsData itemID = do
-  
   let itemID' = fromIntToInt64 itemID 
   sqlQueryAll sql [HDBC.SqlInt64 itemID'] projection
-
   where
-    
     sql = unlines ["SELECT  tags.tagID, tags.name",
                    "FROM    itemTags, tags", 
                    "WHERE   itemTags.tagID = tags.tagID", 
