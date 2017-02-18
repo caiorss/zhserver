@@ -657,8 +657,10 @@ getAllSubCollections collID  = do
 
 getAllSubCollectionsItems :: ZoteroCollectionID -> DBConn [ZoteroItemID]
 getAllSubCollectionsItems collID = do
-  subcolls <- getAllSubCollections collID
-  mapconcatM (\ (cID, cName) -> collectionItems cID) subcolls
+  subcolls     <- getAllSubCollections collID
+  items        <- collectionItems collID
+  subcollItems <- mapconcatM (\ (cID, cName) -> collectionItems cID) subcolls
+  return $ items ++ subcollItems
 
 -- Return all tags in the database
 -- 
