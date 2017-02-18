@@ -592,6 +592,15 @@ itemsWithoutCollectionsJSON paging offset = do
   json  <- getZoteroItemsJSON items
   return json 
   
+{- | Get all sub collections from a parent collection. -}
+getSubcollections :: ZoteroCollectionID -> DBConn [ZoteroCollectionID]
+getSubcollections collID = do
+  sqlQueryRow sql [HDBC.SqlInt64 $ fromIntToInt64 collID] fromSqlToInt
+  where
+    sql = unlines [ "SELECT collectionID FROM collections"
+                  ,"WHERE  parentCollectionID = ?"
+                  ]
+
 
 -- Return all tags in the database
 -- 
