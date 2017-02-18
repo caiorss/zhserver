@@ -76,6 +76,11 @@ printSubCollections collID = do
   liftIO $ mapM_ print colls
 
 
+printAllSubCollections :: Int -> DBConn ()
+printAllSubCollections collID = do
+  colls <- Z.getAllSubCollections collID
+  liftIO $ mapM_ print colls
+
 
 printTags :: DBConn ()
 printTags = do
