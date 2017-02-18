@@ -67,6 +67,7 @@ module Zotero
 
            , itemsWithoutCollections
           ,getSubcollectionsIDNames
+          ,getAllSubCollections
 
           {- JSON Export Functions -}
          ,getCollectionsJSON
@@ -641,6 +642,13 @@ mapconcatM fn xs = aux fn xs []
         []   -> return acc
         y:ys -> do blist <- fn y
                    acc `seq` aux fn ys (blist ++ acc)
+
+getAllSubCollections :: ZoteroCollectionID -> DBConn [(Int, String)]
+getAllSubCollections collID  = do
+  subcolls <- getSubcollectionsIDNames collID
+  colls    <- mapconcatM (\(cID, cName) -> getAllSubCollections cID) subcolls
+  return $ subcolls ++ colls
+
 
 
 -- Return all tags in the database
