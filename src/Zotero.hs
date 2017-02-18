@@ -61,6 +61,7 @@ module Zotero
          ,getTagsFromCollection
          ,searchByTitleWordLike
          ,searchByContentAndTitleLike
+         ,searchByTitleTags
 
           ,getCollectionChild
           ,getCollectionsTop
@@ -1014,6 +1015,25 @@ searchByTitleTagsAndInWords words = do
                    "AND    (  %s  )",
                    "GROUP BY itemData.itemID"                    
                     ]
+
+searchByTitleTags :: String -> DBConn [ZoteroItemID]
+searchByTitleTags word = do
+  sqlQueryRow sql [HDBC.SqlString word, HDBC.SqlString word] fromSqlToInt
+  where
+    sql = unlines $ [
+                   "SELECT itemData.itemID",
+                   "FROM   itemData, itemDataValues, itemAttachments, tags, itemTags",
+                   "WHERE  fieldID = 110",
+                   "AND    itemData.valueID = itemDataValues.valueID",
+                 --  "AND    itemAttachments.sourceItemID = itemData.itemID",
+                   "AND    itemTags.itemID = itemData.itemID",
+                   "AND    itemTags.tagID = tags.tagID",
+                   "AND (LOWER(itemDataValues.value) LIKE ? OR LOWER(tags.Name) LIKE ?)",
+                   "GROUP BY itemData.itemID"
+                    ]
+
+
+
 
 {- | Search all items for which title 'or' tag matches at least one words in a given list -}
 searchByTitleTagsOrInWords :: [String] -> DBConn [ZoteroItemID]
