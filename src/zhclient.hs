@@ -177,6 +177,7 @@ parseArgs args = do
     ["author", "-all"]                  -> printAuthors
     ["author", "-items", authorID]      -> Z.getItemsFromAuthor (read authorID :: Int) >>= mapM_ printItem 
 
+    ["search", "-tag-title", word]      -> Z.searchByTitleTags word >>= mapM_ printItem
     "search-tag-title":"and":"--":words -> Z.searchByTitleTagsAndInWords words >>= mapM_ printItem
     "search-tag-title":"or":"--":words  -> Z.searchByTitleTagsOrInWords  words >>= mapM_ printItem
 
