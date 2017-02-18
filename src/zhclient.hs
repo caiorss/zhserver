@@ -157,42 +157,54 @@ printCollection collID = do
         
             
 -- @HERE
-parseArgs :: [String] -> DBConn ()
-parseArgs args = do
+parseArgs :: [String] -> String -> DBConn ()
+parseArgs args path = do
   conn <- ask
   case args of
-    ["item", "-id",  itemID]            -> printItem (read itemID :: Int)
-    ["item", "-open", itemID]           -> undefined 
-
-    ["coll", "-id",  collID]            -> printCollection (read collID :: Int)
-    ["coll", "-all"]                    -> printCollections
-    ["coll", "-top"]                    -> printCollectionsTop
-
-    ["subcoll", collID]                 -> printSubCollections (read collID :: Int)
-    ["subcoll", "-all",   collID]      -> printAllSubCollections (read collID :: Int)
-    ["subcoll", "-items", collID]      -> Z.getAllSubCollectionsItems (read collID :: Int) >>= mapM_ printItem
-
-    ["tag",  "-all"]                    -> printTags
-
-    ["author", "-all"]                  -> printAuthors
-    ["author", "-items", authorID]      -> Z.getItemsFromAuthor (read authorID :: Int) >>= mapM_ printItem 
-
-    ["search", "-tag-title", word]      -> Z.searchByTitleTags word >>= mapM_ printItem
-    "search-tag-title":"and":"--":words -> Z.searchByTitleTagsAndInWords words >>= mapM_ printItem
-    "search-tag-title":"or":"--":words  -> Z.searchByTitleTagsOrInWords  words >>= mapM_ printItem
-
-    ["search-title", word]              -> Z.searchByTitleWordLike ("%" ++ word ++ "%") >>= mapM_ printItem
+    ["item", "-id",  itemID]              -> printItem (read itemID :: Int)
+    ["item", "-open", itemID]             -> undefined 
+    ["item", "-delete", itemID]           -> undefined
+    ["item", "-add-tag", itemID, "-name", tagName] -> undefined 
+    ["item", "-add-tag", itemID, "-id", tagID]     -> undefined
     
-    []                                  -> liftIO $ putStrLn "Show help"
-    _                                   -> liftIO $ putStrLn "Error: Invalid command."
+    ["coll", "-id",  collID]              -> printCollection (read collID :: Int)
+    ["coll", "-all"]                      -> printCollections
+    ["coll", "-top"]                      -> printCollectionsTop
+
+    ["subcoll", collID]                   -> printSubCollections (read collID :: Int)
+    ["subcoll", "-all",   collID]         -> printAllSubCollections (read collID :: Int)
+    ["subcoll", "-items", collID]         -> Z.getAllSubCollectionsItems (read collID :: Int) >>= mapM_ printItem
+
+    -- Tags command line switches 
+    ["tag",  "-all"]                      -> printTags
+    ["tag",  "-items", tagID]             -> Z.getTagItems (read tagID :: Int) >>= mapM_ printItem
+    ["tag",  "-delete", tagID]            -> undefined
+    ["tag",  "-merge", oldTag, newTag]    -> undefined  
+  
+    ["author", "-all"]                    -> printAuthors
+    ["author", "-items", authorID]        -> Z.getItemsFromAuthor (read authorID :: Int) >>= mapM_ printItem 
+
+    ["search", "-title-tag", word]        -> Z.searchByTitleTags word >>= mapM_ printItem
+    ["search", "-title", word]            -> Z.searchByTitleWordLike ("%" ++ word ++ "%") >>= mapM_ printItem
+    ["search", "-title-content", word]    -> Z.searchByContentAndTitleLike word >>= mapM_ printItem
+    
+    ["search", "-title-tag-and", query]   -> Z.searchByTitleTagsAndInWords (words query) >>= mapM_ printItem
+    ["search", "-title-tag-or", query]    -> Z.searchByTitleTagsOrInWords  (words query) >>= mapM_ printItem
+
+    
+    []                                    -> liftIO $ putStrLn "Show help"
+    _                                     -> liftIO $ putStrLn "Error: Invalid command."
 
 
 main :: IO ()
 main = do
   dbUri  <- Env.lookupEnv "ZOTERO_DB"
-  case dbUri of
-    Nothing  -> do putStrLn "Error: I can't open the database connection."
-                   putStrLn "Set the environment variable ZOTERO_DB."
+  pathSt   <- Env.lookupEnv "ZOTERO_PATH"
+  case (dbUri, pathSt) of
 
-    Just db   -> do args <- Env.getArgs
-                    Z.withDBConnection db (parseArgs args)
+       (Just db, Just path)   -> do args <- Env.getArgs
+                                    Just dbcon <- Z.openDBConnection db
+                                    Z.runDBConn dbcon (parseArgs args path)
+
+       _                      -> do putStrLn "Error: I can't open the database connection."
+                                    putStrLn "Set the environment variable ZOTERO_DB."
