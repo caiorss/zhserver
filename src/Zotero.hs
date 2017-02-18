@@ -66,6 +66,7 @@ module Zotero
           ,getCollectionsTop
 
            , itemsWithoutCollections
+          ,getSubcollectionsIDNames
 
           {- JSON Export Functions -}
          ,getCollectionsJSON
@@ -630,6 +631,16 @@ getSubcollectionsIDNames collID = do
     sql = unlines [ "SELECT collectionID, collectionName FROM collections"
                   ,"WHERE  parentCollectionID = ?"
                   ]
+
+{- | @IN-PROGRESS -}
+mapconcatM :: Monad m => (a -> m [b]) -> [a] -> m [b]
+mapconcatM fn xs = aux fn xs []
+  where
+    aux fn xs acc =
+      case xs of
+        []   -> return acc
+        y:ys -> do blist <- fn y
+                   acc `seq` aux fn ys (blist ++ acc)
 
 
 -- Return all tags in the database
