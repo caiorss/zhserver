@@ -1006,7 +1006,7 @@ searchByTitleTagsAndInWords words = do
     tpl word = P.printf "(itemDataValues.value LIKE \"%%%s%%\" OR tags.Name LIKE \"%%%s%%\")" word word 
     subquery = joinStrings " AND "  (map tpl  words)
     sql = unlines $ [
-                   "SELECT itemData.itemID, itemDataValues.value",
+                   "SELECT itemData.itemID",
                    "FROM   itemData, itemDataValues, itemAttachments, tags, itemTags",
                    "WHERE  fieldID = 110",
                    "AND    itemData.valueID = itemDataValues.valueID",
