@@ -244,8 +244,9 @@ type ZoteroTagID   = Int
 {- | Tag Name  -}
 type ZoteroTagName = String
 
-
+{-| Item ID type Alias -}
 type ZoteroItemID     = Int
+
 type ZoteroItemString = String
 type ZoteroItemTags   = [(ZoteroTagID, ZoteroTagName)]
 type ZoteroItemMime   = String
