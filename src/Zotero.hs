@@ -540,12 +540,11 @@ getCollectionChild collID = do
 getCollectionChildJSON :: Int -> DBConn BLI.ByteString
 getCollectionChildJSON collID = encode <$> getCollectionChild collID
 
-collectionItems :: Int -> DBConn [Int]
+{- | Query all items from a collection defined by its ID. -}
+collectionItems :: ZoteroCollectionID -> DBConn [ZoteroItemID]
 collectionItems collID = do
-  
   let collID' = fromIntToInt64 collID
   sqlQueryRow sql [HDBC.SqlInt64 collID'] fromSqlToInt
-  
   where
     sql = "SELECT  itemID FROM collectionItems WHERE collectionID = ?"
 
