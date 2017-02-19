@@ -1,12 +1,18 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-{-
 
-Description: Command line interactive client to access the database.  
-File:        zhclient.hs 
+
+{- |
+Module      : Zhclient
+Description : Command line client to access and test the database.
+License     : Public Domain
+
+
+Interface to Zotero database to query and manipulate the database.
 
 -}
+
 
 -- let destPath itemFile = SF.joinPath ["/tmp/test", SF.takeFileName itemFile]    
 
