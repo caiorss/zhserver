@@ -1221,15 +1221,20 @@ createTag tagName =  do
            ]
 
 
+addTagNameToItem :: ZoteroItemID -> ZoteroTagName -> DBConn ()
+addTagNameToItem itemID' tagName' = do
+  let itemID = HDBC.SqlInt64 $ fromIntToInt64 itemID'
+  let tagName = HDBC.SqlString tagName'
+  tagID' <- createTag tagName'
+  let tagID = HDBC.SqlInt64 $ fromIntToInt64 tagID'
+  sqlRun sql [itemID, tagID, tagID, tagID, itemID]
   where
     sql = unlines [
                    "INSERT INTO itemTags (itemID, tagID)"
                   ,"SELECT ?, ?"
-                  ,"WHERE EXISTS (SELECT 1 FROM itemTags WHERE tagID = ?)"
+                  ,"WHERE EXISTS (SELECT 1 FROM tags WHERE tagID = ?)"
+                  ,"AND NOT EXISTS (SELECT 1 FROM itemTags WHERE tagID = ? AND itemID = ?)"
                   ]
-
-
-  
 
 
 renameAuthor :: Int -> String -> String -> DBConn ()
