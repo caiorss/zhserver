@@ -171,6 +171,16 @@ printCollection collID = do
                  )
   mapM_ printItem items
 
+
+
+printTagID :: Int -> DBConn ()
+printTagID tagID = do
+  name <- Z.getTagName tagID
+  iterMaybe name (\a -> liftIO $ do putStrLn $ "Tag = " ++ a
+                                    putStrLn "===============================\n\n"
+                  )
+  Z.getTagItems tagID >>= mapM_ printItem
+
 -- printSearchWordsTagsAnd [String] -> DBConn ()
 -- printSearchWordsTagsAnd words =
 --   searchByTitleTagsAndInWords words
