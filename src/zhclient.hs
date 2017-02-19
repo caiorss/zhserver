@@ -50,6 +50,21 @@ copyCollectionTo conn collID dest = do
 
 
 
+{- | Apply a monadic function to a Maybe value if the value is not Nothing -}
+iterMaybe :: Monad m => Maybe a -> (a -> m ()) -> m ()
+iterMaybe value action = do
+  case value of
+    Just a   -> action a
+    Nothing  -> return ()
+
+
+iterMaybeError2 :: Monad m => Maybe a -> Maybe b -> m () -> (a -> b -> m ())  -> m ()
+iterMaybeError2 a b errorHandler action  = do
+  case (a, b) of
+    (Just a', Just b') -> action a' b'
+    _                  -> errorHandler
+
+
 {- Last name comes first than first name in 
    order to make easier to locate the author.
 -}   
@@ -158,19 +173,7 @@ prompt msg = do
   line    <- getLine
   return line 
 
-{- | Apply a monadic function to a Maybe value if the value is not Nothing -}
-iterMaybe :: Monad m => Maybe a -> (a -> m ()) -> m ()
-iterMaybe value action = do
-  case value of
-    Just a   -> action a
-    Nothing  -> return ()
 
-
-iterMaybeError2 :: Monad m => Maybe a -> Maybe b -> m () -> (a -> b -> m ())  -> m ()
-iterMaybeError2 a b errorHandler action  = do
-  case (a, b) of
-    (Just a', Just b') -> action a' b'
-    _                  -> errorHandler
 
 printCollection :: Int -> DBConn ()
 printCollection collID = do
