@@ -921,11 +921,8 @@ getItemsFromAuthorJSON authorID = do
 
 getRelatedTags :: ZoteroTagID -> DBConn [ZoteroTag]
 getRelatedTags tagID = do 
-
   let tagID' = fromIntToInt64 tagID
-
   sqlQueryAll sql [HDBC.SqlInt64 tagID', HDBC.SqlInt64 tagID'] projection  
-
   where
 
     projection row = ZoteroTag (fromSqlToInt    (row !! 0))
