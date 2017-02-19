@@ -147,7 +147,7 @@ prompt msg = do
   line    <- getLine
   return line 
 
-
+{- | Apply a monadic function to a Maybe value if the value is not Nothing -}
 iterMaybe :: Monad m => Maybe a -> (a -> m ()) -> m ()
 iterMaybe value action = do
   case value of
