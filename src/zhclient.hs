@@ -102,10 +102,10 @@ printAuthors = do
                                                (Z.zoteroAuthorFirstName a)
 
 
-printItem :: Int -> DBConn ()
-printItem itemID = do
+printItem :: Z.ZoteroItem -> DBConn ()
+printItem item = do
   conn         <- ask
-  item         <- Z.getZoteroItem itemID
+  let itemID   = Z.zoteroItemID   item
   let itemdata = Z.zoteroItemData item
   let path     = Z.zoteroItemFile item
   let tags     = Z.zoteroItemTags item
