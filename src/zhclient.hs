@@ -147,6 +147,13 @@ prompt msg = do
   line    <- getLine
   return line 
 
+
+iterMaybe :: Monad m => Maybe a -> (a -> m ()) -> m ()
+iterMaybe value action = do
+  case value of
+    Just a   -> action a
+    Nothing  -> return ()
+
 printCollection :: Int -> DBConn ()
 printCollection collID = do
   items <- Z.collectionItems collID
