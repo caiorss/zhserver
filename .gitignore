@@ -15,3 +15,4 @@ Server
 /ZHServer
 dist/*
 docs/*
+.stack-work/*
