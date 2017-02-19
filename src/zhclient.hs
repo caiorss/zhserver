@@ -154,6 +154,13 @@ iterMaybe value action = do
     Just a   -> action a
     Nothing  -> return ()
 
+
+iterMaybeError2 :: Monad m => Maybe a -> Maybe b -> m () -> (a -> b -> m ())  -> m ()
+iterMaybeError2 a b errorHandler action  = do
+  case (a, b) of
+    (Just a', Just b') -> action a' b'
+    _                  -> errorHandler
+
 printCollection :: Int -> DBConn ()
 printCollection collID = do
   name  <- Z.getCollName collID
