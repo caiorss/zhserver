@@ -174,7 +174,7 @@ printCollection collID = do
                                     putStrLn "===============================\n\n"
 
                  )
-  mapM_ printItem items
+  mapM_ printItemID items
 
 
 
@@ -184,7 +184,7 @@ printTagID tagID = do
   iterMaybe name (\a -> liftIO $ do putStrLn $ "Tag = " ++ a
                                     putStrLn "===============================\n\n"
                   )
-  Z.getTagItems tagID >>= mapM_ printItem
+  Z.getTagItems tagID >>= mapM_ printItemID
 
 -- printSearchWordsTagsAnd [String] -> DBConn ()
 -- printSearchWordsTagsAnd words =
@@ -203,8 +203,8 @@ parseArgs args path = do
 
     -- ============ Items command line switches ========================
     -- 
-    ["item", "-id",  itemID]                       -> printItem (read itemID :: Int)
-    ["item", "-open", itemID]                      -> undefined 
+    ["item", "-id",  itemID]                       -> printItemID (read itemID :: Int)
+    ["item", "-open", itemID]                      -> undefined -- openItem itemID
     ["item", "-delete", itemID]                    -> undefined
     ["item", "-add-tag", itemID, "-tag-name", tagName] -> undefined 
     ["item", "-add-tag", itemID, "-tag-id", tagID]     -> Z.addTagToItem (readInt itemID) (readInt tagID)
@@ -217,7 +217,7 @@ parseArgs args path = do
 
     ["subcoll", collID]                            -> printSubCollections (read collID :: Int)
     ["subcoll", "-all",   collID]                  -> printAllSubCollections (read collID :: Int)
-    ["subcoll", "-items", collID]                  -> Z.getAllSubCollectionsItems (read collID :: Int) >>= mapM_ printItem
+    ["subcoll", "-items", collID]                  -> Z.getAllSubCollectionsItems (read collID :: Int) >>= mapM_ printItemID
 
     -- ============= Tags command line switches ===========================
     --
@@ -233,16 +233,16 @@ parseArgs args path = do
     ["author", "-all"]                             -> printAuthors
     ["author", "-id", authorID]                    -> undefined
     ["author", "-search", name]                    -> undefined 
-    ["author", "-items", authorID]                 -> Z.getItemsFromAuthor (read authorID :: Int) >>= mapM_ printItem 
+    ["author", "-items", authorID]                 -> Z.getItemsFromAuthor (read authorID :: Int) >>= mapM_ printItemID
 
     -- ============ Search commands ======================================
     --
-    ["search", "-title-tag", word]                 -> Z.searchByTitleTags word >>= mapM_ printItem
-    ["search", "-title", word]                     -> Z.searchByTitleWordLike ("%" ++ word ++ "%") >>= mapM_ printItem
-    ["search", "-title-content", word]             -> Z.searchByContentAndTitleLike word >>= mapM_ printItem
+    ["search", "-title-tag", word]                 -> Z.searchByTitleTags word >>= mapM_ printItemID
+    ["search", "-title", word]                     -> Z.searchByTitleWordLike ("%" ++ word ++ "%") >>= mapM_ printItemID
+    ["search", "-title-content", word]             -> Z.searchByContentAndTitleLike word >>= mapM_ printItemID
     
-    ["search", "-title-tag-and", query]            -> Z.searchByTitleTagsAndInWords (words query) >>= mapM_ printItem
-    ["search", "-title-tag-or", query]             -> Z.searchByTitleTagsOrInWords  (words query) >>= mapM_ printItem
+    ["search", "-title-tag-and", query]            -> Z.searchByTitleTagsAndInWords (words query) >>= mapM_ printItemID
+    ["search", "-title-tag-or", query]             -> Z.searchByTitleTagsOrInWords  (words query) >>= mapM_ printItemID
 
     
     []                                             -> liftIO $ putStrLn "Show help"
