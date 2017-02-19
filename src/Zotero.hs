@@ -77,6 +77,7 @@ module Zotero
           ,mergeTags
           ,addTagToItem
           ,getTagName
+          ,getCollName
 
           {- JSON Export Functions -}
          ,getCollectionsJSON
@@ -503,6 +504,12 @@ getTagName :: ZoteroTagID -> DBConn (Maybe String)
 getTagName tagID = sqlQueryOne sql [HDBC.SqlInt64 $  fromIntToInt64 tagID] fromSqlToString
   where
     sql = "SELECT tagName FROM tags WHERE tagID = ?"
+
+{- | Get name of collection given its ID -}
+getCollName :: Int -> DBConn (Maybe String)
+getCollName collID = sqlQueryOne sql [HDBC.SqlInt64 $  fromIntToInt64 collID] fromSqlToString
+  where
+    sql = "SELECT collectionName FROM collections WHERE collectionID = ?"
 
 
 {- | Get all collections -}
