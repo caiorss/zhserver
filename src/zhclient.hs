@@ -211,10 +211,15 @@ printCollection collID = do
 
 printTagID :: Int -> DBConn ()
 printTagID tagID = do
-  name <- Z.getTagName tagID
+  name     <- Z.getTagName tagID
+  related  <- Z.getRelatedTags tagID
+
   iterMaybe name (\a -> liftIO $ do putStrLn $ "Tag = " ++ a
                                     putStrLn "===============================\n\n"
                   )
+
+  liftIO $ putStr "Realated tags: " >> mapM_ print related
+  liftIO $ putStrLn "\n"  
   Z.getTagItems tagID >>= mapM_ printItemID
 
 -- printSearchWordsTagsAnd [String] -> DBConn ()
