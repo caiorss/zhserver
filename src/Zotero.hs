@@ -505,7 +505,7 @@ getZoteroItem itemID = do
 getTagName :: ZoteroTagID -> DBConn (Maybe String)
 getTagName tagID = sqlQueryOne sql [HDBC.SqlInt64 $  fromIntToInt64 tagID] fromSqlToString
   where
-    sql = "SELECT tagName FROM tags WHERE tagID = ?"
+    sql = "SELECT name FROM tags WHERE tagID = ?"
 
 {- | Get name of collection given its ID -}
 getCollName :: Int -> DBConn (Maybe String)
