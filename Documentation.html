@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Development Documentation</title>
-<!-- 2017-02-14 ter 22:10 -->
+<!-- 2017-02-19 dom 14:24 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Caio Rodrigues Soares Silva" />
@@ -146,20 +146,30 @@ for the JavaScript code in this tag.
 <ul>
 <li><a href="#sec-1">1. Development Documentation</a>
 <ul>
-<li><a href="#sec-1-1">1.1. REST API doc</a>
+<li><a href="#sec-1-1">1.1. REPL Testing and Exploration in the REPL</a>
 <ul>
-<li><a href="#sec-1-1-1">1.1.1. End Points</a></li>
-<li><a href="#sec-1-1-2">1.1.2. Examples</a></li>
+<li><a href="#sec-1-1-1">1.1.1. Zotero Module</a></li>
 </ul>
 </li>
-<li><a href="#sec-1-2">1.2. Database Documentation</a>
+<li><a href="#sec-1-2">1.2. REST API doc</a>
 <ul>
-<li><a href="#sec-1-2-1">1.2.1. Search Titles that contains a word</a></li>
-<li><a href="#sec-1-2-2">1.2.2. Search by a Regex Pattern</a></li>
-<li><a href="#sec-1-2-3">1.2.3. Full text search.</a></li>
+<li><a href="#sec-1-2-1">1.2.1. End Points</a></li>
+<li><a href="#sec-1-2-2">1.2.2. Examples</a></li>
 </ul>
 </li>
 <li><a href="#sec-1-3">1.3. Haskell Related Documentation</a></li>
+<li><a href="#sec-1-4">1.4. Database Documentation</a>
+<ul>
+<li><a href="#sec-1-4-1">1.4.1. Search Titles that contains a word</a></li>
+<li><a href="#sec-1-4-2">1.4.2. Search by a Regex Pattern</a></li>
+<li><a href="#sec-1-4-3">1.4.3. Text search.</a></li>
+<li><a href="#sec-1-4-4">1.4.4. Insert Tag</a></li>
+<li><a href="#sec-1-4-5">1.4.5. Search items which has at least one tag</a></li>
+<li><a href="#sec-1-4-6">1.4.6. Search all items which title at least match one of the word of a list</a></li>
+<li><a href="#sec-1-4-7">1.4.7. Search all items which title contains all words in a list</a></li>
+<li><a href="#sec-1-4-8">1.4.8. Search all items which title or tags matches all words in a list</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -170,11 +180,149 @@ for the JavaScript code in this tag.
 <h2 id="sec-1"><span class="section-number-2">1</span> Development Documentation</h2>
 <div class="outline-text-2" id="text-1">
 </div><div id="outline-container-sec-1-1" class="outline-3">
-<h3 id="sec-1-1"><span class="section-number-3">1.1</span> REST API doc</h3>
+<h3 id="sec-1-1"><span class="section-number-3">1.1</span> REPL Testing and Exploration in the REPL</h3>
 <div class="outline-text-3" id="text-1-1">
 </div><div id="outline-container-sec-1-1-1" class="outline-4">
-<h4 id="sec-1-1-1"><span class="section-number-4">1.1.1</span> End Points</h4>
+<h4 id="sec-1-1-1"><span class="section-number-4">1.1.1</span> Zotero Module</h4>
 <div class="outline-text-4" id="text-1-1-1">
+<p>
+Example about how to connec to the database and query the data in the REPL.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-haskell"><span class="org-haskell-operator">&gt;</span>
+<span class="org-haskell-operator">&gt;</span> <span class="org-haskell-constructor">:</span>t runDBConn 
+<span class="org-function-name">runDBConn</span> <span class="org-haskell-operator">::</span> <span class="org-haskell-type">HDBConn</span> <span class="org-haskell-operator">-&gt;</span> <span class="org-haskell-type">DBConn</span> a <span class="org-haskell-operator">-&gt;</span> <span class="org-haskell-type">IO</span> a
+
+<span class="org-haskell-operator">&gt;</span> <span class="org-haskell-keyword">let</span> uri <span class="org-haskell-operator">=</span> <span class="org-string">"sqlite:///home/arch/.mozilla/firefox/dic34vce.default/zotero/zotero2.sqlite"</span> 
+<span class="org-haskell-operator">&gt;</span> 
+<span class="org-haskell-operator">&gt;</span> <span class="org-haskell-constructor">Just</span> db <span class="org-haskell-operator">&lt;-</span> openDBConnection uri 
+<span class="org-haskell-operator">&gt;</span> 
+<span class="org-haskell-operator">&gt;</span> <span class="org-haskell-constructor">:</span>t db
+<span class="org-function-name">db</span> <span class="org-haskell-operator">::</span> <span class="org-haskell-type">HDBConn</span>
+<span class="org-haskell-operator">&gt;</span> 
+<span class="org-haskell-operator">&gt;</span> <span class="org-haskell-keyword">let</span> rows <span class="org-haskell-operator">=</span> runD
+<span class="org-haskell-definition">runDBConn</span>   runDbQuery
+<span class="org-haskell-operator">&gt;</span> rows <span class="org-haskell-operator">&lt;-</span> runDBConn db (collectionItems 211)
+<span class="org-haskell-operator">&gt;</span> 
+<span class="org-haskell-operator">&gt;</span> rows
+[2917,2921,2922,2924,2925,3099,6602,6603,6604,6618,6620,6621]
+<span class="org-haskell-operator">&gt;</span> 
+<span class="org-haskell-operator">&gt;</span> 
+<span class="org-haskell-operator">&gt;</span> item <span class="org-haskell-operator">&lt;-</span> runDBConn db (getZoteroItem 5120)
+<span class="org-haskell-operator">&gt;</span> item
+<span class="org-haskell-constructor">ZoteroItem</span> {zoteroItemID <span class="org-haskell-operator">=</span> 5120, zoteroItemData <span class="org-haskell-operator">=</span> [(<span class="org-string">"url"</span>,<span class="org-string">"https://en.wikipedia.org/wiki/Order_book_(trading)"</span>),(<span class="org-string">"accessDate"</span>,<span class="org-string">"2015-06-24 10:12:56"</span>),(<span class="org-string">"title"</span>,<span class="org-string">"Order book (trading) - Wikipedia, the free encyclopedia"</span>)], zoteroItemAuthors <span class="org-haskell-operator">=</span> <span class="org-haskell-constructor">[]</span>, zoteroItemTags <span class="org-haskell-operator">=</span> <span class="org-haskell-constructor">[]</span>, zoteroItemCollections <span class="org-haskell-operator">=</span> [(262,<span class="org-string">"OCAML"</span>)], zoteroItemFile <span class="org-haskell-operator">=</span> <span class="org-haskell-constructor">Just</span> <span class="org-string">"DKD757F3/Order_book_(trading).html"</span>, zoteroItemMime <span class="org-haskell-operator">=</span> <span class="org-haskell-constructor">Nothing</span>}
+
+<span class="org-haskell-operator">&gt;</span> <span class="org-haskell-definition">zoteroItemTags</span> item
+<span class="org-haskell-constructor">[]</span>
+
+<span class="org-haskell-operator">&gt;</span> <span class="org-haskell-definition">zoteroItemCollections</span> item
+[(262,<span class="org-string">"OCAML"</span>)]
+
+<span class="org-haskell-operator">&gt;</span> <span class="org-haskell-definition">zoteroItemAuthors</span> item
+<span class="org-haskell-constructor">[]</span>
+
+<span class="org-haskell-operator">&gt;</span> <span class="org-haskell-definition">zoteroItemData</span> item
+[(<span class="org-string">"url"</span>,<span class="org-string">"https://en.wikipedia.org/wiki/Order_book_(trading)"</span>),(<span class="org-string">"accessDate"</span>,<span class="org-string">"2015-06-24 10:12:56"</span>),(<span class="org-string">"title"</span>,<span class="org-string">"Order book (trading) - Wikipedia, the free encyclopedia"</span>)]
+<span class="org-haskell-operator">*</span><span class="org-haskell-constructor">Main</span> <span class="org-haskell-constructor">Zotero</span><span class="org-haskell-operator">&gt;</span>      
+
+
+ <span class="org-haskell-operator">&gt;</span> json <span class="org-haskell-operator">&lt;-</span> runDBConn db (getZoteroItemJSON 5120)
+<span class="org-haskell-operator">&gt;</span> LC<span class="org-haskell-definition">.</span>putStrLn json
+{<span class="org-string">"mime"</span><span class="org-haskell-constructor">:</span>null,<span class="org-string">"colls"</span><span class="org-haskell-constructor">:</span>[[262,<span class="org-string">"OCAML"</span>]],<span class="org-string">"data"</span><span class="org-haskell-constructor">:</span>[[<span class="org-string">"url"</span>,<span class="org-string">"https://en.wikipedia.org/wiki/Order_book_(trading)"</span>],[<span class="org-string">"accessDate"</span>,<span class="org-string">"2015-06-24 10:12:56"</span>],[<span class="org-string">"title"</span>,<span class="org-string">"Order book (trading) - Wikipedia, the free encyclopedia"</span>]],<span class="org-string">"authors"</span><span class="org-haskell-constructor">:[]</span>,<span class="org-string">"id"</span><span class="org-haskell-constructor">:</span>5120,<span class="org-string">"file"</span><span class="org-haskell-constructor">:</span><span class="org-string">"DKD757F3/Order_book_(trading).html"</span>,<span class="org-string">"tags"</span><span class="org-haskell-constructor">:[]</span>}
+
+
+<span class="org-comment-delimiter">{-  </span><span class="org-comment">Search all itemsID which has title or tag with </span>
+<span class="org-comment">    the word category. </span>
+<span class="org-comment">-}</span>
+<span class="org-haskell-operator">&gt;</span> rows <span class="org-haskell-operator">&lt;-</span> runDBConn db (searchByTitleTags <span class="org-string">"category"</span>) 
+<span class="org-haskell-operator">&gt;</span> rows
+[5167,5975,5977,5979]
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">Get all item's data</span>
+<span class="org-comment-delimiter">--</span>
+<span class="org-haskell-operator">&gt;</span> <span class="org-haskell-constructor">:</span>t runDBConn db (itemData 5167)
+<span class="org-haskell-definition">runDBConn</span> db (itemData 5167) <span class="org-haskell-operator">::</span> <span class="org-haskell-type">IO</span> [(<span class="org-haskell-type">String</span>, <span class="org-haskell-type">String</span>)]
+
+<span class="org-haskell-operator">&gt;</span> <span class="org-haskell-definition">runDBConn</span> db (itemData 5167)
+[(<span class="org-string">"url"</span>,<span class="org-string">"https://news.ycombinator.com/item?id=9459520"</span>),(<span class="org-string">"accessDate"</span>,<span class="org-string">"2015-06-25 22:59:16"</span>),(<span class="org-string">"title"</span>,<span class="org-string">"Category Theory for Programmers | Hacker News"</span>)]
+<span class="org-haskell-operator">&gt;</span> 
+
+<span class="org-comment-delimiter">-- </span><span class="org-comment">Get attachment file</span>
+<span class="org-comment-delimiter">--</span>
+<span class="org-haskell-operator">&gt;</span> <span class="org-haskell-definition">runDBConn</span> db (itemAttachmentFile 5167)
+<span class="org-haskell-constructor">Just</span> <span class="org-string">"6F3H3J7D/item.html"</span>
+
+<span class="org-haskell-operator">&gt;</span> <span class="org-haskell-definition">runDBConn</span> db (itemAttachmentFile 5975)
+<span class="org-haskell-constructor">Just</span> <span class="org-string">"Q9T3GPMJ/arrows.pdf"</span>
+
+<span class="org-haskell-operator">&gt;</span> <span class="org-haskell-definition">runDBConn</span> db (itemAttachmentFile 5977)
+<span class="org-haskell-constructor">Just</span> <span class="org-string">"JQPTNHAB/Category Theory Lecture Notes for ESSLLI.pdf"</span>
+
+<span class="org-haskell-operator">&gt;</span> <span class="org-haskell-definition">runDBConn</span> db (itemAttachmentFile 5979)
+<span class="org-haskell-constructor">Just</span> <span class="org-string">"T2W7HJBI/CategoryTheory.pdf"</span>
+
+<span class="org-comment-delimiter">--</span><span class="org-comment">------------------------------------     </span>
+<span class="org-comment-delimiter">--  </span><span class="org-comment">Get all tags</span>
+<span class="org-comment-delimiter">--</span><span class="org-comment">------------------------------------</span>
+
+<span class="org-haskell-operator">&gt;</span> <span class="org-haskell-definition">runDBConn</span> db (getTags) <span class="org-haskell-operator">&gt;&gt;=</span> mapM_ print
+
+<span class="org-haskell-constructor">ZoteroTag</span> {zoteroTagID <span class="org-haskell-operator">=</span> 337, zoteroTagName <span class="org-haskell-operator">=</span> <span class="org-string">".net"</span>}
+<span class="org-haskell-constructor">ZoteroTag</span> {zoteroTagID <span class="org-haskell-operator">=</span> 120, zoteroTagName <span class="org-haskell-operator">=</span> <span class="org-string">"8051"</span>}
+<span class="org-haskell-constructor">ZoteroTag</span> {zoteroTagID <span class="org-haskell-operator">=</span> 307, zoteroTagName <span class="org-haskell-operator">=</span> <span class="org-string">"abi"</span>}
+<span class="org-haskell-constructor">ZoteroTag</span> {zoteroTagID <span class="org-haskell-operator">=</span> 341, zoteroTagName <span class="org-haskell-operator">=</span> <span class="org-string">"actors"</span>}
+<span class="org-haskell-constructor">ZoteroTag</span> {zoteroTagID <span class="org-haskell-operator">=</span> 9, zoteroTagName <span class="org-haskell-operator">=</span> <span class="org-string">"advanced"</span>}
+<span class="org-haskell-constructor">ZoteroTag</span> {zoteroTagID <span class="org-haskell-operator">=</span> 142, zoteroTagName <span class="org-haskell-operator">=</span> <span class="org-string">"amortization"</span>}
+<span class="org-haskell-constructor">ZoteroTag</span> {zoteroTagID <span class="org-haskell-operator">=</span> 14, zoteroTagName <span class="org-haskell-operator">=</span> <span class="org-string">"analysis"</span>}
+<span class="org-haskell-constructor">ZoteroTag</span> {zoteroTagID <span class="org-haskell-operator">=</span> 262, zoteroTagName <span class="org-haskell-operator">=</span> <span class="org-string">"anbima"</span>}
+
+          <span class="org-haskell-operator">...</span> <span class="org-haskell-operator">...</span> <span class="org-haskell-operator">...</span> <span class="org-haskell-operator">..</span>
+
+<span class="org-haskell-constructor">ZoteroTag</span> {zoteroTagID <span class="org-haskell-operator">=</span> 53, zoteroTagName <span class="org-haskell-operator">=</span> <span class="org-string">"sensor"</span>}
+<span class="org-haskell-constructor">ZoteroTag</span> {zoteroTagID <span class="org-haskell-operator">=</span> 161, zoteroTagName <span class="org-haskell-operator">=</span> <span class="org-string">"Sequential machine theory"</span>}
+<span class="org-haskell-constructor">ZoteroTag</span> {zoteroTagID <span class="org-haskell-operator">=</span> 240, zoteroTagName <span class="org-haskell-operator">=</span> <span class="org-string">"serialization"</span>}
+<span class="org-haskell-constructor">ZoteroTag</span> {zoteroTagID <span class="org-haskell-operator">=</span> 235, zoteroTagName <span class="org-haskell-operator">=</span> <span class="org-string">"server"</span>}
+<span class="org-haskell-constructor">ZoteroTag</span> {zoteroTagID <span class="org-haskell-operator">=</span> 204, zoteroTagName <span class="org-haskell-operator">=</span> <span class="org-string">"signal"</span>}
+<span class="org-haskell-constructor">ZoteroTag</span> {zoteroTagID <span class="org-haskell-operator">=</span> 110, zoteroTagName <span class="org-haskell-operator">=</span> <span class="org-string">"simulation"</span>}
+<span class="org-haskell-constructor">ZoteroTag</span> {zoteroTagID <span class="org-haskell-operator">=</span> 294, zoteroTagName <span class="org-haskell-operator">=</span> <span class="org-string">"soap"</span>}
+<span class="org-haskell-constructor">ZoteroTag</span> {zoteroTagID <span class="org-haskell-operator">=</span> 39, zoteroTagName <span class="org-haskell-operator">=</span> <span class="org-string">"socket"</span>}
+<span class="org-haskell-constructor">ZoteroTag</span> {zoteroTagID <span class="org-haskell-operator">=</span> 99, zoteroTagName <span class="org-haskell-operator">=</span> <span class="org-string">"software"</span>}
+
+<span class="org-comment-delimiter">--</span><span class="org-comment">------------------------------------     </span>
+<span class="org-comment-delimiter">--  </span><span class="org-comment">Get all collections </span>
+<span class="org-comment-delimiter">--</span><span class="org-comment">------------------------------------</span>
+
+<span class="org-haskell-operator">&gt;</span> <span class="org-haskell-definition">runDBConn</span> db Z.getCollections  <span class="org-haskell-operator">&gt;&gt;=</span> mapM_ print
+
+<span class="org-haskell-constructor">ZoteroColl</span> {zoteroCollID <span class="org-haskell-operator">=</span> 230, zoteroCollName <span class="org-haskell-operator">=</span> <span class="org-string">"Algorithm"</span>}
+<span class="org-haskell-constructor">ZoteroColl</span> {zoteroCollID <span class="org-haskell-operator">=</span> 8, zoteroCollName <span class="org-haskell-operator">=</span> <span class="org-string">"Android"</span>}
+<span class="org-haskell-constructor">ZoteroColl</span> {zoteroCollID <span class="org-haskell-operator">=</span> 252, zoteroCollName <span class="org-haskell-operator">=</span> <span class="org-string">"Application"</span>}
+<span class="org-haskell-constructor">ZoteroColl</span> {zoteroCollID <span class="org-haskell-operator">=</span> 317, zoteroCollName <span class="org-haskell-operator">=</span> <span class="org-string">"Arrows"</span>}
+<span class="org-haskell-constructor">ZoteroColl</span> {zoteroCollID <span class="org-haskell-operator">=</span> 58, zoteroCollName <span class="org-haskell-operator">=</span> <span class="org-string">"Austrian School"</span>}
+<span class="org-haskell-constructor">ZoteroColl</span> {zoteroCollID <span class="org-haskell-operator">=</span> 195, zoteroCollName <span class="org-haskell-operator">=</span> <span class="org-string">"Backup Time Machine"</span>}
+<span class="org-haskell-constructor">ZoteroColl</span> {zoteroCollID <span class="org-haskell-operator">=</span> 86, zoteroCollName <span class="org-haskell-operator">=</span> <span class="org-string">"Ball Bearing - Rolamentos"</span>}
+<span class="org-haskell-constructor">ZoteroColl</span> {zoteroCollID <span class="org-haskell-operator">=</span> 22, zoteroCollName <span class="org-haskell-operator">=</span> <span class="org-string">"Beagle Bone ARM"</span>}
+<span class="org-haskell-constructor">ZoteroColl</span> {zoteroCollID <span class="org-haskell-operator">=</span> 87, zoteroCollName <span class="org-haskell-operator">=</span> <span class="org-string">"Bearings"</span>}
+<span class="org-haskell-constructor">ZoteroColl</span> {zoteroCollID <span class="org-haskell-operator">=</span> 89, zoteroCollName <span class="org-haskell-operator">=</span> <span class="org-string">"Belts"</span>}
+
+                 <span class="org-haskell-operator">...</span> <span class="org-haskell-operator">...</span> <span class="org-haskell-operator">...</span> <span class="org-haskell-operator">....</span> <span class="org-haskell-operator">...</span> <span class="org-haskell-operator">...</span>
+
+<span class="org-haskell-constructor">ZoteroColl</span> {zoteroCollID <span class="org-haskell-operator">=</span> 102, zoteroCollName <span class="org-haskell-operator">=</span> <span class="org-string">"Plastics Manufacturing Process"</span>}
+<span class="org-haskell-constructor">ZoteroColl</span> {zoteroCollID <span class="org-haskell-operator">=</span> 81, zoteroCollName <span class="org-haskell-operator">=</span> <span class="org-string">"Pneumatic and Hidraulic"</span>}
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-1-2" class="outline-3">
+<h3 id="sec-1-2"><span class="section-number-3">1.2</span> REST API doc</h3>
+<div class="outline-text-3" id="text-1-2">
+</div><div id="outline-container-sec-1-2-1" class="outline-4">
+<h4 id="sec-1-2-1"><span class="section-number-4">1.2.1</span> End Points</h4>
+<div class="outline-text-4" id="text-1-2-1">
 <p>
 The API has the following scheme:
 </p>
@@ -236,10 +384,10 @@ The API has the following scheme:
 </table>
 </div>
 </div>
-<div id="outline-container-sec-1-1-2" class="outline-4">
-<h4 id="sec-1-1-2"><span class="section-number-4">1.1.2</span> Examples</h4>
-<div class="outline-text-4" id="text-1-1-2">
-</div><ol class="org-ol"><li><a id="sec-1-1-2-1" name="sec-1-1-2-1"></a>Get item by Id<br  /><div class="outline-text-5" id="text-1-1-2-1">
+<div id="outline-container-sec-1-2-2" class="outline-4">
+<h4 id="sec-1-2-2"><span class="section-number-4">1.2.2</span> Examples</h4>
+<div class="outline-text-4" id="text-1-2-2">
+</div><ol class="org-ol"><li><a id="sec-1-2-2-1" name="sec-1-2-2-1"></a>Get item by Id<br  /><div class="outline-text-5" id="text-1-2-2-1">
 <div class="org-src-container">
 
 <pre class="src src-json">$ curl -s http://localhost:<span class="org-constant">8000</span>/api/item?id=<span class="org-constant">17</span> |  python -mjson.tool
@@ -284,7 +432,7 @@ The API has the following scheme:
 </div>
 </li>
 
-<li><a id="sec-1-1-2-2" name="sec-1-1-2-2"></a>Get Collections<br  /><div class="outline-text-5" id="text-1-1-2-2">
+<li><a id="sec-1-2-2-2" name="sec-1-2-2-2"></a>Get Collections<br  /><div class="outline-text-5" id="text-1-2-2-2">
 <p>
 Example: Querying the REST api with curl: 
 </p>
@@ -327,7 +475,7 @@ Get collections:
 </div>
 </li>
 
-<li><a id="sec-1-1-2-3" name="sec-1-1-2-3"></a>Get all Items from a Collection<br  /><div class="outline-text-5" id="text-1-1-2-3">
+<li><a id="sec-1-2-2-3" name="sec-1-2-2-3"></a>Get all Items from a Collection<br  /><div class="outline-text-5" id="text-1-2-2-3">
 <p>
 Query all items wich belongs to collection Fsharp which id=6.
 </p>
@@ -448,7 +596,7 @@ Query all items wich belongs to collection Fsharp which id=6.
 </div>
 </li>
 
-<li><a id="sec-1-1-2-4" name="sec-1-1-2-4"></a>Get all authors<br  /><div class="outline-text-5" id="text-1-1-2-4">
+<li><a id="sec-1-2-2-4" name="sec-1-2-2-4"></a>Get all authors<br  /><div class="outline-text-5" id="text-1-2-2-4">
 <div class="org-src-container">
 
 <pre class="src src-json">$ curl -s http://localhost:<span class="org-constant">8000</span>/api/authors |  python -mjson.tool
@@ -536,7 +684,7 @@ Query all items wich belongs to collection Fsharp which id=6.
 </div>
 </li>
 
-<li><a id="sec-1-1-2-5" name="sec-1-1-2-5"></a>Get all items that belongs to an author<br  /><div class="outline-text-5" id="text-1-1-2-5">
+<li><a id="sec-1-2-2-5" name="sec-1-2-2-5"></a>Get all items that belongs to an author<br  /><div class="outline-text-5" id="text-1-2-2-5">
 <div class="org-src-container">
 
 <pre class="src src-json">$ curl -s http://localhost:<span class="org-constant">8000</span>/api/authors?id=<span class="org-constant">10</span> |  python -mjson.tool
@@ -600,7 +748,7 @@ Query all items wich belongs to collection Fsharp which id=6.
 </div>
 </li>
 
-<li><a id="sec-1-1-2-6" name="sec-1-1-2-6"></a>Get all tags<br  /><div class="outline-text-5" id="text-1-1-2-6">
+<li><a id="sec-1-2-2-6" name="sec-1-2-2-6"></a>Get all tags<br  /><div class="outline-text-5" id="text-1-2-2-6">
 <div class="org-src-container">
 
 <pre class="src src-json">$ curl -s http://localhost:<span class="org-constant">8000</span>/api/tags |  python -mjson.tool
@@ -665,7 +813,7 @@ Query all items wich belongs to collection Fsharp which id=6.
 </div>
 </li>
 
-<li><a id="sec-1-1-2-7" name="sec-1-1-2-7"></a>Get all items with a tag<br  /><div class="outline-text-5" id="text-1-1-2-7">
+<li><a id="sec-1-2-2-7" name="sec-1-2-2-7"></a>Get all items with a tag<br  /><div class="outline-text-5" id="text-1-2-2-7">
 <p>
 Get all items which contains the tag 'Linux' which Id=9.
 </p>
@@ -752,7 +900,7 @@ Get all items which contains the tag 'Linux' which Id=9.
 </div>
 </li>
 
-<li><a id="sec-1-1-2-8" name="sec-1-1-2-8"></a>Search all items which title or word contains a string<br  /><div class="outline-text-5" id="text-1-1-2-8">
+<li><a id="sec-1-2-2-8" name="sec-1-2-2-8"></a>Search all items which title or word contains a string<br  /><div class="outline-text-5" id="text-1-2-2-8">
 <p>
 Search all items which contais the word 'cpp'
 </p>
@@ -844,116 +992,6 @@ Search all items which contais the word 'cpp'
 </li></ol>
 </div>
 </div>
-<div id="outline-container-sec-1-2" class="outline-3">
-<h3 id="sec-1-2"><span class="section-number-3">1.2</span> Database Documentation</h3>
-<div class="outline-text-3" id="text-1-2">
-</div><div id="outline-container-sec-1-2-1" class="outline-4">
-<h4 id="sec-1-2-1"><span class="section-number-4">1.2.1</span> Search Titles that contains a word</h4>
-<div class="outline-text-4" id="text-1-2-1">
-<p>
-Search all titles that contains the string "functional".
-</p>
-
-<div class="org-src-container">
-
-<pre class="src src-sql"><span class="org-keyword">SELECT</span> itemData.itemID, itemDataValues.<span class="org-keyword">value</span>  
-<span class="org-keyword">FROM</span>   itemData, itemDataValues, itemAttachments
-<span class="org-keyword">WHERE</span>  fieldID = 110 
-<span class="org-keyword">AND</span>    itemData.valueID = itemDataValues.valueID
-<span class="org-keyword">AND</span>    itemAttachments.sourceItemID = itemData.itemID
-<span class="org-keyword">AND</span>    itemDataValues.<span class="org-keyword">value</span> <span class="org-keyword">LIKE</span> "%functional%"
-</pre>
-</div>
-
-
-<div class="org-src-container">
-
-<pre class="src src-sql">sqlite&gt; 
-sqlite&gt; <span class="org-keyword">SELECT</span> itemData.itemID, itemDataValues.<span class="org-keyword">value</span>  
-   ...&gt; <span class="org-keyword">FROM</span>   itemData, itemDataValues, itemAttachments
-   ...&gt; <span class="org-keyword">WHERE</span>  fieldID = 110 
-   ...&gt; <span class="org-keyword">AND</span>    itemData.valueID = itemDataValues.valueID
-   ...&gt; <span class="org-keyword">AND</span>    itemAttachments.sourceItemID = itemData.itemID
-   ...&gt; <span class="org-keyword">AND</span>    itemDataValues.<span class="org-keyword">value</span> <span class="org-keyword">LIKE</span> "%functional%" 
-   ...&gt; ;
-1936|Functional Programming
-2688|Currently struggling. Can someone help em transition <span class="org-keyword">from</span> functional programming <span class="org-keyword">to</span> <span class="org-keyword">using</span> OOP? : learnpython
-2750|<span class="org-keyword">When</span> <span class="org-keyword">to</span> use functional programming languages <span class="org-keyword">and</span> techniques - TechRepublic
-2752|<span class="org-keyword">Where</span> functional programming fits <span class="org-keyword">in</span> - TechRepublic
-2754|Commercial Uses: Going functional <span class="org-keyword">on</span> exotic trades
-2772|Functional Programming <span class="org-keyword">in</span> the Financial Industry | <span class="org-keyword">Open</span> Parallel
-2794|An introduction <span class="org-keyword">to</span> functional programming
-2798|functional programming | Math &#8745; Programming
-...
-</pre>
-</div>
-</div>
-</div>
-<div id="outline-container-sec-1-2-2" class="outline-4">
-<h4 id="sec-1-2-2"><span class="section-number-4">1.2.2</span> Search by a Regex Pattern</h4>
-<div class="outline-text-4" id="text-1-2-2">
-<div class="org-src-container">
-
-<pre class="src src-sql"><span class="org-keyword">SELECT</span> itemData.itemID, itemDataValues.<span class="org-keyword">value</span>  
-<span class="org-keyword">FROM</span>   itemData, itemDataValues, itemAttachments
-<span class="org-keyword">WHERE</span>  fieldID = 110 
-<span class="org-keyword">AND</span>    itemData.valueID = itemDataValues.valueID
-<span class="org-keyword">AND</span>    itemAttachments.sourceItemID = itemData.itemID
-<span class="org-keyword">AND</span>    itemDataValues.<span class="org-keyword">value</span> REGEXP "math.*"
-</pre>
-</div>
-
-<p>
-Result: 
-</p>
-
-<div class="org-src-container">
-
-<pre class="src src-sql">"2987"  "Functional Patterns <span class="org-keyword">for</span> the non-mathematician"
-"4842"  "Power <span class="org-keyword">of</span> mathematics: Reasoning about functional types"
-"6094"  "Discrete mathematics <span class="org-keyword">using</span> a computer"
-</pre>
-</div>
-</div>
-</div>
-<div id="outline-container-sec-1-2-3" class="outline-4">
-<h4 id="sec-1-2-3"><span class="section-number-4">1.2.3</span> Full text search.</h4>
-<div class="outline-text-4" id="text-1-2-3">
-<p>
-Search all items that have the word "haskell".
-</p>
-
-<div class="org-src-container">
-
-<pre class="src src-sql"><span class="org-keyword">SELECT</span> <span class="org-keyword">DISTINCT</span> itemID 
-<span class="org-keyword">FROM</span>   fulltextItemWords, fulltextWords
-<span class="org-keyword">WHERE</span>  fulltextItemWords.wordID = fulltextWords.wordID
-<span class="org-keyword">AND</span>    fulltextWords.word <span class="org-keyword">LIKE</span> "%haskell%"
-</pre>
-</div>
-
-<p>
-Search all items that have the word "haskell" in the title or in the
-content.
-</p>
-
-<div class="org-src-container">
-
-<pre class="src src-sql"><span class="org-keyword">SELECT</span> itemData.itemID
-<span class="org-keyword">FROM</span>   itemData, itemDataValues, fulltextItemWords, fulltextWords
-<span class="org-keyword">WHERE</span>  itemData.fieldID = 110 
-<span class="org-keyword">AND</span>    itemDataValues.valueID = itemData.valueID
-<span class="org-keyword">AND</span>    fulltextItemWords.wordID = fulltextWords.wordID
-<span class="org-keyword">AND</span>    fulltextItemWords.itemID = itemData.itemID
-<span class="org-keyword">AND</span>    (itemDataValues.<span class="org-keyword">value</span> <span class="org-keyword">LIKE</span> "%haskell%"
-        <span class="org-keyword">OR</span>  
-        fulltextWords.word <span class="org-keyword">LIKE</span> "%haskell%"
-        )
-</pre>
-</div>
-</div>
-</div>
-</div>
 <div id="outline-container-sec-1-3" class="outline-3">
 <h3 id="sec-1-3"><span class="section-number-3">1.3</span> Haskell Related Documentation</h3>
 <div class="outline-text-3" id="text-1-3">
@@ -994,11 +1032,340 @@ Haskell AESON - Json library
 </ul>
 </div>
 </div>
+<div id="outline-container-sec-1-4" class="outline-3">
+<h3 id="sec-1-4"><span class="section-number-3">1.4</span> Database Documentation</h3>
+<div class="outline-text-3" id="text-1-4">
+</div><div id="outline-container-sec-1-4-1" class="outline-4">
+<h4 id="sec-1-4-1"><span class="section-number-4">1.4.1</span> Search Titles that contains a word</h4>
+<div class="outline-text-4" id="text-1-4-1">
+<p>
+Search all titles that contains the string "functional".
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sql"><span class="org-keyword">SELECT</span> itemData.itemID, itemDataValues.<span class="org-keyword">value</span>  
+<span class="org-keyword">FROM</span>   itemData, itemDataValues, itemAttachments
+<span class="org-keyword">WHERE</span>  fieldID = 110 
+<span class="org-keyword">AND</span>    itemData.valueID = itemDataValues.valueID
+<span class="org-keyword">AND</span>    itemAttachments.sourceItemID = itemData.itemID
+<span class="org-keyword">AND</span>    itemDataValues.<span class="org-keyword">value</span> <span class="org-keyword">LIKE</span> "%functional%"
+</pre>
+</div>
+
+
+<div class="org-src-container">
+
+<pre class="src src-sql">sqlite&gt; 
+sqlite&gt; <span class="org-keyword">SELECT</span> itemData.itemID, itemDataValues.<span class="org-keyword">value</span>  
+   ...&gt; <span class="org-keyword">FROM</span>   itemData, itemDataValues, itemAttachments
+   ...&gt; <span class="org-keyword">WHERE</span>  fieldID = 110 
+   ...&gt; <span class="org-keyword">AND</span>    itemData.valueID = itemDataValues.valueID
+   ...&gt; <span class="org-keyword">AND</span>    itemAttachments.sourceItemID = itemData.itemID
+   ...&gt; <span class="org-keyword">AND</span>    itemDataValues.<span class="org-keyword">value</span> <span class="org-keyword">LIKE</span> "%functional%" 
+   ...&gt; ;
+1936|Functional Programming
+2688|Currently struggling. Can someone help em transition <span class="org-keyword">from</span> functional programming <span class="org-keyword">to</span> <span class="org-keyword">using</span> OOP? : learnpython
+2750|<span class="org-keyword">When</span> <span class="org-keyword">to</span> use functional programming languages <span class="org-keyword">and</span> techniques - TechRepublic
+2752|<span class="org-keyword">Where</span> functional programming fits <span class="org-keyword">in</span> - TechRepublic
+2754|Commercial Uses: Going functional <span class="org-keyword">on</span> exotic trades
+2772|Functional Programming <span class="org-keyword">in</span> the Financial Industry | <span class="org-keyword">Open</span> Parallel
+2794|An introduction <span class="org-keyword">to</span> functional programming
+2798|functional programming | Math &#8745; Programming
+...
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-1-4-2" class="outline-4">
+<h4 id="sec-1-4-2"><span class="section-number-4">1.4.2</span> Search by a Regex Pattern</h4>
+<div class="outline-text-4" id="text-1-4-2">
+<div class="org-src-container">
+
+<pre class="src src-sql"><span class="org-keyword">SELECT</span> itemData.itemID, itemDataValues.<span class="org-keyword">value</span>  
+<span class="org-keyword">FROM</span>   itemData, itemDataValues, itemAttachments
+<span class="org-keyword">WHERE</span>  fieldID = 110 
+<span class="org-keyword">AND</span>    itemData.valueID = itemDataValues.valueID
+<span class="org-keyword">AND</span>    itemAttachments.sourceItemID = itemData.itemID
+<span class="org-keyword">AND</span>    itemDataValues.<span class="org-keyword">value</span> REGEXP "math.*"
+</pre>
+</div>
+
+<p>
+Result: 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sql">"2987"  "Functional Patterns <span class="org-keyword">for</span> the non-mathematician"
+"4842"  "Power <span class="org-keyword">of</span> mathematics: Reasoning about functional types"
+"6094"  "Discrete mathematics <span class="org-keyword">using</span> a computer"
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-1-4-3" class="outline-4">
+<h4 id="sec-1-4-3"><span class="section-number-4">1.4.3</span> Text search.</h4>
+<div class="outline-text-4" id="text-1-4-3">
+</div><ol class="org-ol"><li><a id="sec-1-4-3-1" name="sec-1-4-3-1"></a>Search all items which title has a word<br  /><div class="outline-text-5" id="text-1-4-3-1">
+<p>
+Search all items that have the word "haskell".
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sql"><span class="org-keyword">SELECT</span> <span class="org-keyword">DISTINCT</span> itemID 
+<span class="org-keyword">FROM</span>   fulltextItemWords, fulltextWords
+<span class="org-keyword">WHERE</span>  fulltextItemWords.wordID = fulltextWords.wordID
+<span class="org-keyword">AND</span>    fulltextWords.word <span class="org-keyword">LIKE</span> "%haskell%"
+</pre>
+</div>
+</div>
+</li>
+
+<li><a id="sec-1-4-3-2" name="sec-1-4-3-2"></a>Search all itesm which title or content has a given word<br  /><div class="outline-text-5" id="text-1-4-3-2">
+<p>
+Search all items that have the word "haskell" in the title or in the
+content.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sql"><span class="org-keyword">SELECT</span> itemData.itemID
+<span class="org-keyword">FROM</span>   itemData, itemDataValues, fulltextItemWords, fulltextWords
+<span class="org-keyword">WHERE</span>  itemData.fieldID = 110 
+<span class="org-keyword">AND</span>    itemDataValues.valueID = itemData.valueID
+<span class="org-keyword">AND</span>    fulltextItemWords.wordID = fulltextWords.wordID
+<span class="org-keyword">AND</span>    fulltextItemWords.itemID = itemData.itemID
+<span class="org-keyword">AND</span>    (itemDataValues.<span class="org-keyword">value</span> <span class="org-keyword">LIKE</span> "%haskell%"
+        <span class="org-keyword">OR</span>  
+        fulltextWords.word <span class="org-keyword">LIKE</span> "%haskell%"
+        )
+</pre>
+</div>
+</div>
+</li></ol>
+</div>
+
+<div id="outline-container-sec-1-4-4" class="outline-4">
+<h4 id="sec-1-4-4"><span class="section-number-4">1.4.4</span> Insert Tag</h4>
+<div class="outline-text-4" id="text-1-4-4">
+<p>
+Insert a new tag if it doesn't exist and return its tagID or ID.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sql"><span class="org-keyword">INSERT</span> <span class="org-keyword">INTO</span> tags (<span class="org-keyword">name</span>, <span class="org-keyword">type</span>, <span class="org-keyword">key</span>)
+<span class="org-keyword">SELECT</span> "DSL", 0, "XMFAMGDFAS" 
+<span class="org-comment">-- Ensure that the tag is not inserted twice</span>
+<span class="org-keyword">WHERE</span> <span class="org-keyword">NOT</span> <span class="org-keyword">EXISTS</span> (<span class="org-keyword">SELECT</span> 1 <span class="org-keyword">FROM</span> tags <span class="org-keyword">WHERE</span> <span class="org-keyword">name</span> = "DSL") ; 
+<span class="org-comment">-- Return the tagID of the new tag inserted or existing</span>
+<span class="org-keyword">SELECT</span> tagID <span class="org-keyword">FROM</span> tags <span class="org-keyword">WHERE</span> <span class="org-keyword">name</span> = "DSL"
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-1-4-5" class="outline-4">
+<h4 id="sec-1-4-5"><span class="section-number-4">1.4.5</span> Search items which has at least one tag</h4>
+<div class="outline-text-4" id="text-1-4-5">
+<p>
+Search all items which has at least one tag of "haskell", "ffi", "fp", "functional"
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sql"><span class="org-keyword">SELECT</span> itemTags.itemID, tags.tagID, tags.<span class="org-keyword">Name</span> <span class="org-keyword">FROM</span> itemTags, tags 
+<span class="org-keyword">WHERE</span>  itemTags.tagID = tags.tagID <span class="org-keyword">and</span> tags.<span class="org-keyword">Name</span> <span class="org-keyword">IN</span> ("haskell", "ffi", "fp", "functional")
+</pre>
+</div>
+
+<p>
+Sample output: 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-text">itemID|tagID|name
+5766|182|haskell
+5792|182|haskell
+5920|182|haskell
+5928|182|haskell
+5928|189|fp
+5936|182|haskell
+5938|189|fp
+5943|182|haskell
+5946|189|fp
+5948|189|fp
+5950|189|fp
+5952|189|fp
+5954|189|fp
+5956|189|fp
+5958|189|fp
+5960|189|fp
+5962|189|fp
+5965|189|fp
+5907|182|haskell
+5907|189|fp
+5935|182|haskell
+5935|189|fp
+5969|182|haskell
+5969|189|fp
+5970|182|haskell
+5973|182|haskell
+5973|189|fp
+5975|182|haskell
+5975|189|fp
+5977|189|fp
+5979|189|fp
+5979|182|haskell
+5167|189|fp
+5980|182|haskell
+5980|189|fp
+5985|182|haskell
+5985|189|fp
+5988|182|haskell
+5988|189|fp
+5992|189|fp
+5992|182|haskell
+5994|182|haskell
+... ... ...
+</pre>
+</div>
+
+<p>
+Refined search return only itemID 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sql"><span class="org-keyword">SELECT</span> <span class="org-keyword">DISTINCT</span> itemTags.itemID <span class="org-keyword">FROM</span> itemTags, tags 
+<span class="org-keyword">WHERE</span>  itemTags.tagID = tags.tagID <span class="org-keyword">and</span> tags.<span class="org-keyword">Name</span> <span class="org-keyword">IN</span> ("haskell", "ffi", "fp", "functional") ;
+</pre>
+</div>
+
+<p>
+Sample output:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-text">itemID
+5167
+5766
+5792
+5815
+5907
+5920
+5928
+5935
+5936
+
+...
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-1-4-6" class="outline-4">
+<h4 id="sec-1-4-6"><span class="section-number-4">1.4.6</span> Search all items which title at least match one of the word of a list</h4>
+<div class="outline-text-4" id="text-1-4-6">
+<div class="org-src-container">
+
+<pre class="src src-sql"><span class="org-keyword">SELECT</span> itemData.itemID, itemDataValues.<span class="org-keyword">value</span>   
+<span class="org-keyword">FROM</span>   itemData, itemDataValues, itemAttachments
+<span class="org-keyword">WHERE</span>  fieldID = 110 
+<span class="org-keyword">AND</span>    itemData.valueID = itemDataValues.valueID
+<span class="org-keyword">AND</span>    itemAttachments.sourceItemID = itemData.itemID
+<span class="org-keyword">AND</span>    (    itemDataValues.<span class="org-keyword">value</span> <span class="org-keyword">LIKE</span> "%ocaml%"
+        <span class="org-keyword">OR</span>  itemDataValues.<span class="org-keyword">value</span> <span class="org-keyword">LIKE</span> "%haskell%"
+        <span class="org-keyword">OR</span>  itemDataValues.<span class="org-keyword">value</span> <span class="org-keyword">LIKE</span> "%functional%"
+        <span class="org-keyword">OR</span>  itemDataValues.<span class="org-keyword">value</span> <span class="org-keyword">LIKE</span> "%fsharp%"
+        <span class="org-keyword">OR</span>  itemDataValues.<span class="org-keyword">value</span> <span class="org-keyword">LIKE</span> "%monad%"
+        )
+<span class="org-keyword">GROUP</span> <span class="org-keyword">BY</span> itemData.itemID
+</pre>
+</div>
+
+<p>
+Output:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-text">itemID|value
+1936|Functional Programming
+2688|Currently struggling. Can someone help em transition from functional programming to using OOP? : learnpython
+2740|Blow your mind - HaskellWiki
+2750|When to use functional programming languages and techniques - TechRepublic
+2752|Where functional programming fits in - TechRepublic
+
+...  ... ... ...
+
+3019|Turning to the Functional Side using C# and F#.
+3703|Functional Programming in Javascript
+3705|Functional programming and the death of the Unix Way | Dan Newcome, blog
+4024|Learn Physics by Programming in Haskell [pdf] | Hacker News
+4027|Learn Physics by Programming in Haskell
+4030|Well-Typed - The Haskell Consultants: Monads: From Web 2.0 to Hardware Drivers
+
+.... ... ... ... ...
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-1-4-7" class="outline-4">
+<h4 id="sec-1-4-7"><span class="section-number-4">1.4.7</span> Search all items which title contains all words in a list</h4>
+<div class="outline-text-4" id="text-1-4-7">
+<div class="org-src-container">
+
+<pre class="src src-sql"><span class="org-keyword">SELECT</span> itemData.itemID, itemDataValues.<span class="org-keyword">value</span>   
+<span class="org-keyword">FROM</span>   itemData, itemDataValues, itemAttachments
+<span class="org-keyword">WHERE</span>  fieldID = 110 
+<span class="org-keyword">AND</span>    itemData.valueID = itemDataValues.valueID
+<span class="org-keyword">AND</span>    itemAttachments.sourceItemID = itemData.itemID
+<span class="org-keyword">AND</span>    (    itemDataValues.<span class="org-keyword">value</span> <span class="org-keyword">LIKE</span> "%ocaml%"
+        <span class="org-keyword">OR</span>  itemDataValues.<span class="org-keyword">value</span> <span class="org-keyword">LIKE</span> "%haskell%"
+        <span class="org-keyword">OR</span>  itemDataValues.<span class="org-keyword">value</span> <span class="org-keyword">LIKE</span> "%functional%"
+        <span class="org-keyword">OR</span>  itemDataValues.<span class="org-keyword">value</span> <span class="org-keyword">LIKE</span> "%fsharp%"
+        <span class="org-keyword">OR</span>  itemDataValues.<span class="org-keyword">value</span> <span class="org-keyword">LIKE</span> "%monad%"
+        )
+<span class="org-keyword">GROUP</span> <span class="org-keyword">BY</span> itemData.itemID
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-1-4-8" class="outline-4">
+<h4 id="sec-1-4-8"><span class="section-number-4">1.4.8</span> Search all items which title or tags matches all words in a list</h4>
+<div class="outline-text-4" id="text-1-4-8">
+<p>
+Selects all items which tag or title matches all "%ocaml%" or "%monad%".
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sql"><span class="org-keyword">SELECT</span> itemData.itemID, itemDataValues.<span class="org-keyword">value</span>   
+<span class="org-keyword">FROM</span>   itemData, itemDataValues, itemAttachments, tags, itemTags 
+<span class="org-keyword">WHERE</span>  fieldID = 110 
+<span class="org-keyword">AND</span>    itemData.valueID = itemDataValues.valueID
+<span class="org-keyword">AND</span>    itemAttachments.sourceItemID = itemData.itemID
+<span class="org-keyword">AND</span>    itemTags.itemID = itemData.itemID
+<span class="org-keyword">AND</span>    itemTags.tagID = tags.tagID
+<span class="org-keyword">AND</span>    (     (itemDataValues.<span class="org-keyword">value</span> <span class="org-keyword">LIKE</span> "%ocaml%" <span class="org-keyword">OR</span> tags.<span class="org-keyword">Name</span> <span class="org-keyword">LIKE</span> "%ocaml%")
+        <span class="org-keyword">AND</span>  (itemDataValues.<span class="org-keyword">value</span> <span class="org-keyword">LIKE</span> "%monad%" <span class="org-keyword">OR</span> tags.<span class="org-keyword">Name</span> <span class="org-keyword">LIKE</span>  "%monad%")
+
+        )
+<span class="org-keyword">GROUP</span> <span class="org-keyword">BY</span> itemData.itemID
+</pre>
+</div>
+</div>
+</div>
+</div>
 </div>
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Caio Rodrigues Soares Silva</p>
-<p class="date">Created: 2017-02-14 ter 22:10</p>
+<p class="date">Created: 2017-02-19 dom 14:24</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.1.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
