@@ -481,7 +481,7 @@ sqlRun sql sqlvals = do
 
 
 
-{- | getZoteroItem - Get Zotero Item from the database -}
+{- | getZoteroItem - Get all Zotero Item data from the database -}
 getZoteroItem :: ZoteroItemID -> DBConn ZoteroItem
 getZoteroItem itemID = do
 
@@ -517,7 +517,7 @@ getCollName collID = sqlQueryOne sql [HDBC.SqlInt64 $  fromIntToInt64 collID] fr
 getAuthorName ::  Int -> DBConn (Maybe String)
 getAuthorName = undefined
 
-{- | Get all collections -}
+{- | Get all collections data. -}
 getCollections :: DBConn [ZoteroColl]
 getCollections = do
 
