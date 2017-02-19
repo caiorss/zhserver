@@ -189,7 +189,7 @@ parseArgs args path = do
 
     -- ============ Collections command line switches ====================
     -- 
-    ["coll", "-id",  collID]                       -> printCollection (read collID :: Int)
+    ["coll", "-items",  collID]                    -> printCollection (read collID :: Int)
     ["coll", "-all"]                               -> printCollections
     ["coll", "-top"]                               -> printCollectionsTop
 
