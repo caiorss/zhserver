@@ -4,7 +4,8 @@
 #+STARTUP: contents 
 
 * Development Documentation 
-** REPL Testing and Exploration 
+** REPL Testing and Exploration in the REPL
+*** Zotero Module 
 
 Example about how to connec to the database and query the data in the REPL.
 
@@ -133,7 +134,7 @@ Example about how to connec to the database and query the data in the REPL.
 
 ** REST API doc
 *** End Points
-
+    
 The API has the following scheme:
 
 | URL Route               | Description                                       |   |
