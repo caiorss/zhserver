@@ -188,7 +188,9 @@ parseArgs args path = do
     -- ============= Tags command line switches ===========================
     --
     ["tag",  "-all"]                               -> printTags
-    ["tag",  "-items", tagID]                      -> Z.getTagItems (read tagID :: Int) >>= mapM_ printItem
+    ["tag",  "-items", tagID]                      -> Z.getTagItems (readInt tagID) >>= mapM_ printItem
+    ["tag",  "-count", tagID]                      -> Z.getTagItems (readInt tagID) >>= countItems
+    ["tag",  "-rename", tagID, newName]            -> Z.renameTag   (readInt tagID) newName
     ["tag",  "-delete", tagID]                     -> undefined
     ["tag",  "-merge", oldTagID, newTagID]         -> Z.mergeTags (readInt oldTagID) (readInt newTagID)
 
