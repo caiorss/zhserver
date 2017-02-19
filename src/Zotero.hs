@@ -74,6 +74,8 @@ module Zotero
           ,getAllSubCollectionsItems
 
           ,renameTag
+          ,mergeTags
+
           {- JSON Export Functions -}
          ,getCollectionsJSON
          ,getTagsJSON          
@@ -1150,6 +1152,29 @@ deleteTag id = do
   where
     sql1 = "DELETE  FROM itemTags WHERE tagID = ?"
     sql2 = "DELETE  FROM tags WHERE tagID = ?"
+
+
+{- | Move all items which has tag1 to tag2 -}
+mergeTags oldTagID newTagID = do
+  let oldID = fromIntToInt64 oldTagID
+  let newID = fromIntToInt64 newTagID
+
+  sqlRun sql1 [HDBC.SqlInt64 newID, HDBC.SqlInt64 oldID, HDBC.SqlInt64 newID]
+  sqlRun sql2 [HDBC.SqlInt64 oldID]
+  sqlRun sql3 [HDBC.SqlInt64 oldID]
+  where
+    -- Step 1 - rename tag from items with old tag but doesn't have the new tag
+    sql1 = unlines [
+                   "UPDATE itemTags"
+                   ,"SET    tagID = ?"   -- (New tag)  set tag ID to 288 'cpp'
+                   ,"WHERE  tagID = ?"  -- (Old tag) tag which name is 'c++'
+                   ,"AND    itemID NOT IN (SELECT itemID FROM itemTags WHERE tagID = ?)"
+                   ]
+    -- Step 2 - delete all rows from itemTags which has the old tag.
+    sql2 = "DELETE FROM itemTags WHERE tagID = ?"
+    -- Step 3 - delete the old tag
+    sql3 = "DELETE FROM tags WHERE tagID = ?"
+
 
 
 renameAuthor :: Int -> String -> String -> DBConn ()
