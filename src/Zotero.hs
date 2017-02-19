@@ -73,6 +73,7 @@ module Zotero
           ,getAllSubCollections
           ,getAllSubCollectionsItems
 
+       
           ,renameTag
           ,mergeTags
           ,addTagsToItem
@@ -520,22 +521,19 @@ getAuthorName = undefined
 {- | Get all collections data. -}
 getCollections :: DBConn [ZoteroColl]
 getCollections = do
-
   sqlQueryAll sql [] projection
-  
     where
-      
       sql = "SELECT collectionID, collectionName \
             \FROM collections \
             \ORDER BY collectionName"
-            
-        
       projection  row =  ZoteroColl (fromSqlToInt $ row !! 0)
                                     (fromSqlToString $ row !! 1)
+
 
 {- | Get all collections as JSON -}
 getCollectionsJSON :: DBConn BLI.ByteString
 getCollectionsJSON = encode <$> getCollections
+
 
 {- | Get only top level collections -}
 getCollectionsTop :: DBConn [ZoteroColl]
@@ -1291,15 +1289,3 @@ insertCollection name = do
           \)\
           \SELECT max(collectionID) FROM collections"
 
-
-
-
-{-
-
-:load zotero.hs
-conn <- dbConnection
-coll <- head <$>  getCollections conn
-
- row <-  sqlQuery conn "SELECT * FROM collections" [] 
-
--}
