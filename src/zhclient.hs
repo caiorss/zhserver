@@ -161,39 +161,51 @@ parseArgs :: [String] -> String -> DBConn ()
 parseArgs args path = do
   conn <- ask
   case args of
-    ["item", "-id",  itemID]              -> printItem (read itemID :: Int)
-    ["item", "-open", itemID]             -> undefined 
-    ["item", "-delete", itemID]           -> undefined
+
+    -- ============ Items command line switches ========================
+    -- 
+    ["item", "-id",  itemID]                       -> printItem (read itemID :: Int)
+    ["item", "-open", itemID]                      -> undefined 
+    ["item", "-delete", itemID]                    -> undefined
     ["item", "-add-tag", itemID, "-name", tagName] -> undefined 
     ["item", "-add-tag", itemID, "-id", tagID]     -> undefined
+
+    -- ============ Collections command line switches ====================
+    -- 
+    ["coll", "-id",  collID]                       -> printCollection (read collID :: Int)
+    ["coll", "-all"]                               -> printCollections
+    ["coll", "-top"]                               -> printCollectionsTop
+
+    ["subcoll", collID]                            -> printSubCollections (read collID :: Int)
+    ["subcoll", "-all",   collID]                  -> printAllSubCollections (read collID :: Int)
+    ["subcoll", "-items", collID]                  -> Z.getAllSubCollectionsItems (read collID :: Int) >>= mapM_ printItem
+
+    -- ============= Tags command line switches ===========================
+    --
+    ["tag",  "-all"]                               -> printTags
+    ["tag",  "-items", tagID]                      -> Z.getTagItems (read tagID :: Int) >>= mapM_ printItem
+    ["tag",  "-delete", tagID]                     -> undefined
+    ["tag",  "-merge", oldTag, newTag]             -> undefined  
+
+    -- ============  Author command line switches =======================
+    --
+    ["author", "-all"]                             -> printAuthors
+    ["author", "-id", authorID]                    -> undefined
+    ["author", "-search", name]                    -> undefined 
+    ["author", "-items", authorID]                 -> Z.getItemsFromAuthor (read authorID :: Int) >>= mapM_ printItem 
+
+    -- ============ Search commands ======================================
+    --
+    ["search", "-title-tag", word]                 -> Z.searchByTitleTags word >>= mapM_ printItem
+    ["search", "-title", word]                     -> Z.searchByTitleWordLike ("%" ++ word ++ "%") >>= mapM_ printItem
+    ["search", "-title-content", word]             -> Z.searchByContentAndTitleLike word >>= mapM_ printItem
     
-    ["coll", "-id",  collID]              -> printCollection (read collID :: Int)
-    ["coll", "-all"]                      -> printCollections
-    ["coll", "-top"]                      -> printCollectionsTop
-
-    ["subcoll", collID]                   -> printSubCollections (read collID :: Int)
-    ["subcoll", "-all",   collID]         -> printAllSubCollections (read collID :: Int)
-    ["subcoll", "-items", collID]         -> Z.getAllSubCollectionsItems (read collID :: Int) >>= mapM_ printItem
-
-    -- Tags command line switches 
-    ["tag",  "-all"]                      -> printTags
-    ["tag",  "-items", tagID]             -> Z.getTagItems (read tagID :: Int) >>= mapM_ printItem
-    ["tag",  "-delete", tagID]            -> undefined
-    ["tag",  "-merge", oldTag, newTag]    -> undefined  
-  
-    ["author", "-all"]                    -> printAuthors
-    ["author", "-items", authorID]        -> Z.getItemsFromAuthor (read authorID :: Int) >>= mapM_ printItem 
-
-    ["search", "-title-tag", word]        -> Z.searchByTitleTags word >>= mapM_ printItem
-    ["search", "-title", word]            -> Z.searchByTitleWordLike ("%" ++ word ++ "%") >>= mapM_ printItem
-    ["search", "-title-content", word]    -> Z.searchByContentAndTitleLike word >>= mapM_ printItem
-    
-    ["search", "-title-tag-and", query]   -> Z.searchByTitleTagsAndInWords (words query) >>= mapM_ printItem
-    ["search", "-title-tag-or", query]    -> Z.searchByTitleTagsOrInWords  (words query) >>= mapM_ printItem
+    ["search", "-title-tag-and", query]            -> Z.searchByTitleTagsAndInWords (words query) >>= mapM_ printItem
+    ["search", "-title-tag-or", query]             -> Z.searchByTitleTagsOrInWords  (words query) >>= mapM_ printItem
 
     
-    []                                    -> liftIO $ putStrLn "Show help"
-    _                                     -> liftIO $ putStrLn "Error: Invalid command."
+    []                                             -> liftIO $ putStrLn "Show help"
+    _                                              -> liftIO $ putStrLn "Error: Invalid command."
 
 
 main :: IO ()
