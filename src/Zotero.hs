@@ -1201,6 +1201,26 @@ mergeTags oldTagID newTagID = do
     sql3 = "DELETE FROM tags WHERE tagID = ?"
 
 
+createTag :: String -> DBConn Int
+createTag tagName =  do
+  key <- liftIO $ createKey
+  let sqlValues = [HDBC.SqlString tagName
+                  ,HDBC.SqlString key
+                  ,HDBC.SqlString tagName
+                  ]
+  sqlRun sql1 sqlValues
+  fromJust <$> sqlQueryOne sql2 [HDBC.SqlString tagName] fromSqlToInt
+  where
+    sql2 = "SELECT tagID FROM tags WHERE name = ?"
+    sql1 = unlines [
+             "INSERT INTO tags (name, type, key)"
+           ,"SELECT ?, 0, ?"
+           -- Ensure that the tag is not inserted twice
+           ,"WHERE NOT EXISTS (SELECT 1 FROM tags WHERE name = ?) ;"
+           -- Return the tagID of the new tag inserted or existing
+           ]
+
+
   where
     sql = unlines [
                    "INSERT INTO itemTags (itemID, tagID)"
