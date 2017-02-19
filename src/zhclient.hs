@@ -34,6 +34,9 @@ import Text.Printf (printf)
 
 import qualified System.Environment as Env
 
+import qualified System.Process as SP
+import qualified System.FilePath as SF
+
 
 copyCollectionTo conn collID dest = do
   items       <- runReaderT (Z.collectionItems collID) conn
@@ -164,6 +167,25 @@ printItemID itemID = do
     item  <- Z.getZoteroItem itemID
     printItem item
 
+
+openItem :: String -> Int -> DBConn ()
+openItem storagePath itemID = do 
+  item <-  Z.getZoteroItem itemID
+  -- file :: Maybe String 
+  let file =  Z.zoteroItemFile item
+  -- path :: Maybe String 
+  let filePath =  fmap (SF.combine storagePath) file     
+  printItem item
+  iterMaybe filePath  (\file -> liftIO $ xdgOpen file) 
+  where
+    -- Open file with default system application.
+    xdgOpen :: String -> IO () 
+    xdgOpen file = do
+      _ <- SP.spawnProcess "xdg-open" [file]
+      return ()
+  
+
+
 countItems :: [a] -> DBConn ()
 countItems items = liftIO $ putStrLn $ "Count = " ++ show (length items)
 
@@ -213,7 +235,7 @@ parseArgs args path = do
     -- ============ Items command line switches ========================
     -- 
     ["item", "-id",  itemID]                       -> printItemID (read itemID :: Int)
-    ["item", "-open", itemID]                      -> undefined -- openItem itemID
+    ["item", "-open", itemID]                      -> openItem path (readInt itemID)
     ["item", "-delete", itemID]                    -> undefined
     ["item", "-add-tag", itemID, "-tag-name", tagName] -> undefined 
     ["item", "-add-tag", itemID, "-tag-id", tagID]     -> Z.addTagToItem (readInt itemID) (readInt tagID)
