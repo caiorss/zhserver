@@ -697,6 +697,19 @@ AND    (itemDataValues.value LIKE "%haskell%"
 
 #+END_SRC
 
+*** Insert Tag 
+
+Insert a new tag if it doesn't exist and return its tagID or ID.
+
+#+BEGIN_SRC sql 
+  INSERT INTO tags (name, type, key)
+  SELECT "DSL", 0, "XMFAMGDFAS" 
+  -- Ensure that the tag is not inserted twice
+  WHERE NOT EXISTS (SELECT 1 FROM tags WHERE name = "DSL") ; 
+  -- Return the tagID of the new tag inserted or existing
+  SELECT tagID FROM tags WHERE name = "DSL"
+#+END_SRC
+
 *** Search items which has at least one tag 
 
 Search all items which has at least one tag of "haskell", "ffi", "fp", "functional"
