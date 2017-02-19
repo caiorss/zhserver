@@ -138,6 +138,11 @@ printItem item = do
               putStrLn "--------------------------------------------\n\n"
 
 
+printItemID :: Int -> DBConn ()
+printItemID itemID = do
+    item  <- Z.getZoteroItem itemID
+    printItem item
+
 countItems :: [a] -> DBConn ()
 countItems items = liftIO $ putStrLn $ "Count = " ++ show (length items)
 
