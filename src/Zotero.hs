@@ -75,6 +75,7 @@ module Zotero
 
           ,renameTag
           ,mergeTags
+          ,addTagToItem
 
           {- JSON Export Functions -}
          ,getCollectionsJSON
@@ -99,6 +100,7 @@ module Zotero
 
          ,searchByTitleTagsAndInWords
          ,searchByTitleTagsOrInWords
+
 
           
       
@@ -1180,6 +1182,21 @@ mergeTags oldTagID newTagID = do
     -- Step 3 - delete the old tag
     sql3 = "DELETE FROM tags WHERE tagID = ?"
 
+{- | Add tag to Item -}
+addTagToItem :: ZoteroItemID -> ZoteroTagID -> DBConn ()
+addTagToItem itemID' tagID' = do
+  let itemID = fromIntToInt64 itemID'
+  let tagID  = fromIntToInt64 tagID'
+  sqlRun sql [HDBC.SqlInt64 itemID, HDBC.SqlInt64 tagID, HDBC.SqlInt64 tagID]
+  where
+    sql = unlines [
+                   "INSERT INTO itemTags (itemID, tagID)"
+                  ,"SELECT ?, ?"
+                  ,"WHERE EXISTS (SELECT 1 FROM itemTags WHERE tagID = ?)"
+                  ]
+
+
+  
 
 
 renameAuthor :: Int -> String -> String -> DBConn ()
