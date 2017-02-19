@@ -70,6 +70,17 @@ printCollectionsTop  = do
     printColl coll =
       Text.Printf.printf "\t%d\t%s\n" (Z.zoteroCollID coll) (Z.zoteroCollName coll)
 
+printSubCollections :: Int -> DBConn ()
+printSubCollections collID = do
+  colls <- Z.getSubcollectionsIDNames collID
+  liftIO $ mapM_ print colls
+
+
+printAllSubCollections :: Int -> DBConn ()
+printAllSubCollections collID = do
+  colls <- Z.getAllSubCollections collID
+  liftIO $ mapM_ print colls
+
 
 printTags :: DBConn ()
 printTags = do
@@ -93,10 +104,12 @@ printAuthors = do
 
 printItem :: Int -> DBConn ()
 printItem itemID = do
-  conn     <- ask
-  itemdata <- Z.itemData itemID
-  path     <- Z.itemAttachmentFile itemID
-  tags     <- Z.itemTags itemID
+  conn         <- ask
+  item         <- Z.getZoteroItem itemID
+  let itemdata = Z.zoteroItemData item
+  let path     = Z.zoteroItemFile item
+  let tags     = Z.zoteroItemTags item
+  let colls    = Z.zoteroItemCollections item
 
   let printField label field = do
         mapM_ (\value -> do
@@ -107,22 +120,26 @@ printItem itemID = do
               (lookup field itemdata)
 
 
-  liftIO $ do printField  "Title: "      "title"
-              putStrLn ""
-              putStrLn   ("Item ID: " ++ show itemID)
-              printField  "Publisher: "  "publisher"
-              printField  "Book Title: " "bookTitle"
-              printField  "Url: "        "url"
-              printField  "DOI: "        "DOI"
+  liftIO $ do printField  "Title: "     "title"
+              putStrLn    ""
+              putStrLn $  "Item ID:     " ++ show itemID
+              putStrLn $  "Tags:        " ++ joinStrings ", " (map show tags)
+              putStrLn $  "Collections: " ++ joinStrings ", " (map show colls)
+              printField  "Publisher:   " "publisher"
+              printField  "Book Title:  " "bookTitle"
+              printField  "Url:         " "url"
+              printField  "DOI:         " "DOI"
 
               printItemAuthor conn itemID
 
               printField  "Abstract :\n" "abstractNote"
               putStrLn ""
               mapM_ putStrLn path
-              putStrLn $ "Tags: " ++ joinStrings ", " tags
               putStrLn "--------------------------------------------\n\n"
 
+
+countItems :: [a] -> DBConn ()
+countItems items = liftIO $ putStrLn $ "Count = " ++ show (length items)
 
 
 prompt msg = do
@@ -130,50 +147,112 @@ prompt msg = do
   line    <- getLine
   return line 
 
+{- | Apply a monadic function to a Maybe value if the value is not Nothing -}
+iterMaybe :: Monad m => Maybe a -> (a -> m ()) -> m ()
+iterMaybe value action = do
+  case value of
+    Just a   -> action a
+    Nothing  -> return ()
+
+
+iterMaybeError2 :: Monad m => Maybe a -> Maybe b -> m () -> (a -> b -> m ())  -> m ()
+iterMaybeError2 a b errorHandler action  = do
+  case (a, b) of
+    (Just a', Just b') -> action a' b'
+    _                  -> errorHandler
+
 printCollection :: Int -> DBConn ()
 printCollection collID = do
+  name  <- Z.getCollName collID
   items <- Z.collectionItems collID
+  iterMaybe name (\a -> liftIO $ do putStrLn $ "Collection = " ++ a
+                                    putStrLn "===============================\n\n"
+
+                 )
   mapM_ printItem items
+
+
+
+printTagID :: Int -> DBConn ()
+printTagID tagID = do
+  name <- Z.getTagName tagID
+  iterMaybe name (\a -> liftIO $ do putStrLn $ "Tag = " ++ a
+                                    putStrLn "===============================\n\n"
+                  )
+  Z.getTagItems tagID >>= mapM_ printItem
 
 -- printSearchWordsTagsAnd [String] -> DBConn ()
 -- printSearchWordsTagsAnd words =
 --   searchByTitleTagsAndInWords words
-  
 
+{- | Parse Integer - Not a safe function -}
+readInt :: String -> Int
+readInt s = read s
         
             
 -- @HERE
-parseArgs :: [String] -> DBConn ()
-parseArgs args = do
+parseArgs :: [String] -> String -> DBConn ()
+parseArgs args path = do
   conn <- ask
   case args of
-    ["item", "-id",  itemID]            -> printItem (read itemID :: Int)
-    ["item", "-open", itemID]           -> undefined 
 
-    ["coll", "-id",  collID]            -> printCollection (read collID :: Int)
-    ["coll", "-all"]                    -> printCollections
-    ["coll", "-top"]                    -> printCollectionsTop
+    -- ============ Items command line switches ========================
+    -- 
+    ["item", "-id",  itemID]                       -> printItem (read itemID :: Int)
+    ["item", "-open", itemID]                      -> undefined 
+    ["item", "-delete", itemID]                    -> undefined
+    ["item", "-add-tag", itemID, "-tag-name", tagName] -> undefined 
+    ["item", "-add-tag", itemID, "-tag-id", tagID]     -> Z.addTagToItem (readInt itemID) (readInt tagID)
 
-    ["tag",  "-all"]                    -> printTags
+    -- ============ Collections command line switches ====================
+    -- 
+    ["coll", "-items",  collID]                    -> printCollection (read collID :: Int)
+    ["coll", "-all"]                               -> printCollections
+    ["coll", "-top"]                               -> printCollectionsTop
 
-    ["author", "-all"]                  -> printAuthors
-    ["author", "-items", authorID]      -> Z.getItemsFromAuthor (read authorID :: Int) >>= mapM_ printItem 
+    ["subcoll", collID]                            -> printSubCollections (read collID :: Int)
+    ["subcoll", "-all",   collID]                  -> printAllSubCollections (read collID :: Int)
+    ["subcoll", "-items", collID]                  -> Z.getAllSubCollectionsItems (read collID :: Int) >>= mapM_ printItem
 
-    "search-tag-title":"and":"--":words -> Z.searchByTitleTagsAndInWords words >>= mapM_ printItem
-    "search-tag-title":"or":"--":words  -> Z.searchByTitleTagsOrInWords  words >>= mapM_ printItem
+    -- ============= Tags command line switches ===========================
+    --
+    ["tag",  "-all"]                               -> printTags
+    ["tag",  "-items", tagID]                      -> printTagID (readInt tagID)
+    ["tag",  "-count", tagID]                      -> Z.getTagItems (readInt tagID) >>= countItems
+    ["tag",  "-rename", tagID, newName]            -> Z.renameTag   (readInt tagID) newName
+    ["tag",  "-delete", tagID]                     -> undefined
+    ["tag",  "-merge", oldTagID, newTagID]         -> Z.mergeTags (readInt oldTagID) (readInt newTagID)
 
-    ["search-title", word]              -> Z.searchByTitleWordLike ("%" ++ word ++ "%") >>= mapM_ printItem
+    -- ============  Author command line switches =======================
+    --
+    ["author", "-all"]                             -> printAuthors
+    ["author", "-id", authorID]                    -> undefined
+    ["author", "-search", name]                    -> undefined 
+    ["author", "-items", authorID]                 -> Z.getItemsFromAuthor (read authorID :: Int) >>= mapM_ printItem 
+
+    -- ============ Search commands ======================================
+    --
+    ["search", "-title-tag", word]                 -> Z.searchByTitleTags word >>= mapM_ printItem
+    ["search", "-title", word]                     -> Z.searchByTitleWordLike ("%" ++ word ++ "%") >>= mapM_ printItem
+    ["search", "-title-content", word]             -> Z.searchByContentAndTitleLike word >>= mapM_ printItem
     
-    []                                  -> liftIO $ putStrLn "Show help"
-    _                                   -> liftIO $ putStrLn "Error: Invalid command."
+    ["search", "-title-tag-and", query]            -> Z.searchByTitleTagsAndInWords (words query) >>= mapM_ printItem
+    ["search", "-title-tag-or", query]             -> Z.searchByTitleTagsOrInWords  (words query) >>= mapM_ printItem
+
+    
+    []                                             -> liftIO $ putStrLn "Show help"
+    _                                              -> liftIO $ putStrLn "Error: Invalid command."
 
 
 main :: IO ()
 main = do
   dbUri  <- Env.lookupEnv "ZOTERO_DB"
-  case dbUri of
-    Nothing  -> do putStrLn "Error: I can't open the database connection."
-                   putStrLn "Set the environment variable ZOTERO_DB."
+  pathSt   <- Env.lookupEnv "ZOTERO_PATH"
+  case (dbUri, pathSt) of
 
-    Just db   -> do args <- Env.getArgs
-                    Z.withDBConnection db (parseArgs args)
+       (Just db, Just path)   -> do args <- Env.getArgs
+                                    Just dbcon <- Z.openDBConnection db
+                                    Z.runDBConn dbcon (parseArgs args path)
+
+       _                      -> do putStrLn "Error: I can't open the database connection."
+                                    putStrLn "Set the environment variable ZOTERO_DB."

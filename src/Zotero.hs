@@ -35,7 +35,9 @@ module Zotero
 
 
         ,openDBConnection
+        ,runDBConn
         ,withDBConnection
+        ,withDBConnection2
 
          -- -----------------------
          ,withConnection
@@ -59,11 +61,25 @@ module Zotero
          ,getTagsFromCollection
          ,searchByTitleWordLike
          ,searchByContentAndTitleLike
+         ,searchByTitleTags
 
           ,getCollectionChild
           ,getCollectionsTop
 
-           , itemsWithoutCollections
+          ,itemsWithoutCollections
+
+          ,getSubcollections
+          ,getSubcollectionsIDNames
+          ,getAllSubCollections
+          ,getAllSubCollectionsItems
+
+          ,renameTag
+          ,mergeTags
+          ,addTagToItem
+
+          ,getTagName
+          ,getCollName
+          ,getAuthorName
 
           {- JSON Export Functions -}
          ,getCollectionsJSON
@@ -88,6 +104,7 @@ module Zotero
 
          ,searchByTitleTagsAndInWords
          ,searchByTitleTagsOrInWords
+
 
           
       
@@ -187,6 +204,12 @@ openDBConnection dbUri =
     Nothing                  -> return Nothing
 
 
+runDBConn :: HDBConn -> DBConn a -> IO a
+runDBConn hdbconn dbAction =
+  case hdbconn of
+    HDBConnSqlite   c  -> runReaderT dbAction c
+    HDBConnPostgres c  -> runReaderT dbAction c
+
 
 -- withDBConnection :: forall conn. (HDBC.IConnection conn) => String -> (conn -> IO ()) -> IO ()
 withDBConnection ::  String -> DBConn () -> IO ()
@@ -196,6 +219,22 @@ withDBConnection dbUri dbAction = do
     Just (HDBConnSqlite   c)  -> runReaderT dbAction c >> HDBC.disconnect c
     Just (HDBConnPostgres c)  -> runReaderT dbAction c >> HDBC.disconnect c
     Nothing                   -> putStrLn "Error: I can't open the database connection"
+
+
+
+withDBConnection2 ::  String -> DBConn a -> IO (Maybe a)
+withDBConnection2 dbUri dbAction = do
+  conn <- openDBConnection dbUri
+  case conn of
+    Just (HDBConnSqlite   c)  -> do out <- runReaderT dbAction c
+                                    HDBC.disconnect c
+                                    return (Just out)
+
+    Just (HDBConnPostgres c)  -> do out <- runReaderT dbAction c
+                                    HDBC.disconnect c
+                                    return (Just out)
+
+    Nothing                   -> return Nothing
 
 
 withConnection :: HDBC.IConnection  conn => IO conn -> (conn -> IO r) -> IO r
@@ -214,22 +253,25 @@ type ZoteroTagID   = Int
 {- | Tag Name  -}
 type ZoteroTagName = String
 
-
+{-| Item ID type Alias -}
 type ZoteroItemID     = Int
+
 type ZoteroItemString = String
 type ZoteroItemTags   = [(ZoteroTagID, ZoteroTagName)]
 type ZoteroItemMime   = String
 
+{- | Collection ID type alias -}
+type ZoteroCollectionID = Int
+
 {- | ZoteroItem  data -}
 data ZoteroItem =
-  ZoteroItem {    zoteroItemID          :: Int
-                , zoteroItemData        :: [(String, String)]
-                , zoteroItemAuthors     :: [ZoteroAuthor]  -- (AuthorID, [firstName, lastName]) 
-                , zoteroItemTags        :: [(Int, String)] -- (tagID, tag)
-                , zoteroItemCollections :: [(Int, String)] -- (collID, collection)
-                                           
-                , zoteroItemFile        :: Maybe String    -- File attachment
-                , zoteroItemMime        :: Maybe String    -- Mime Type
+  ZoteroItem {    zoteroItemID          :: Int                  --  Item ID number
+                , zoteroItemData        :: [(String, String)]   --  Item data (key, value) pair list
+                , zoteroItemAuthors     :: [ZoteroAuthor]       --  (AuthorID, [firstName, lastName])
+                , zoteroItemTags        :: [(Int, String)]      --  (tagID, tag)
+                , zoteroItemCollections :: [(Int, String)]      --  (collID, collection)
+                , zoteroItemFile        :: Maybe String         --  File attachment
+                , zoteroItemMime        :: Maybe String         --  Mime Type
                 
              } deriving (Eq, Show, Read,  Generic)
 
@@ -439,7 +481,7 @@ sqlRun sql sqlvals = do
 
 
 
-{- | getZoteroItem - Get Zotero Item from the database -}
+{- | getZoteroItem - Get all Zotero Item data from the database -}
 getZoteroItem :: ZoteroItemID -> DBConn ZoteroItem
 getZoteroItem itemID = do
 
@@ -459,9 +501,23 @@ getZoteroItem itemID = do
                       itemMime
 
 
--- getCollections :: HDBC.IConnection conn => conn -> IO [(Int, String)]
+{- | Get name of tag given its ID -}
+getTagName :: ZoteroTagID -> DBConn (Maybe String)
+getTagName tagID = sqlQueryOne sql [HDBC.SqlInt64 $  fromIntToInt64 tagID] fromSqlToString
+  where
+    sql = "SELECT name FROM tags WHERE tagID = ?"
 
-{- | Get all collections -}
+{- | Get name of collection given its ID -}
+getCollName :: Int -> DBConn (Maybe String)
+getCollName collID = sqlQueryOne sql [HDBC.SqlInt64 $  fromIntToInt64 collID] fromSqlToString
+  where
+    sql = "SELECT collectionName FROM collections WHERE collectionID = ?"
+
+{- | Get Author Name -}
+getAuthorName ::  Int -> DBConn (Maybe String)
+getAuthorName = undefined
+
+{- | Get all collections data. -}
 getCollections :: DBConn [ZoteroColl]
 getCollections = do
 
@@ -516,24 +572,20 @@ getCollectionChild collID = do
 getCollectionChildJSON :: Int -> DBConn BLI.ByteString
 getCollectionChildJSON collID = encode <$> getCollectionChild collID
 
-collectionItems :: Int -> DBConn [Int]
+{- | Query all items from a collection defined by its ID. -}
+collectionItems :: ZoteroCollectionID -> DBConn [ZoteroItemID]
 collectionItems collID = do
-  
   let collID' = fromIntToInt64 collID
   sqlQueryRow sql [HDBC.SqlInt64 collID'] fromSqlToInt
-  
   where
     sql = "SELECT  itemID FROM collectionItems WHERE collectionID = ?"
 
 {- | Returns all tags of a given item -}
 itemTagsData :: ZoteroItemID -> DBConn ZoteroItemTags
 itemTagsData itemID = do
-  
   let itemID' = fromIntToInt64 itemID 
   sqlQueryAll sql [HDBC.SqlInt64 itemID'] projection
-
   where
-    
     sql = unlines ["SELECT  tags.tagID, tags.name",
                    "FROM    itemTags, tags", 
                    "WHERE   itemTags.tagID = tags.tagID", 
@@ -592,6 +644,48 @@ itemsWithoutCollectionsJSON paging offset = do
   json  <- getZoteroItemsJSON items
   return json 
   
+{- | Get all sub collections from a parent collection. -}
+getSubcollections :: ZoteroCollectionID -> DBConn [ZoteroCollectionID]
+getSubcollections collID = do
+  sqlQueryRow sql [HDBC.SqlInt64 $ fromIntToInt64 collID] fromSqlToInt
+  where
+    sql = unlines [ "SELECT collectionID FROM collections"
+                  ,"WHERE  parentCollectionID = ?"
+                  ]
+{- | Get subcollecotions ID and Name from a parent collection. -}
+getSubcollectionsIDNames :: ZoteroCollectionID -> DBConn [(Int, String)]
+getSubcollectionsIDNames collID = do
+  sqlQueryAll sql [HDBC.SqlInt64  $ fromIntToInt64 collID ] projection
+  where
+    projection row = (fromSqlToInt (row !! 0) , fromSqlToString (row !! 1))
+
+    sql = unlines [ "SELECT collectionID, collectionName FROM collections"
+                  ,"WHERE  parentCollectionID = ?"
+                  ]
+
+{- | @IN-PROGRESS -}
+mapconcatM :: Monad m => (a -> m [b]) -> [a] -> m [b]
+mapconcatM fn xs = aux fn xs []
+  where
+    aux fn xs acc =
+      case xs of
+        []   -> return acc
+        y:ys -> do blist <- fn y
+                   acc `seq` aux fn ys (blist ++ acc)
+
+getAllSubCollections :: ZoteroCollectionID -> DBConn [(Int, String)]
+getAllSubCollections collID  = do
+  subcolls <- getSubcollectionsIDNames collID
+  colls    <- mapconcatM (\(cID, cName) -> getAllSubCollections cID) subcolls
+  return $ subcolls ++ colls
+
+
+getAllSubCollectionsItems :: ZoteroCollectionID -> DBConn [ZoteroItemID]
+getAllSubCollectionsItems collID = do
+  subcolls     <- getAllSubCollections collID
+  items        <- collectionItems collID
+  subcollItems <- mapconcatM (\ (cID, cName) -> collectionItems cID) subcolls
+  return $ items ++ subcollItems
 
 -- Return all tags in the database
 -- 
@@ -935,7 +1029,7 @@ searchByTitleTagsAndInWords words = do
     tpl word = P.printf "(itemDataValues.value LIKE \"%%%s%%\" OR tags.Name LIKE \"%%%s%%\")" word word 
     subquery = joinStrings " AND "  (map tpl  words)
     sql = unlines $ [
-                   "SELECT itemData.itemID, itemDataValues.value",
+                   "SELECT itemData.itemID",
                    "FROM   itemData, itemDataValues, itemAttachments, tags, itemTags",
                    "WHERE  fieldID = 110",
                    "AND    itemData.valueID = itemDataValues.valueID",
@@ -945,6 +1039,25 @@ searchByTitleTagsAndInWords words = do
                    "AND    (  %s  )",
                    "GROUP BY itemData.itemID"                    
                     ]
+
+searchByTitleTags :: String -> DBConn [ZoteroItemID]
+searchByTitleTags word = do
+  sqlQueryRow sql [HDBC.SqlString word, HDBC.SqlString word] fromSqlToInt
+  where
+    sql = unlines $ [
+                   "SELECT itemData.itemID",
+                   "FROM   itemData, itemDataValues, itemAttachments, tags, itemTags",
+                   "WHERE  fieldID = 110",
+                   "AND    itemData.valueID = itemDataValues.valueID",
+                 --  "AND    itemAttachments.sourceItemID = itemData.itemID",
+                   "AND    itemTags.itemID = itemData.itemID",
+                   "AND    itemTags.tagID = tags.tagID",
+                   "AND (LOWER(itemDataValues.value) LIKE ? OR LOWER(tags.Name) LIKE ?)",
+                   "GROUP BY itemData.itemID"
+                    ]
+
+
+
 
 {- | Search all items for which title 'or' tag matches at least one words in a given list -}
 searchByTitleTagsOrInWords :: [String] -> DBConn [ZoteroItemID]
@@ -1038,6 +1151,8 @@ renameTag id name = do
 
 
 
+
+
 renameCollection :: Int -> String -> DBConn ()
 renameCollection id name = do
   let id' = fromIntToInt64 id
@@ -1057,8 +1172,49 @@ deleteTag id = do
   sqlRun sql2 [HDBC.SqlInt64 id']
 
   where
+    -- Remove all rows from itemTags table where tagID = tag to be removed 
     sql1 = "DELETE  FROM itemTags WHERE tagID = ?"
+    -- Remove the tag where tagID = tag to be Removed.
     sql2 = "DELETE  FROM tags WHERE tagID = ?"
+
+
+{- | Move all items which has tag1 to tag2 -}
+mergeTags :: ZoteroTagID -> ZoteroTagID -> DBConn ()
+mergeTags oldTagID newTagID = do
+  let oldID = fromIntToInt64 oldTagID
+  let newID = fromIntToInt64 newTagID
+
+  sqlRun sql1 [HDBC.SqlInt64 newID, HDBC.SqlInt64 oldID, HDBC.SqlInt64 newID]
+  sqlRun sql2 [HDBC.SqlInt64 oldID]
+  sqlRun sql3 [HDBC.SqlInt64 oldID]
+  where
+    -- Step 1 - rename tag from items with old tag but doesn't have the new tag
+    sql1 = unlines [
+                   "UPDATE itemTags"
+                   ,"SET    tagID = ?"   -- (New tag)  set tag ID to 288 'cpp'
+                   ,"WHERE  tagID = ?"  -- (Old tag) tag which name is 'c++'
+                   ,"AND    itemID NOT IN (SELECT itemID FROM itemTags WHERE tagID = ?)"
+                   ]
+    -- Step 2 - delete all rows from itemTags which has the old tag.
+    sql2 = "DELETE FROM itemTags WHERE tagID = ?"
+    -- Step 3 - delete the old tag
+    sql3 = "DELETE FROM tags WHERE tagID = ?"
+
+{- | Add tag to Item -}
+addTagToItem :: ZoteroItemID -> ZoteroTagID -> DBConn ()
+addTagToItem itemID' tagID' = do
+  let itemID = fromIntToInt64 itemID'
+  let tagID  = fromIntToInt64 tagID'
+  sqlRun sql [HDBC.SqlInt64 itemID, HDBC.SqlInt64 tagID, HDBC.SqlInt64 tagID]
+  where
+    sql = unlines [
+                   "INSERT INTO itemTags (itemID, tagID)"
+                  ,"SELECT ?, ?"
+                  ,"WHERE EXISTS (SELECT 1 FROM itemTags WHERE tagID = ?)"
+                  ]
+
+
+  
 
 
 renameAuthor :: Int -> String -> String -> DBConn ()

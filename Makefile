@@ -92,7 +92,7 @@ doc:
 	stack exec -- haddock --html src/Zotero.hs src/ZHServer.hs --hyperlinked-source --odir=dist/docs
 
 doc-show:
-	firefox docs/index.html
+	firefox dist/docs/index.html
 
 clean-db:
 	rm -rf ./testdb
