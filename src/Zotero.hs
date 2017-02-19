@@ -1159,6 +1159,7 @@ deleteTag id = do
 
 
 {- | Move all items which has tag1 to tag2 -}
+mergeTags :: ZoteroTagID -> ZoteroTagID -> DBConn ()
 mergeTags oldTagID newTagID = do
   let oldID = fromIntToInt64 oldTagID
   let newID = fromIntToInt64 newTagID
