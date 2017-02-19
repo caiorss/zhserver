@@ -4,6 +4,133 @@
 #+STARTUP: contents 
 
 * Development Documentation 
+** REPL Testing and Exploration 
+
+Example about how to connec to the database and query the data in the REPL.
+
+#+BEGIN_SRC haskell 
+  >
+  > :t runDBConn 
+  runDBConn :: HDBConn -> DBConn a -> IO a
+
+  > let uri = "sqlite:///home/arch/.mozilla/firefox/dic34vce.default/zotero/zotero2.sqlite" 
+  > 
+  > Just db <- openDBConnection uri 
+  > 
+  > :t db
+  db :: HDBConn
+  > 
+  > let rows = runD
+  runDBConn   runDbQuery
+  > rows <- runDBConn db (collectionItems 211)
+  > 
+  > rows
+  [2917,2921,2922,2924,2925,3099,6602,6603,6604,6618,6620,6621]
+  > 
+  > 
+  > item <- runDBConn db (getZoteroItem 5120)
+  > item
+  ZoteroItem {zoteroItemID = 5120, zoteroItemData = [("url","https://en.wikipedia.org/wiki/Order_book_(trading)"),("accessDate","2015-06-24 10:12:56"),("title","Order book (trading) - Wikipedia, the free encyclopedia")], zoteroItemAuthors = [], zoteroItemTags = [], zoteroItemCollections = [(262,"OCAML")], zoteroItemFile = Just "DKD757F3/Order_book_(trading).html", zoteroItemMime = Nothing}
+
+  > zoteroItemTags item
+  []
+
+  > zoteroItemCollections item
+  [(262,"OCAML")]
+
+  > zoteroItemAuthors item
+  []
+
+  > zoteroItemData item
+  [("url","https://en.wikipedia.org/wiki/Order_book_(trading)"),("accessDate","2015-06-24 10:12:56"),("title","Order book (trading) - Wikipedia, the free encyclopedia")]
+  ,*Main Zotero>      
+
+
+   > json <- runDBConn db (getZoteroItemJSON 5120)
+  > LC.putStrLn json
+  {"mime":null,"colls":[[262,"OCAML"]],"data":[["url","https://en.wikipedia.org/wiki/Order_book_(trading)"],["accessDate","2015-06-24 10:12:56"],["title","Order book (trading) - Wikipedia, the free encyclopedia"]],"authors":[],"id":5120,"file":"DKD757F3/Order_book_(trading).html","tags":[]}
+
+
+  {-  Search all itemsID which has title or tag with 
+      the word category. 
+  -}
+  > rows <- runDBConn db (searchByTitleTags "category") 
+  > rows
+  [5167,5975,5977,5979]
+
+  -- Get all item's data
+  --
+  > :t runDBConn db (itemData 5167)
+  runDBConn db (itemData 5167) :: IO [(String, String)]
+
+  > runDBConn db (itemData 5167)
+  [("url","https://news.ycombinator.com/item?id=9459520"),("accessDate","2015-06-25 22:59:16"),("title","Category Theory for Programmers | Hacker News")]
+  > 
+
+  -- Get attachment file
+  --
+  > runDBConn db (itemAttachmentFile 5167)
+  Just "6F3H3J7D/item.html"
+
+  > runDBConn db (itemAttachmentFile 5975)
+  Just "Q9T3GPMJ/arrows.pdf"
+
+  > runDBConn db (itemAttachmentFile 5977)
+  Just "JQPTNHAB/Category Theory Lecture Notes for ESSLLI.pdf"
+
+  > runDBConn db (itemAttachmentFile 5979)
+  Just "T2W7HJBI/CategoryTheory.pdf"
+
+  --------------------------------------     
+  --  Get all tags
+  --------------------------------------
+
+  > runDBConn db (getTags) >>= mapM_ print
+
+  ZoteroTag {zoteroTagID = 337, zoteroTagName = ".net"}
+  ZoteroTag {zoteroTagID = 120, zoteroTagName = "8051"}
+  ZoteroTag {zoteroTagID = 307, zoteroTagName = "abi"}
+  ZoteroTag {zoteroTagID = 341, zoteroTagName = "actors"}
+  ZoteroTag {zoteroTagID = 9, zoteroTagName = "advanced"}
+  ZoteroTag {zoteroTagID = 142, zoteroTagName = "amortization"}
+  ZoteroTag {zoteroTagID = 14, zoteroTagName = "analysis"}
+  ZoteroTag {zoteroTagID = 262, zoteroTagName = "anbima"}
+
+            ... ... ... ..
+                
+  ZoteroTag {zoteroTagID = 53, zoteroTagName = "sensor"}
+  ZoteroTag {zoteroTagID = 161, zoteroTagName = "Sequential machine theory"}
+  ZoteroTag {zoteroTagID = 240, zoteroTagName = "serialization"}
+  ZoteroTag {zoteroTagID = 235, zoteroTagName = "server"}
+  ZoteroTag {zoteroTagID = 204, zoteroTagName = "signal"}
+  ZoteroTag {zoteroTagID = 110, zoteroTagName = "simulation"}
+  ZoteroTag {zoteroTagID = 294, zoteroTagName = "soap"}
+  ZoteroTag {zoteroTagID = 39, zoteroTagName = "socket"}
+  ZoteroTag {zoteroTagID = 99, zoteroTagName = "software"}
+
+  --------------------------------------     
+  --  Get all collections 
+  --------------------------------------
+
+  > runDBConn db Z.getCollections  >>= mapM_ print
+
+  ZoteroColl {zoteroCollID = 230, zoteroCollName = "Algorithm"}
+  ZoteroColl {zoteroCollID = 8, zoteroCollName = "Android"}
+  ZoteroColl {zoteroCollID = 252, zoteroCollName = "Application"}
+  ZoteroColl {zoteroCollID = 317, zoteroCollName = "Arrows"}
+  ZoteroColl {zoteroCollID = 58, zoteroCollName = "Austrian School"}
+  ZoteroColl {zoteroCollID = 195, zoteroCollName = "Backup Time Machine"}
+  ZoteroColl {zoteroCollID = 86, zoteroCollName = "Ball Bearing - Rolamentos"}
+  ZoteroColl {zoteroCollID = 22, zoteroCollName = "Beagle Bone ARM"}
+  ZoteroColl {zoteroCollID = 87, zoteroCollName = "Bearings"}
+  ZoteroColl {zoteroCollID = 89, zoteroCollName = "Belts"}
+
+                   ... ... ... .... ... ...
+
+  ZoteroColl {zoteroCollID = 102, zoteroCollName = "Plastics Manufacturing Process"}
+  ZoteroColl {zoteroCollID = 81, zoteroCollName = "Pneumatic and Hidraulic"}    
+#+END_SRC
+
 ** REST API doc
 *** End Points
 
