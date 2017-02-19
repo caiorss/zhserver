@@ -1131,6 +1131,8 @@ renameTag id name = do
 
 
 
+
+
 renameCollection :: Int -> String -> DBConn ()
 renameCollection id name = do
   let id' = fromIntToInt64 id
@@ -1150,7 +1152,9 @@ deleteTag id = do
   sqlRun sql2 [HDBC.SqlInt64 id']
 
   where
+    -- Remove all rows from itemTags table where tagID = tag to be removed 
     sql1 = "DELETE  FROM itemTags WHERE tagID = ?"
+    -- Remove the tag where tagID = tag to be Removed.
     sql2 = "DELETE  FROM tags WHERE tagID = ?"
 
 
