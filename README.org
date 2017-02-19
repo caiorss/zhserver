@@ -1,4 +1,4 @@
-#+TITLE:  Zhserver - Haskell Web Server for Zotero Database 
+#+TITLE:  ZHServer - Haskell Book shelve Webserver 
 #+AUTHOR: Caio Rodrigues 
 #+EMAIL:  <caiorss.rodrigues@gmail.com>
 #+KEYWORKDS: zotero papers docs documents patent search metadata notes haskell database 
