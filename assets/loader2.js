@@ -48,6 +48,13 @@ function makeAuthorURL(authorID, name){
 }
 
 
+function reportConnectioError (input){
+    var dom = document.querySelector("#content");
+    dom.textContent = "Error: I can't connect to server";
+    console.log("Error: I can't connect to server");
+    console.log(input);
+}
+
 
 function insertItemTypes (urlFunction, idLabel, valLabel){
 
