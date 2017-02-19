@@ -155,8 +155,10 @@ printCollection collID = do
 -- printSearchWordsTagsAnd [String] -> DBConn ()
 -- printSearchWordsTagsAnd words =
 --   searchByTitleTagsAndInWords words
-  
 
+{- | Parse Integer - Not a safe function -}
+readInt :: String -> Int
+readInt s = read s
         
             
 -- @HERE
