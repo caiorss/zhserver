@@ -75,7 +75,7 @@ module Zotero
 
           ,renameTag
           ,mergeTags
-          ,addTagToItem
+          ,addTagsToItem
 
           ,getTagName
           ,getCollName
@@ -1236,6 +1236,8 @@ addTagNameToItem itemID' tagName' = do
                   ,"AND NOT EXISTS (SELECT 1 FROM itemTags WHERE tagID = ? AND itemID = ?)"
                   ]
 
+addTagsToItem :: Int -> [String] -> DBConn ()
+addTagsToItem itemID tags = mapM_ (addTagNameToItem itemID) tags
 
 renameAuthor :: Int -> String -> String -> DBConn ()
 renameAuthor id firstName lastName = do
