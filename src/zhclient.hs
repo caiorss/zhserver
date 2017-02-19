@@ -156,7 +156,12 @@ iterMaybe value action = do
 
 printCollection :: Int -> DBConn ()
 printCollection collID = do
+  name  <- Z.getCollName collID
   items <- Z.collectionItems collID
+  iterMaybe name (\a -> liftIO $ do putStrLn $ "Collection = " ++ a
+                                    putStrLn "===============================\n\n"
+
+                 )
   mapM_ printItem items
 
 -- printSearchWordsTagsAnd [String] -> DBConn ()
