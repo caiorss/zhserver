@@ -73,6 +73,7 @@ module Zotero
           ,getAllSubCollections
           ,getAllSubCollectionsItems
 
+          ,renameTag
           {- JSON Export Functions -}
          ,getCollectionsJSON
          ,getTagsJSON          
