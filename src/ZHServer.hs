@@ -407,14 +407,6 @@ routeItemsWithoutCollection2 = do
     Nothing       -> return (LC.pack "Error wrong parameters")
     Just (p, o)   -> runDbQuery $ Z.itemsWithoutCollectionsJSON p o
     
-  -- case paging of
-    
-  --   Nothing -> return (LC.pack "Error wrong parameters")
-
-  --   Just p -> case offset of
-  --             Nothing -> return (LC.pack "Error wrong parameters")
-  --             Just o ->  runDbQuery $ Z.itemsWithoutCollectionsJSON p o
-
 
 
 {- ==================== MAIN  ======================== -}

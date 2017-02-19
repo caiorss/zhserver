@@ -1,12 +1,18 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-{-
 
-Description: Command line interactive client to access the database.  
-File:        zhclient.hs 
+
+{- |
+Module      : Zhclient
+Description : Command line client to access and test the database.
+License     : Public Domain
+
+
+Interface to Zotero database to query and manipulate the database.
 
 -}
+
 
 -- let destPath itemFile = SF.joinPath ["/tmp/test", SF.takeFileName itemFile]    
 
@@ -28,6 +34,9 @@ import Text.Printf (printf)
 
 import qualified System.Environment as Env
 
+import qualified System.Process as SP
+import qualified System.FilePath as SF
+
 
 copyCollectionTo conn collID dest = do
   items       <- runReaderT (Z.collectionItems collID) conn
@@ -42,6 +51,21 @@ copyCollectionTo conn collID dest = do
     copyToDest itemFile =
       mapM_ (\i -> copyFile i (destPath i)) itemFile  
 
+
+
+{- | Apply a monadic function to a Maybe value if the value is not Nothing -}
+iterMaybe :: Monad m => Maybe a -> (a -> m ()) -> m ()
+iterMaybe value action = do
+  case value of
+    Just a   -> action a
+    Nothing  -> return ()
+
+
+iterMaybeError2 :: Monad m => Maybe a -> Maybe b -> m () -> (a -> b -> m ())  -> m ()
+iterMaybeError2 a b errorHandler action  = do
+  case (a, b) of
+    (Just a', Just b') -> action a' b'
+    _                  -> errorHandler
 
 
 {- Last name comes first than first name in 
@@ -102,10 +126,10 @@ printAuthors = do
                                                (Z.zoteroAuthorFirstName a)
 
 
-printItem :: Int -> DBConn ()
-printItem itemID = do
+printItem :: Z.ZoteroItem -> DBConn ()
+printItem item = do
   conn         <- ask
-  item         <- Z.getZoteroItem itemID
+  let itemID   = Z.zoteroItemID   item
   let itemdata = Z.zoteroItemData item
   let path     = Z.zoteroItemFile item
   let tags     = Z.zoteroItemTags item
@@ -138,6 +162,30 @@ printItem itemID = do
               putStrLn "--------------------------------------------\n\n"
 
 
+printItemID :: Int -> DBConn ()
+printItemID itemID = do
+    item  <- Z.getZoteroItem itemID
+    printItem item
+
+
+openItem :: String -> Int -> DBConn ()
+openItem storagePath itemID = do 
+  item <-  Z.getZoteroItem itemID
+  -- file :: Maybe String 
+  let file =  Z.zoteroItemFile item
+  -- path :: Maybe String 
+  let filePath =  fmap (SF.combine storagePath) file     
+  printItem item
+  iterMaybe filePath  (\file -> liftIO $ xdgOpen file) 
+  where
+    -- Open file with default system application.
+    xdgOpen :: String -> IO () 
+    xdgOpen file = do
+      _ <- SP.spawnProcess "xdg-open" [file]
+      return ()
+  
+
+
 countItems :: [a] -> DBConn ()
 countItems items = liftIO $ putStrLn $ "Count = " ++ show (length items)
 
@@ -147,19 +195,7 @@ prompt msg = do
   line    <- getLine
   return line 
 
-{- | Apply a monadic function to a Maybe value if the value is not Nothing -}
-iterMaybe :: Monad m => Maybe a -> (a -> m ()) -> m ()
-iterMaybe value action = do
-  case value of
-    Just a   -> action a
-    Nothing  -> return ()
 
-
-iterMaybeError2 :: Monad m => Maybe a -> Maybe b -> m () -> (a -> b -> m ())  -> m ()
-iterMaybeError2 a b errorHandler action  = do
-  case (a, b) of
-    (Just a', Just b') -> action a' b'
-    _                  -> errorHandler
 
 printCollection :: Int -> DBConn ()
 printCollection collID = do
@@ -169,7 +205,7 @@ printCollection collID = do
                                     putStrLn "===============================\n\n"
 
                  )
-  mapM_ printItem items
+  mapM_ printItemID items
 
 
 
@@ -179,7 +215,7 @@ printTagID tagID = do
   iterMaybe name (\a -> liftIO $ do putStrLn $ "Tag = " ++ a
                                     putStrLn "===============================\n\n"
                   )
-  Z.getTagItems tagID >>= mapM_ printItem
+  Z.getTagItems tagID >>= mapM_ printItemID
 
 -- printSearchWordsTagsAnd [String] -> DBConn ()
 -- printSearchWordsTagsAnd words =
@@ -198,8 +234,8 @@ parseArgs args path = do
 
     -- ============ Items command line switches ========================
     -- 
-    ["item", "-id",  itemID]                       -> printItem (read itemID :: Int)
-    ["item", "-open", itemID]                      -> undefined 
+    ["item", "-id",  itemID]                       -> printItemID (read itemID :: Int)
+    ["item", "-open", itemID]                      -> openItem path (readInt itemID)
     ["item", "-delete", itemID]                    -> undefined
     ["item", "-add-tag", itemID, "-tag-name", tagName] -> undefined 
     ["item", "-add-tag", itemID, "-tag-id", tagID]     -> Z.addTagToItem (readInt itemID) (readInt tagID)
@@ -212,7 +248,7 @@ parseArgs args path = do
 
     ["subcoll", collID]                            -> printSubCollections (read collID :: Int)
     ["subcoll", "-all",   collID]                  -> printAllSubCollections (read collID :: Int)
-    ["subcoll", "-items", collID]                  -> Z.getAllSubCollectionsItems (read collID :: Int) >>= mapM_ printItem
+    ["subcoll", "-items", collID]                  -> Z.getAllSubCollectionsItems (read collID :: Int) >>= mapM_ printItemID
 
     -- ============= Tags command line switches ===========================
     --
@@ -228,16 +264,16 @@ parseArgs args path = do
     ["author", "-all"]                             -> printAuthors
     ["author", "-id", authorID]                    -> undefined
     ["author", "-search", name]                    -> undefined 
-    ["author", "-items", authorID]                 -> Z.getItemsFromAuthor (read authorID :: Int) >>= mapM_ printItem 
+    ["author", "-items", authorID]                 -> Z.getItemsFromAuthor (read authorID :: Int) >>= mapM_ printItemID
 
     -- ============ Search commands ======================================
     --
-    ["search", "-title-tag", word]                 -> Z.searchByTitleTags word >>= mapM_ printItem
-    ["search", "-title", word]                     -> Z.searchByTitleWordLike ("%" ++ word ++ "%") >>= mapM_ printItem
-    ["search", "-title-content", word]             -> Z.searchByContentAndTitleLike word >>= mapM_ printItem
+    ["search", "-title-tag", word]                 -> Z.searchByTitleTags word >>= mapM_ printItemID
+    ["search", "-title", word]                     -> Z.searchByTitleWordLike ("%" ++ word ++ "%") >>= mapM_ printItemID
+    ["search", "-title-content", word]             -> Z.searchByContentAndTitleLike word >>= mapM_ printItemID
     
-    ["search", "-title-tag-and", query]            -> Z.searchByTitleTagsAndInWords (words query) >>= mapM_ printItem
-    ["search", "-title-tag-or", query]             -> Z.searchByTitleTagsOrInWords  (words query) >>= mapM_ printItem
+    ["search", "-title-tag-and", query]            -> Z.searchByTitleTagsAndInWords (words query) >>= mapM_ printItemID
+    ["search", "-title-tag-or", query]             -> Z.searchByTitleTagsOrInWords  (words query) >>= mapM_ printItemID
 
     
     []                                             -> liftIO $ putStrLn "Show help"
