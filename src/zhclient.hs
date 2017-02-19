@@ -190,7 +190,7 @@ parseArgs args path = do
     ["tag",  "-all"]                               -> printTags
     ["tag",  "-items", tagID]                      -> Z.getTagItems (read tagID :: Int) >>= mapM_ printItem
     ["tag",  "-delete", tagID]                     -> undefined
-    ["tag",  "-merge", oldTag, newTag]             -> undefined  
+    ["tag",  "-merge", oldTagID, newTagID]         -> Z.mergeTags (readInt oldTagID) (readInt newTagID)
 
     -- ============  Author command line switches =======================
     --
