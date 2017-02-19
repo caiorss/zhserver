@@ -247,7 +247,7 @@ function showZoteroItemsFromUrl(url){
               anchor.append(docFragment)
           },
           
-          logger
+          reportConnectioError
          );    
 }
 
@@ -259,7 +259,7 @@ insertCollections = insertItemTypes (makeCollectionURL, "id", "name")
 function showCollections () {
     setPageTitle("Collections");
     cleanContentArea();    
-    doXHR("/api/colls", compose(parseJson, insertCollections) , logger);
+    doXHR("/api/colls", compose(parseJson, insertCollections) , reportConnectioError);
     console.log("Displayed Collections OK");    
 }
 
@@ -289,7 +289,7 @@ function showTags () {
     console.log("Tags");
     setPageTitle("Tags");
     cleanContentArea();    
-    doXHR("/api/tags", compose(parseJson, insertTags) , logger);
+    doXHR("/api/tags", compose(parseJson, insertTags), reportConnectioError);
     //console.log("Displayed Collections OK");    
 }
 
@@ -358,7 +358,7 @@ function showAuthors () {
     
     cleanContentArea();    
 
-    doXHR("/api/authors", compose(parseJson, insertAuthors) , logger);
+    doXHR("/api/authors", compose(parseJson, insertAuthors) , reportConnectioError);
 
     //console.log("Displayed Collections OK");    
 }
@@ -580,8 +580,9 @@ function routeDispatcher (){
 
     // Default route that will be executed if not route is matched.
     else{
-        
+        // reportConnectioError("Error: Route note found")(100);
         showCollections ();
+        alert("Error: Route doesn't exist or not implemented.");
     }
 
 } // End of function routeDispatcher
