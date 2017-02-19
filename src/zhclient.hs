@@ -138,6 +138,9 @@ printItem itemID = do
               putStrLn "--------------------------------------------\n\n"
 
 
+countItems :: [a] -> DBConn ()
+countItems items = liftIO $ putStrLn $ "Count = " ++ show (length items)
+
 
 prompt msg = do
   putStr  msg
