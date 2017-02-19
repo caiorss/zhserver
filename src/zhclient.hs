@@ -237,8 +237,11 @@ parseArgs args path = do
     ["item", "-id",  itemID]                       -> printItemID (read itemID :: Int)
     ["item", "-open", itemID]                      -> openItem path (readInt itemID)
     ["item", "-delete", itemID]                    -> undefined
-    ["item", "-add-tag", itemID, "-tag-name", tagName] -> undefined 
-    ["item", "-add-tag", itemID, "-tag-id", tagID]     -> Z.addTagToItem (readInt itemID) (readInt tagID)
+    
+    ["item", "-add-tag", itemID,  tagNames] -> do Z.addTagsToItem (readInt itemID) (words tagNames)
+                                                  printItemID (readInt itemID)
+                                                             
+    -- ["item", "-add-tag", itemID, "-tag-id", tagID]     -> Z.addTagToItem (readInt itemID) (readInt tagID)
 
     -- ============ Collections command line switches ====================
     -- 
