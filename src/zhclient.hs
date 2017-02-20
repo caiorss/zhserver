@@ -78,6 +78,8 @@ printItemAuthor conn itemID = do
     printRow author = printf "%s: %s, %s\n" (Z.zoteroAuthorFirstName author)
                                             (Z.zoteroAuthorLastName  author)
                                             (show $ Z.zoteroAuthorID author)
+
+{- | Print all collections. -}
 printCollections :: DBConn ()
 printCollections  = do
   colls <- Z.getCollections
@@ -86,6 +88,7 @@ printCollections  = do
     printColl coll =
       Text.Printf.printf "\t%d\t%s\n" (Z.zoteroCollID coll) (Z.zoteroCollName coll)
 
+{- | Print all top level collections. Collections without any child collection -}
 printCollectionsTop :: DBConn ()
 printCollectionsTop  = do
   colls <- Z.getCollectionsTop
@@ -94,18 +97,19 @@ printCollectionsTop  = do
     printColl coll =
       Text.Printf.printf "\t%d\t%s\n" (Z.zoteroCollID coll) (Z.zoteroCollName coll)
 
+{- | Print all subcollections of a collection -}
 printSubCollections :: Int -> DBConn ()
 printSubCollections collID = do
   colls <- Z.getSubcollectionsIDNames collID
   liftIO $ mapM_ print colls
 
-
+{- | Print all subcollections recursively of a given collection defined by its ID -}
 printAllSubCollections :: Int -> DBConn ()
 printAllSubCollections collID = do
   colls <- Z.getAllSubCollections collID
   liftIO $ mapM_ print colls
 
-
+{- | Print all available tags and its ids -}
 printTags :: DBConn ()
 printTags = do
   tags    <- Z.getTags
@@ -114,7 +118,7 @@ printTags = do
     printTag tag =
       Text.Printf.printf "\t%d\t%s\n" (Z.zoteroTagID tag) (Z.zoteroTagName tag)
 
-
+{- | Print all authors and its IDs -}
 printAuthors :: DBConn ()
 printAuthors = do
   authors <- Z.getAuthors
@@ -125,7 +129,7 @@ printAuthors = do
                                                (Z.zoteroAuthorLastName a)
                                                (Z.zoteroAuthorFirstName a)
 
-
+{- | Print an item record -}
 printItem :: Z.ZoteroItem -> DBConn ()
 printItem item = do
   conn         <- ask
