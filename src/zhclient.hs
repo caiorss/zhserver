@@ -37,20 +37,6 @@ import qualified System.Environment as Env
 import qualified System.Process as SP
 import qualified System.FilePath as SF
 
-copyCollectionTo :: String -> String -> Int -> DBConn ()
-copyCollectionTo storagePath dest collID = do
-  items       <- Z.collectionItems collID
-  attachments <- mapM (\item -> Z.itemAttachmentFile item ) items
-  liftIO $ createDirectoryIfMissing True dest
-  liftIO $ mapM_ copyToDest attachments
-  where
-    destPath itemFile =
-      SF.joinPath [dest, SF.takeFileName itemFile]
-
-    copyToDest :: Maybe FilePath -> IO ()
-    copyToDest itemFile =
-      mapM_ (\file -> copyFile (SF.combine storagePath file) (destPath file)) itemFile
-
 {- | Copy item file to a destination
 - storagePath: Path where zotero's files are stored.
 - dest:        Destination directory.
@@ -251,6 +237,21 @@ readInt s = read s
 
 wordLike s = "%" ++ s ++ "%"
             
+
+copyCollectionTo :: String -> String -> Int -> DBConn ()
+copyCollectionTo storagePath dest collID = do
+  items       <- Z.collectionItems collID
+  attachments <- mapM (\item -> Z.itemAttachmentFile item ) items
+  liftIO $ createDirectoryIfMissing True dest
+  liftIO $ mapM_ copyToDest attachments
+  where
+    destPath itemFile =
+      SF.joinPath [dest, SF.takeFileName itemFile]
+
+    copyToDest :: Maybe FilePath -> IO ()
+    copyToDest itemFile =
+      mapM_ (\file -> copyFile (SF.combine storagePath file) (destPath file)) itemFile
+
 -- @HERE
 parseArgs :: [String] -> String -> DBConn ()
 parseArgs args path = do
