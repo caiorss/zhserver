@@ -246,6 +246,11 @@ withConnection ioConn function = do
   return result
 
 type SQL = String
+{- | This type represents a function that takes name and returns all IDs
+   associated with table rows which matches the name
+-}
+type SearchIDFun = String -> DBConn [Int]
+
 -- withDBConnection2 dbUri dbAction = do
 --   withDBConnection dbUri (ioToDBConn dbAction)
 
