@@ -582,7 +582,7 @@ function routeDispatcher (){
     else{
         // reportConnectioError("Error: Route note found")(100);
         showCollections ();
-        alert("Error: Route doesn't exist or not implemented.");
+        // alert("Error: Route doesn't exist or not implemented.");
     }
 
 } // End of function routeDispatcher
