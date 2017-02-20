@@ -915,16 +915,11 @@ getAuthorsJSON :: DBConn BLI.ByteString
 getAuthorsJSON = 
   encode <$> getAuthors 
 
-
 getItemsFromAuthor :: Int -> DBConn [Int]
 getItemsFromAuthor  authorID =
-
   let authorID' = fromIntToInt64 authorID in
-  
   sqlQueryRow  sql [HDBC.SqlInt64 authorID'] fromSqlToInt
-
   where
-
     sql = "SELECT itemID FROM itemCreators WHERE creatorID = ?"
 
 
