@@ -160,7 +160,7 @@ printItem item = do
 
               printItemAuthor conn itemID
 
-              printField  "Abstract :\n" "abstractNote"
+              printField  "\n\nAbstract :\n" "abstractNote"
               putStrLn ""
               mapM_ putStrLn path
               putStrLn "--------------------------------------------\n\n"
