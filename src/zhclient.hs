@@ -26,7 +26,7 @@ import qualified System.FilePath as SF
 import System.Exit  (exitSuccess)
 
 import qualified Zotero as Z
-import Zotero (DBConn, joinStrings, strip)
+import Zotero (DBConn)
 
 import System.Directory (copyFile, createDirectoryIfMissing)
 
@@ -37,22 +37,8 @@ import qualified System.Environment as Env
 import qualified System.Process as SP
 import qualified System.FilePath as SF
 
-
-copyCollectionTo conn collID dest = do
-  items       <- runReaderT (Z.collectionItems collID) conn
-  attachments <- mapM (\item -> runReaderT (Z.itemAttachmentFile item) conn) items
-  createDirectoryIfMissing True dest
-  mapM_ copyToDest attachments
-  where
-    destPath itemFile =
-      SF.joinPath [dest, SF.takeFileName itemFile]
-
-    copyToDest :: Maybe FilePath -> IO ()
-    copyToDest itemFile =
-      mapM_ (\i -> copyFile i (destPath i)) itemFile  
-
-
-
+import DBUtils (joinStrings)
+    
 {- | Apply a monadic function to a Maybe value if the value is not Nothing -}
 iterMaybe :: Monad m => Maybe a -> (a -> m ()) -> m ()
 iterMaybe value action = do
@@ -78,6 +64,8 @@ printItemAuthor conn itemID = do
     printRow author = printf "%s: %s, %s\n" (Z.zoteroAuthorFirstName author)
                                             (Z.zoteroAuthorLastName  author)
                                             (show $ Z.zoteroAuthorID author)
+
+{- | Print all collections. -}
 printCollections :: DBConn ()
 printCollections  = do
   colls <- Z.getCollections
@@ -86,6 +74,7 @@ printCollections  = do
     printColl coll =
       Text.Printf.printf "\t%d\t%s\n" (Z.zoteroCollID coll) (Z.zoteroCollName coll)
 
+{- | Print all top level collections. Collections without any child collection -}
 printCollectionsTop :: DBConn ()
 printCollectionsTop  = do
   colls <- Z.getCollectionsTop
@@ -94,18 +83,19 @@ printCollectionsTop  = do
     printColl coll =
       Text.Printf.printf "\t%d\t%s\n" (Z.zoteroCollID coll) (Z.zoteroCollName coll)
 
+{- | Print all subcollections of a collection -}
 printSubCollections :: Int -> DBConn ()
 printSubCollections collID = do
   colls <- Z.getSubcollectionsIDNames collID
   liftIO $ mapM_ print colls
 
-
+{- | Print all subcollections recursively of a given collection defined by its ID -}
 printAllSubCollections :: Int -> DBConn ()
 printAllSubCollections collID = do
   colls <- Z.getAllSubCollections collID
   liftIO $ mapM_ print colls
 
-
+{- | Print all available tags and its ids -}
 printTags :: DBConn ()
 printTags = do
   tags    <- Z.getTags
@@ -114,7 +104,7 @@ printTags = do
     printTag tag =
       Text.Printf.printf "\t%d\t%s\n" (Z.zoteroTagID tag) (Z.zoteroTagName tag)
 
-
+{- | Print all authors and its IDs -}
 printAuthors :: DBConn ()
 printAuthors = do
   authors <- Z.getAuthors
@@ -125,7 +115,7 @@ printAuthors = do
                                                (Z.zoteroAuthorLastName a)
                                                (Z.zoteroAuthorFirstName a)
 
-
+{- | Print an item record -}
 printItem :: Z.ZoteroItem -> DBConn ()
 printItem item = do
   conn         <- ask
@@ -156,18 +146,18 @@ printItem item = do
 
               printItemAuthor conn itemID
 
-              printField  "Abstract :\n" "abstractNote"
+              printField  "\n\nAbstract :\n" "abstractNote"
               putStrLn ""
               mapM_ putStrLn path
               putStrLn "--------------------------------------------\n\n"
 
-
+{- | Print an item given by its ID -}
 printItemID :: Int -> DBConn ()
 printItemID itemID = do
     item  <- Z.getZoteroItem itemID
     printItem item
 
-
+{- | Open item file with default system application -}
 openItem :: String -> Int -> DBConn ()
 openItem storagePath itemID = do 
   item <-  Z.getZoteroItem itemID
@@ -196,7 +186,7 @@ prompt msg = do
   return line 
 
 
-
+{- | Print a collection given by its ID -}
 printCollection :: Int -> DBConn ()
 printCollection collID = do
   name  <- Z.getCollName collID
@@ -229,8 +219,44 @@ printTagID tagID = do
 {- | Parse Integer - Not a safe function -}
 readInt :: String -> Int
 readInt s = read s
-        
-            
+
+wordLike s = "%" ++ s ++ "%"
+
+
+
+copyCollectionTo :: String -> String -> Int -> DBConn ()
+copyCollectionTo storagePath dest collID = do
+  items       <- Z.collectionItems collID
+  attachments <- mapM (\item -> Z.itemAttachmentFile item ) items
+  liftIO $ createDirectoryIfMissing True dest
+  liftIO $ mapM_ copyToDest attachments
+  where
+    destPath itemFile =
+      SF.joinPath [dest, SF.takeFileName itemFile]
+
+    copyToDest :: Maybe FilePath -> IO ()
+    copyToDest itemFile =
+      mapM_ (\file -> copyFile (SF.combine storagePath file) (destPath file)) itemFile
+
+          
+{- | Copy item file to a destination
+- storagePath: Path where zotero's files are stored.
+- dest:        Destination directory.
+- itemID:      ID of item to be copied.
+-}
+copyItemTo :: String -> String -> Int -> DBConn ()
+copyItemTo storagePath dest itemID = do
+  itemFile <- Z.itemAttachmentFile itemID
+  case itemFile of
+    Nothing    -> liftIO $ putStrLn $ "Error: Item ID = " ++ show itemID ++ " has no associated file."
+    Just file  -> do liftIO $ createDirectoryIfMissing True dest
+                     let origin = SF.combine storagePath file
+                     let output = SF.joinPath [dest, SF.takeFileName file]
+                     liftIO $ copyFile origin output
+                     liftIO $ putStrLn $ "Copied file '" ++ origin ++ "' to '" ++ output ++ "'\n\n"
+                     printItemID itemID       
+
+             
 -- @HERE
 parseArgs :: [String] -> String -> DBConn ()
 parseArgs args path = do
@@ -239,8 +265,9 @@ parseArgs args path = do
 
     -- ============ Items command line switches ========================
     -- 
-    ["item", "-id",  itemID]                       -> printItemID (read itemID :: Int)
+    ["item", "-show",  itemID]                     -> printItemID (read itemID :: Int)
     ["item", "-open", itemID]                      -> openItem path (readInt itemID)
+    ["item", "-copy", itemID, destPath]            -> copyItemTo path destPath (readInt itemID)                                                      
     ["item", "-delete", itemID]                    -> undefined
     
     ["item", "-add-tag", itemID,  tagNames] -> do Z.addTagsToItem (readInt itemID) (words tagNames)
@@ -250,9 +277,13 @@ parseArgs args path = do
 
     -- ============ Collections command line switches ====================
     -- 
-    ["coll", "-items",  collID]                    -> printCollection (read collID :: Int)
+    ["coll", "-show",  collID]                    -> printCollection (read collID :: Int)
     ["coll", "-all"]                               -> printCollections
     ["coll", "-top"]                               -> printCollectionsTop
+    ["coll", "-count", collID]                     -> Z.collectionItems (readInt collID) >>= countItems
+    ["coll", "-search", name]                      -> Z.searchCollection (wordLike name) >>= mapM_ (\ tpl -> liftIO $ print tpl)
+    ["coll", "-copy-to", collID, destPath]         -> copyCollectionTo path destPath (readInt collID)
+                                                       
 
     ["subcoll", collID]                            -> printSubCollections (read collID :: Int)
     ["subcoll", "-all",   collID]                  -> printAllSubCollections (read collID :: Int)
@@ -261,23 +292,24 @@ parseArgs args path = do
     -- ============= Tags command line switches ===========================
     --
     ["tag",  "-all"]                               -> printTags
-    ["tag",  "-items", tagID]                      -> printTagID (readInt tagID)
+    ["tag",  "-show", tagID]                      -> printTagID (readInt tagID)
     ["tag",  "-count", tagID]                      -> Z.getTagItems (readInt tagID) >>= countItems
     ["tag",  "-rename", tagID, newName]            -> Z.renameTag   (readInt tagID) newName
     ["tag",  "-delete", tagID]                     -> undefined
     ["tag",  "-merge", oldTagID, newTagID]         -> Z.mergeTags (readInt oldTagID) (readInt newTagID)
+    ["tag", "-search", name]                       -> Z.searchTag (wordLike name) >>= mapM_ (\ tpl -> liftIO $ print tpl)
 
     -- ============  Author command line switches =======================
     --
     ["author", "-all"]                             -> printAuthors
     ["author", "-id", authorID]                    -> undefined
     ["author", "-search", name]                    -> undefined 
-    ["author", "-items", authorID]                 -> Z.getItemsFromAuthor (read authorID :: Int) >>= mapM_ printItemID
+    ["author", "-show", authorID]                  -> Z.getItemsFromAuthor (read authorID :: Int) >>= mapM_ printItemID
 
     -- ============ Search commands ======================================
     --
     ["search", "-title-tag", word]                 -> Z.searchByTitleTags word >>= mapM_ printItemID
-    ["search", "-title", word]                     -> Z.searchByTitleWordLike ("%" ++ word ++ "%") >>= mapM_ printItemID
+    ["search", "-title", word]                     -> Z.searchByTitleWordLike (wordLike word) >>= mapM_ printItemID
     ["search", "-title-content", word]             -> Z.searchByContentAndTitleLike word >>= mapM_ printItemID
     
     ["search", "-title-tag-and", query]            -> Z.searchByTitleTagsAndInWords (words query) >>= mapM_ printItemID
@@ -286,6 +318,7 @@ parseArgs args path = do
     
     []                                             -> liftIO $ putStrLn "Show help"
     _                                              -> liftIO $ putStrLn "Error: Invalid command."
+
 
 
 main :: IO ()

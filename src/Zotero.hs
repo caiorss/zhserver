@@ -82,6 +82,9 @@ module Zotero
           ,getCollName
           ,getAuthorName
 
+          ,searchTag
+          ,searchCollection
+
           {- JSON Export Functions -}
          ,getCollectionsJSON
          ,getTagsJSON          
@@ -105,16 +108,7 @@ module Zotero
 
          ,searchByTitleTagsAndInWords
          ,searchByTitleTagsOrInWords
-
-
-          
-      
-         ,getAuthors
-
-
-         ,joinStrings
-         ,strip
-         
+         ,getAuthors         
 
        ) where
 
@@ -152,98 +146,8 @@ import qualified Data.ByteString.Lazy.Internal as BLI
 import qualified Text.Printf as P
 import qualified Data.Text as T
 
-
-import System.Random (getStdGen, newStdGen, randomRs)
-
-{- ---------------------- Types -----------------}
-
-type SQLQuery =  [(String, HDBC.SqlValue)] 
-
-{- | Database Connection -> DbConn a = ReaderT conn IO a = conn -> IO a -}
-type DBConn a = forall conn. (HDBC.IConnection conn) =>  ReaderT conn IO a
-
-{- | Database Connection - Objective make the database connection
-    implementation agnostic.
--}
-data HDBConn =  HDBConnSqlite   Sqlite3.Connection
-              | HDBConnPostgres Pg.Connection
-              -- deriving (Eq, Read, Show)
-
-
-
-{- | Database URI -}
-data DBUri = DBUriSqlite   String
-           | DBUriPostGres String
-           deriving (Eq, Read, Show)
-
-
-
-stripPrefix prefix str =
- case T.stripPrefix (T.pack prefix) (T.pack str) of
-   Just s   -> T.unpack s
-   Nothing  -> str
-
-parseDbDriver2 dbUri =
-  case getDbType dbUri of
-    "sqlite"    -> Just (DBUriSqlite   sqlitePath)
-    "postgres"  -> Just (DBUriPostGres dbUri)
-    _           -> Nothing
-  where
-    sqlitePath = (stripPrefix "sqlite://" dbUri)
-    getDbType dbUri = T.unpack . (!!0) . T.split (==':') . T.pack $ dbUri
-
-
-openDBConnection :: String -> IO (Maybe HDBConn)
-openDBConnection dbUri =
-  case parseDbDriver2 dbUri of
-    Just (DBUriSqlite   uri) -> Sqlite3.connectSqlite3  uri
-                                >>= \conn -> return $ Just (HDBConnSqlite conn)
-
-    Just (DBUriPostGres uri) -> Pg.connectPostgreSQL    uri
-                                >>= \conn -> return $ Just ( HDBConnPostgres conn)
-
-    Nothing                  -> return Nothing
-
-
-runDBConn :: HDBConn -> DBConn a -> IO a
-runDBConn hdbconn dbAction =
-  case hdbconn of
-    HDBConnSqlite   c  -> runReaderT dbAction c
-    HDBConnPostgres c  -> runReaderT dbAction c
-
-
--- withDBConnection :: forall conn. (HDBC.IConnection conn) => String -> (conn -> IO ()) -> IO ()
-withDBConnection ::  String -> DBConn () -> IO ()
-withDBConnection dbUri dbAction = do
-  conn <- openDBConnection dbUri
-  case conn of
-    Just (HDBConnSqlite   c)  -> runReaderT dbAction c >> HDBC.disconnect c
-    Just (HDBConnPostgres c)  -> runReaderT dbAction c >> HDBC.disconnect c
-    Nothing                   -> putStrLn "Error: I can't open the database connection"
-
-
-
-withDBConnection2 ::  String -> DBConn a -> IO (Maybe a)
-withDBConnection2 dbUri dbAction = do
-  conn <- openDBConnection dbUri
-  case conn of
-    Just (HDBConnSqlite   c)  -> do out <- runReaderT dbAction c
-                                    HDBC.disconnect c
-                                    return (Just out)
-
-    Just (HDBConnPostgres c)  -> do out <- runReaderT dbAction c
-                                    HDBC.disconnect c
-                                    return (Just out)
-
-    Nothing                   -> return Nothing
-
-
-withConnection :: HDBC.IConnection  conn => IO conn -> (conn -> IO r) -> IO r
-withConnection ioConn function = do
-  conn     <- ioConn
-  result   <- function conn
-  HDBC.disconnect conn
-  return result
+import System.Random (getStdGen, newStdGen, randomRs)    
+import DBUtils    
 
 -- withDBConnection2 dbUri dbAction = do
 --   withDBConnection dbUri (ioToDBConn dbAction)
@@ -355,49 +259,6 @@ stripPrefixStr prefix str =
 
 {- ================== Helper Functions ======================  -}
 
-splitOn delim text =  
-   map T.unpack $ T.splitOn (T.pack delim) (T.pack text)
-
-strip  = T.unpack . T.strip . T.pack
-
-fromInt64ToInt :: Int64 -> Int
-fromInt64ToInt = fromIntegral
-
-fromIntToInt64 :: Int -> Int64
-fromIntToInt64 = fromIntegral
-
-
-{- | Join strings by separator -}
-joinStrings :: String -> [String] -> String
-joinStrings sep strs =
-  case strs of
-    [] -> ""
-    _  -> foldr1 (\x acc ->  x ++ sep ++  acc) strs
-
-lookupString :: String -> SQLQuery -> Maybe String 
-lookupString field row = do 
-  value <- lookup field row
-  return $ HDBC.fromSql value
-
-  
-lookupInt :: String -> SQLQuery -> Maybe Int
-lookupInt field row = do 
-  value <- lookup field row
-  return $ HDBC.fromSql value 
-
-coerceString :: [HDBC.SqlValue] -> Int -> Maybe String
-coerceString sqlValues pos =
-  HDBC.fromSql (sqlValues !! pos)
-
-coerceInt :: [HDBC.SqlValue] -> Int -> Maybe Int
-coerceInt sqlValues pos = 
-  HDBC.fromSql (sqlValues !! pos)
-
-fromSqlToInt :: HDBC.SqlValue -> Int
-fromSqlToInt  sv = HDBC.fromSql sv  
-
-fromSqlToString :: HDBC.SqlValue -> String
-fromSqlToString sv = HDBC.fromSql sv 
 
 createKey :: IO String 
 createKey = do
@@ -418,64 +279,6 @@ createKey = do
 --      -> [HDBC.SqlValue]
 --      -> ([HDBC.SqlValue] -> b)
 --      -> IO (Maybe b)
-
-
-sqlQuery :: String -> [HDBC.SqlValue] -> ([HDBC.SqlValue] -> b) -> DBConn (Maybe b)
-sqlQuery sql sqlvals projection = do
-  conn   <- ask 
-  stmt   <- liftIO $  HDBC.prepare conn sql
-  liftIO $ HDBC.execute stmt sqlvals
-  row     <- liftIO $ HDBC.fetchRow stmt
-  return (fmap projection row)
-
-
-    
--- sqlQueryAll
---   :: HDBC.IConnection conn =>
---      conn
---      -> String -> [HDBC.SqlValue] -> ([HDBC.SqlValue] -> b) -> IO [b]
-
-sqlQueryAll :: String -> [HDBC.SqlValue] -> ([HDBC.SqlValue] -> b) -> DBConn [b]     
-sqlQueryAll sql sqlvals projection = do
-  con     <- ask 
-  stmt    <- liftIO $ HDBC.prepare con sql
-  liftIO  $ HDBC.execute stmt sqlvals  
-  rows    <- liftIO $ HDBC.fetchAllRows stmt
-  return (fmap projection rows)
-
-
-{-
-sqlQueryRow :: HDBC.IConnection conn => conn
-               -> String
-               -> [HDBC.SqlValue]
-               -> (HDBC.SqlValue -> b)
-               -> IO [b]
--}
-
-sqlQueryRow :: String -> [HDBC.SqlValue] -> (HDBC.SqlValue -> b) -> DBConn [b]   
-sqlQueryRow sql sqlvals coercion = do
-  sqlQueryAll sql sqlvals (coercion . (!!0))
-
-
-sqlQueryOne :: String -> [HDBC.SqlValue] -> (HDBC.SqlValue -> b) -> DBConn (Maybe b)
-sqlQueryOne sql sqlvals projection = do
-  conn   <- ask 
-  stmt   <- liftIO $  HDBC.prepare conn sql
-  liftIO $ HDBC.execute stmt sqlvals
-  row     <- liftIO $ HDBC.fetchRow stmt
-  liftIO $ HDBC.commit conn 
-  return $ (!!0) . (map projection) <$> row
-
-  
-  
-
-sqlRun :: String -> [HDBC.SqlValue] -> DBConn ()
-sqlRun sql sqlvals = do
-  conn    <- ask 
-  stmt    <- liftIO $ HDBC.prepare conn sql
-  liftIO  $ HDBC.execute stmt sqlvals
-  liftIO  $ HDBC.commit conn 
-    
 
 
 {- ================== Database Functions  ======================  -}
@@ -880,16 +683,12 @@ getTagItemsJSON tagID = do
 
 getAuthors :: DBConn [ZoteroAuthor]
 getAuthors  = do
-  
   sqlQueryAll sql [] projection 
-
   where
-
     sql = "SELECT    creators.creatorID, creatorData.firstName, creatorData.lastName \
           \FROM      creatorData, creators \
           \WHERE     creatorData.creatorDataID = creators.creatorDataID \
-          \ORDER BY creatorData.firstName || ' ' || creatorData.lastName"
-  
+          \ORDER BY  creatorData.firstName || ' ' || creatorData.lastName"
     projection row = ZoteroAuthor (fromSqlToInt    (row !! 0))
                                   (fromSqlToString (row !! 1))
                                   (fromSqlToString (row !! 2))
@@ -898,16 +697,11 @@ getAuthorsJSON :: DBConn BLI.ByteString
 getAuthorsJSON = 
   encode <$> getAuthors 
 
-
 getItemsFromAuthor :: Int -> DBConn [Int]
 getItemsFromAuthor  authorID =
-
   let authorID' = fromIntToInt64 authorID in
-  
   sqlQueryRow  sql [HDBC.SqlInt64 authorID'] fromSqlToInt
-
   where
-
     sql = "SELECT itemID FROM itemCreators WHERE creatorID = ?"
 
 
@@ -968,6 +762,16 @@ getTagsFromCollection  collID = do
 getTagsFromCollectionJSON :: Int ->  DBConn BLI.ByteString
 getTagsFromCollectionJSON collID = 
   encode <$> getTagsFromCollection collID
+
+
+
+searchTag :: String -> DBConn [(ZoteroTagID, ZoteroTagName)]
+searchTag = makeSearchNameIdFun "SELECT tagID, name FROM tags WHERE name LIKE ?"
+
+
+searchCollection :: String -> DBConn [(Int, String)]
+searchCollection = makeSearchNameIdFun "SELECT collectionID, collectionName FROM collections WHERE collectionName LIKE ?"
+
 
 
 searchByTitleWordLike :: String -> DBConn [Int]
