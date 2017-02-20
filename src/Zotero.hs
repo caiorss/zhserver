@@ -163,6 +163,21 @@ import System.Random (getStdGen, newStdGen, randomRs)
 
 {- ---------------------- Types -----------------}
 
+{- | SQL Statement or SQL expression. -}
+type SQL = String
+
+{- | Database Uri string.  -}    
+type DBUriPath = String 
+
+    {- | This type represents a function that takes name and returns all IDs
+   associated with table rows which match the name
+-}
+type SearchIDFun = String -> DBConn [Int]
+
+
+type SearchNameIdFun = String -> DBConn [(Int, String)]
+
+
 type SQLQuery =  [(String, HDBC.SqlValue)] 
 
 {- | Database Connection -> DbConn a = ReaderT conn IO a = conn -> IO a -}
@@ -199,7 +214,7 @@ parseDbDriver2 dbUri =
     getDbType dbUri = T.unpack . (!!0) . T.split (==':') . T.pack $ dbUri
 
 
-openDBConnection :: String -> IO (Maybe HDBConn)
+openDBConnection :: DBUriPath -> IO (Maybe HDBConn)
 openDBConnection dbUri =
   case parseDbDriver2 dbUri of
     Just (DBUriSqlite   uri) -> Sqlite3.connectSqlite3  uri
@@ -219,7 +234,7 @@ runDBConn hdbconn dbAction =
 
 
 -- withDBConnection :: forall conn. (HDBC.IConnection conn) => String -> (conn -> IO ()) -> IO ()
-withDBConnection ::  String -> DBConn () -> IO ()
+withDBConnection ::  DBUriPath -> DBConn () -> IO ()
 withDBConnection dbUri dbAction = do
   conn <- openDBConnection dbUri
   case conn of
@@ -250,15 +265,6 @@ withConnection ioConn function = do
   result   <- function conn
   HDBC.disconnect conn
   return result
-
-type SQL = String
-{- | This type represents a function that takes name and returns all IDs
-   associated with table rows which matches the name
--}
-type SearchIDFun = String -> DBConn [Int]
-
-
-type SearchNameIdFun = String -> DBConn [(Int, String)]
 
 
 {- | Make  function which searches by string or name and returns IDs -}
@@ -447,7 +453,7 @@ createKey = do
 --      -> IO (Maybe b)
 
 
-sqlQuery :: String -> [HDBC.SqlValue] -> ([HDBC.SqlValue] -> b) -> DBConn (Maybe b)
+sqlQuery :: SQL -> [HDBC.SqlValue] -> ([HDBC.SqlValue] -> b) -> DBConn (Maybe b)
 sqlQuery sql sqlvals projection = do
   conn   <- ask 
   stmt   <- liftIO $  HDBC.prepare conn sql
@@ -462,7 +468,7 @@ sqlQuery sql sqlvals projection = do
 --      conn
 --      -> String -> [HDBC.SqlValue] -> ([HDBC.SqlValue] -> b) -> IO [b]
 
-sqlQueryAll :: String -> [HDBC.SqlValue] -> ([HDBC.SqlValue] -> b) -> DBConn [b]     
+sqlQueryAll :: SQL -> [HDBC.SqlValue] -> ([HDBC.SqlValue] -> b) -> DBConn [b]     
 sqlQueryAll sql sqlvals projection = do
   con     <- ask 
   stmt    <- liftIO $ HDBC.prepare con sql
@@ -479,12 +485,12 @@ sqlQueryRow :: HDBC.IConnection conn => conn
                -> IO [b]
 -}
 
-sqlQueryRow :: String -> [HDBC.SqlValue] -> (HDBC.SqlValue -> b) -> DBConn [b]   
+sqlQueryRow :: SQL -> [HDBC.SqlValue] -> (HDBC.SqlValue -> b) -> DBConn [b]   
 sqlQueryRow sql sqlvals coercion = do
   sqlQueryAll sql sqlvals (coercion . (!!0))
 
 
-sqlQueryOne :: String -> [HDBC.SqlValue] -> (HDBC.SqlValue -> b) -> DBConn (Maybe b)
+sqlQueryOne :: SQL -> [HDBC.SqlValue] -> (HDBC.SqlValue -> b) -> DBConn (Maybe b)
 sqlQueryOne sql sqlvals projection = do
   conn   <- ask 
   stmt   <- liftIO $  HDBC.prepare conn sql
@@ -496,7 +502,7 @@ sqlQueryOne sql sqlvals projection = do
   
   
 
-sqlRun :: String -> [HDBC.SqlValue] -> DBConn ()
+sqlRun :: SQL -> [HDBC.SqlValue] -> DBConn ()
 sqlRun sql sqlvals = do
   conn    <- ask 
   stmt    <- liftIO $ HDBC.prepare conn sql
