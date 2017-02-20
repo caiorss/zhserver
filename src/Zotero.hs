@@ -83,6 +83,8 @@ module Zotero
           ,getAuthorName
 
           ,searchTag
+          ,searchCollection
+
           {- JSON Export Functions -}
          ,getCollectionsJSON
          ,getTagsJSON          
@@ -986,6 +988,12 @@ getTagsFromCollectionJSON collID =
 
 searchTag :: String -> DBConn [(ZoteroTagID, ZoteroTagName)]
 searchTag = makeSearchNameIdFun "SELECT tagID, name FROM tags WHERE name LIKE ?"
+
+
+searchCollection :: String -> DBConn [(Int, String)]
+searchCollection = makeSearchNameIdFun "SELECT collectionID, collectionName FROM collections WHERE collectionName LIKE ?"
+
+
 
 searchByTitleWordLike :: String -> DBConn [Int]
 searchByTitleWordLike  searchWord = do
