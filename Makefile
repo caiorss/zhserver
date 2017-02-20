@@ -86,6 +86,17 @@ app: zhserver
 
 app-run: dbtest 
 	sh zhserver.sh --params 0.0.0.0 9090 "sqlite://testdb/zotero.sqlite" assets testdb/storage 
+
+# Copy Sqlite database from system to top level project directory
+
+sample-db     := testdb/zotero-db.sqlite
+sample-db-src := /home/arch/.mozilla/firefox/dic34vce.default/zotero/zotero.sqlite
+
+update: $(sample-db)
+
+$(sample-db): $(sample-db-src)
+	cp $(sample-db-src) $(sample-db)
+
 #========= Clean Rules ===================#
 
 doc:
