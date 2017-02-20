@@ -259,6 +259,13 @@ type SearchNameIdFun = String -> DBConn [(Int, String)]
 makeSearchIdFun :: SQL -> SearchIDFun
 makeSearchIdFun sql = \ search -> sqlQueryRow sql [HDBC.SqlString search] fromSqlToInt
 
+
+{- | Make function which searches items from table which column matches a string -}
+makeSearchNameIdFun :: SQL -> SearchNameIdFun
+makeSearchNameIdFun sql = \ search -> sqlQueryAll sql [HDBC.SqlString search] projection
+                          where
+                            projection row =  (fromSqlToInt (row !! 0),  (fromSqlToString (row !! 1)))
+
 -- withDBConnection2 dbUri dbAction = do
 --   withDBConnection dbUri (ioToDBConn dbAction)
 
