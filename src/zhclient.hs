@@ -37,20 +37,19 @@ import qualified System.Environment as Env
 import qualified System.Process as SP
 import qualified System.FilePath as SF
 
-
-copyCollectionTo conn collID dest = do
-  items       <- runReaderT (Z.collectionItems collID) conn
-  attachments <- mapM (\item -> runReaderT (Z.itemAttachmentFile item) conn) items
-  createDirectoryIfMissing True dest
-  mapM_ copyToDest attachments
+copyCollectionTo :: String -> String -> Int -> DBConn ()
+copyCollectionTo storagePath dest collID = do
+  items       <- Z.collectionItems collID
+  attachments <- mapM (\item -> Z.itemAttachmentFile item ) items
+  liftIO $ createDirectoryIfMissing True dest
+  liftIO $ mapM_ copyToDest attachments
   where
     destPath itemFile =
       SF.joinPath [dest, SF.takeFileName itemFile]
 
     copyToDest :: Maybe FilePath -> IO ()
     copyToDest itemFile =
-      mapM_ (\i -> copyFile i (destPath i)) itemFile  
-
+      mapM_ (\file -> copyFile (SF.combine storagePath file) (destPath file)) itemFile
 
 
 {- | Apply a monadic function to a Maybe value if the value is not Nothing -}
