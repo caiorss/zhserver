@@ -259,8 +259,9 @@ parseArgs args path = do
 
     -- ============ Items command line switches ========================
     -- 
-    ["item", "-id",  itemID]                       -> printItemID (read itemID :: Int)
+    ["item", "-show",  itemID]                     -> printItemID (read itemID :: Int)
     ["item", "-open", itemID]                      -> openItem path (readInt itemID)
+    ["item", "-copy", itemID, destPath]            -> copyItemTo path destPath (readInt itemID)                                                      
     ["item", "-delete", itemID]                    -> undefined
     
     ["item", "-add-tag", itemID,  tagNames] -> do Z.addTagsToItem (readInt itemID) (words tagNames)
@@ -270,11 +271,13 @@ parseArgs args path = do
 
     -- ============ Collections command line switches ====================
     -- 
-    ["coll", "-items",  collID]                    -> printCollection (read collID :: Int)
+    ["coll", "-show",  collID]                    -> printCollection (read collID :: Int)
     ["coll", "-all"]                               -> printCollections
     ["coll", "-top"]                               -> printCollectionsTop
     ["coll", "-count", collID]                     -> Z.collectionItems (readInt collID) >>= countItems
     ["coll", "-search", name]                      -> Z.searchCollection (wordLike name) >>= mapM_ (\ tpl -> liftIO $ print tpl)
+    ["coll", "-copy-to", collID, destPath]         -> copyCollectionTo path destPath (readInt collID)
+                                                       
 
     ["subcoll", collID]                            -> printSubCollections (read collID :: Int)
     ["subcoll", "-all",   collID]                  -> printAllSubCollections (read collID :: Int)
@@ -283,7 +286,7 @@ parseArgs args path = do
     -- ============= Tags command line switches ===========================
     --
     ["tag",  "-all"]                               -> printTags
-    ["tag",  "-items", tagID]                      -> printTagID (readInt tagID)
+    ["tag",  "-show", tagID]                      -> printTagID (readInt tagID)
     ["tag",  "-count", tagID]                      -> Z.getTagItems (readInt tagID) >>= countItems
     ["tag",  "-rename", tagID, newName]            -> Z.renameTag   (readInt tagID) newName
     ["tag",  "-delete", tagID]                     -> undefined
@@ -295,7 +298,7 @@ parseArgs args path = do
     ["author", "-all"]                             -> printAuthors
     ["author", "-id", authorID]                    -> undefined
     ["author", "-search", name]                    -> undefined 
-    ["author", "-items", authorID]                 -> Z.getItemsFromAuthor (read authorID :: Int) >>= mapM_ printItemID
+    ["author", "-show", authorID]                  -> Z.getItemsFromAuthor (read authorID :: Int) >>= mapM_ printItemID
 
     -- ============ Search commands ======================================
     --
