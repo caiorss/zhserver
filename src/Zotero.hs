@@ -169,7 +169,7 @@ type SQL = String
 {- | Database Uri string.  -}    
 type DBUriPath = String 
 
-    {- | This type represents a function that takes name and returns all IDs
+{- | This type represents a function that takes name and returns all IDs
    associated with table rows which match the name
 -}
 type SearchIDFun = String -> DBConn [Int]
