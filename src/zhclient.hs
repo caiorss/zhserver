@@ -233,7 +233,8 @@ printTagID tagID = do
 {- | Parse Integer - Not a safe function -}
 readInt :: String -> Int
 readInt s = read s
-        
+
+wordLike s = "%" ++ s ++ "%"
             
 -- @HERE
 parseArgs :: [String] -> String -> DBConn ()
