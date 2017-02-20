@@ -61,7 +61,8 @@ import qualified Database.HDBC.Sqlite3    as Sqlite3
 import Text.Printf (printf)
 
 import qualified Zotero as Z
-
+import qualified DBUtils
+    
 import Zotero (DBConn)
 
 {-
@@ -109,8 +110,8 @@ withConnServerDB dbUri conf serverApp = do
 
   case maybeConn of
 
-    Just (Z.HDBConnSqlite conn)   ->  withConn conn conf serverApp
-    Just (Z.HDBConnPostgres conn) ->  withConn conn conf serverApp
+    Just (DBUtils.HDBConnSqlite conn)   ->  withConn conn conf serverApp
+    Just (DBUtils.HDBConnPostgres conn) ->  withConn conn conf serverApp
     Nothing                     ->  putStrLn $ "Error: Invalid database URI " ++ dbUri
 
   where
@@ -118,7 +119,7 @@ withConnServerDB dbUri conf serverApp = do
       -- Listen http request
       simpleHTTP conf $ runReaderT serverApp conn
       -- Disconnect database
-      HDBC.disconnect conn
+      -- HDBC.disconnect conn
       return ()
 
 

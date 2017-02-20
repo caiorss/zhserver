@@ -26,7 +26,7 @@ import qualified System.FilePath as SF
 import System.Exit  (exitSuccess)
 
 import qualified Zotero as Z
-import Zotero (DBConn, joinStrings, strip)
+import Zotero (DBConn)
 
 import System.Directory (copyFile, createDirectoryIfMissing)
 
@@ -37,6 +37,8 @@ import qualified System.Environment as Env
 import qualified System.Process as SP
 import qualified System.FilePath as SF
 
+import DBUtils (joinStrings)
+    
 {- | Apply a monadic function to a Maybe value if the value is not Nothing -}
 iterMaybe :: Monad m => Maybe a -> (a -> m ()) -> m ()
 iterMaybe value action = do
