@@ -155,8 +155,11 @@ import qualified Data.ByteString.Lazy.Internal as BLI
 import qualified Text.Printf as P
 import qualified Data.Text as T
 
+import System.Random (getStdGen, newStdGen, randomRs)    
+    
 
-import System.Random (getStdGen, newStdGen, randomRs)
+ 
+
 
 {- ---------------------- Types -----------------}
 
