@@ -254,6 +254,11 @@ type SearchIDFun = String -> DBConn [Int]
 
 type SearchNameIdFun = String -> DBConn [(Int, String)]
 
+
+{- | Make  function which searches by string or name and returns IDs -}
+makeSearchIdFun :: SQL -> SearchIDFun
+makeSearchIdFun sql = \ search -> sqlQueryRow sql [HDBC.SqlString search] fromSqlToInt
+
 -- withDBConnection2 dbUri dbAction = do
 --   withDBConnection dbUri (ioToDBConn dbAction)
 
