@@ -165,13 +165,13 @@ printItem item = do
               mapM_ putStrLn path
               putStrLn "--------------------------------------------\n\n"
 
-
+{- | Print an item given by its ID -}
 printItemID :: Int -> DBConn ()
 printItemID itemID = do
     item  <- Z.getZoteroItem itemID
     printItem item
 
-
+{- | Open item file with default system application -}
 openItem :: String -> Int -> DBConn ()
 openItem storagePath itemID = do 
   item <-  Z.getZoteroItem itemID
@@ -200,7 +200,7 @@ prompt msg = do
   return line 
 
 
-
+{- | Print a collection given by its ID -}
 printCollection :: Int -> DBConn ()
 printCollection collID = do
   name  <- Z.getCollName collID
