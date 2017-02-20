@@ -258,6 +258,8 @@ parseArgs args path = do
     ["coll", "-items",  collID]                    -> printCollection (read collID :: Int)
     ["coll", "-all"]                               -> printCollections
     ["coll", "-top"]                               -> printCollectionsTop
+    ["coll", "-count", collID]                     -> Z.collectionItems (readInt collID) >>= countItems
+    ["coll", "-search", name]                      -> Z.searchCollection (wordLike name) >>= mapM_ (\ tpl -> liftIO $ print tpl)
 
     ["subcoll", collID]                            -> printSubCollections (read collID :: Int)
     ["subcoll", "-all",   collID]                  -> printAllSubCollections (read collID :: Int)
@@ -271,6 +273,7 @@ parseArgs args path = do
     ["tag",  "-rename", tagID, newName]            -> Z.renameTag   (readInt tagID) newName
     ["tag",  "-delete", tagID]                     -> undefined
     ["tag",  "-merge", oldTagID, newTagID]         -> Z.mergeTags (readInt oldTagID) (readInt newTagID)
+    ["tag", "-search", name]                       -> Z.searchTag (wordLike name) >>= mapM_ (\ tpl -> liftIO $ print tpl)
 
     -- ============  Author command line switches =======================
     --
@@ -282,7 +285,7 @@ parseArgs args path = do
     -- ============ Search commands ======================================
     --
     ["search", "-title-tag", word]                 -> Z.searchByTitleTags word >>= mapM_ printItemID
-    ["search", "-title", word]                     -> Z.searchByTitleWordLike ("%" ++ word ++ "%") >>= mapM_ printItemID
+    ["search", "-title", word]                     -> Z.searchByTitleWordLike (wordLike word) >>= mapM_ printItemID
     ["search", "-title-content", word]             -> Z.searchByContentAndTitleLike word >>= mapM_ printItemID
     
     ["search", "-title-tag-and", query]            -> Z.searchByTitleTagsAndInWords (words query) >>= mapM_ printItemID
@@ -291,6 +294,7 @@ parseArgs args path = do
     
     []                                             -> liftIO $ putStrLn "Show help"
     _                                              -> liftIO $ putStrLn "Error: Invalid command."
+
 
 
 main :: IO ()
