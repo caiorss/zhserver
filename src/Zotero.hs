@@ -251,6 +251,9 @@ type SQL = String
 -}
 type SearchIDFun = String -> DBConn [Int]
 
+
+type SearchNameIdFun = String -> DBConn [(Int, String)]
+
 -- withDBConnection2 dbUri dbAction = do
 --   withDBConnection dbUri (ioToDBConn dbAction)
 
