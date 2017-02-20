@@ -245,6 +245,7 @@ withConnection ioConn function = do
   HDBC.disconnect conn
   return result
 
+type SQL = String
 -- withDBConnection2 dbUri dbAction = do
 --   withDBConnection dbUri (ioToDBConn dbAction)
 
