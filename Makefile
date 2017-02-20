@@ -1,12 +1,12 @@
 all: server 
 
 app = zhserver.bin
-src = src/ZHServer.hs src/Zotero.hs
+src = src/ZHServer.hs src/DBUtils.hs src/Zotero.hs
 
 config = src/zhserver.conf
 
 zhclient:
-	stack exec -- ghc --make -o zhclient.bin src/zhclient.hs src/Zotero.hs
+	stack exec -- ghc --make -o zhclient.bin src/zhclient.hs src/DBUtils.hs src/Zotero.hs
 
 server: $(src)
 	stack exec -- ghc --make -o $(app) $(src)
@@ -100,7 +100,7 @@ $(sample-db): $(sample-db-src)
 #========= Clean Rules ===================#
 
 doc:
-	stack exec -- haddock --html src/Zotero.hs src/ZHServer.hs --hyperlinked-source --odir=dist/docs
+	stack exec -- haddock --html src/Zotero.hs src/DBUtils.hs src/ZHServer.hs --hyperlinked-source --odir=dist/docs
 
 doc-show:
 	firefox dist/docs/index.html
