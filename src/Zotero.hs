@@ -82,6 +82,7 @@ module Zotero
           ,getCollName
           ,getAuthorName
 
+          ,searchTag
           {- JSON Export Functions -}
          ,getCollectionsJSON
          ,getTagsJSON          
@@ -981,6 +982,10 @@ getTagsFromCollectionJSON :: Int ->  DBConn BLI.ByteString
 getTagsFromCollectionJSON collID = 
   encode <$> getTagsFromCollection collID
 
+
+
+searchTag :: String -> DBConn [(ZoteroTagID, ZoteroTagName)]
+searchTag = makeSearchNameIdFun "SELECT tagID, name FROM tags WHERE name LIKE ?"
 
 searchByTitleWordLike :: String -> DBConn [Int]
 searchByTitleWordLike  searchWord = do
