@@ -743,68 +743,138 @@ Haskell AESON - Json library
 
  - [[https://hackage.haskell.org/package/aeson][aeson: Fast JSON parsing and encoding]]
 ** Database Documentation 
+*** Get all collections 
+
+#+header: :results table
+#+header: :db testdb/zotero-db.sqlite
+#+BEGIN_SRC sqlite 
+SELECT   collectionID, collectionName 
+FROM     collections 
+ORDER BY collectionName
+#+END_SRC
+
+#+RESULTS:
+| 230 | Algorithm                                                        |
+| 119 | C Programming                                                    |
+| 284 | C/C++                                                            |
+| 270 | Continuations Passing                                            |
+| 117 | Contracts                                                        |
+|  64 | Control System                                                   |
+| 326 | Csharp                                                           |
+|  66 | Ctypes                                                           |
+| 217 | DSL Domain Specific Language                                     |
+|   9 | Data Analysis                                                    |
+|  44 | Database                                                         |
+| 229 | Decision Tables                                                  |
+| 272 | Deterministic Password                                           |
+|  19 | Economics                                                        |
+| 166 | Elements of Software Construction                                |
+|  21 | Embedded Systems                                                 |
+| 127 | Encryption                                                       |
+|  11 | Engineering                                                      |
+| 202 | F# - Fsharp                                                      |
+| 225 | Faraday Cage                                                     |
+| 200 | Functional Programming                                           |
+| 306 | Functional Thinking Serie                                        |
+| 122 | Fuzzy Logic                                                      |
+|  65 | GUI Toolkit                                                      |
+
+
+
+
+*** Get all items from a given collection 
+
+Get all items from collection "SMB Protocol" which id = 335.
+
+#+header: :results table
+#+header: :db testdb/zotero-db.sqlite
+#+BEGIN_SRC sqlite 
+  SELECT  itemID FROM collectionItems WHERE collectionID = 335
+#+END_SRC
+
+#+RESULTS:
+| 6626 |
+| 6628 |
+| 6630 |
+| 6632 |
+| 6634 |
+| 6636 |
+| 6638 |
+| 6640 |
+| 6643 |
+| 6645 |
+| 6647 |
+| 6648 |
+
+
 *** Search Titles that contains a word 
 
 Search all titles that contains the string "functional".
 
-#+BEGIN_SRC sql 
-SELECT itemData.itemID, itemDataValues.value  
-FROM   itemData, itemDataValues, itemAttachments
-WHERE  fieldID = 110 
-AND    itemData.valueID = itemDataValues.valueID
-AND    itemAttachments.sourceItemID = itemData.itemID
-AND    itemDataValues.value LIKE "%functional%" 
+#+header: :results table
+#+header: :db testdb/zotero-db.sqlite
+#+BEGIN_SRC sqlite 
+  SELECT itemData.itemID, itemDataValues.value  
+  FROM   itemData, itemDataValues, itemAttachments
+  WHERE  fieldID = 110 
+  AND    itemData.valueID = itemDataValues.valueID
+  AND    itemAttachments.sourceItemID = itemData.itemID
+  AND    itemDataValues.value LIKE "%functional%" 
+  LIMIT 10
 #+END_SRC
 
+#+RESULTS:
+| 1936 | Functional Programming                                                                                       |   |
+| 2688 | Currently struggling. Can someone help em transition from functional programming to using OOP? : learnpython |   |
+| 2750 | When to use functional programming languages and techniques - TechRepublic                                   |   |
+| 2752 | Where functional programming fits in - TechRepublic                                                          |   |
+| 2754 | Commercial Uses: Going functional on exotic trades                                                           |   |
+| 2794 | An introduction to functional programming                                                                    |   |
+| 2798 | functional programming                                                                                       |   |
+| 2804 | Concepts and Terminology (Functional Transformation)                                                         |   |
+| 2807 | Purely functional data structures                                                                            |   |
 
-#+BEGIN_SRC sql 
-sqlite> 
-sqlite> SELECT itemData.itemID, itemDataValues.value  
-   ...> FROM   itemData, itemDataValues, itemAttachments
-   ...> WHERE  fieldID = 110 
-   ...> AND    itemData.valueID = itemDataValues.valueID
-   ...> AND    itemAttachments.sourceItemID = itemData.itemID
-   ...> AND    itemDataValues.value LIKE "%functional%" 
-   ...> ;
-1936|Functional Programming
-2688|Currently struggling. Can someone help em transition from functional programming to using OOP? : learnpython
-2750|When to use functional programming languages and techniques - TechRepublic
-2752|Where functional programming fits in - TechRepublic
-2754|Commercial Uses: Going functional on exotic trades
-2772|Functional Programming in the Financial Industry | Open Parallel
-2794|An introduction to functional programming
-2798|functional programming | Math ∩ Programming
-...
-#+END_SRC
+
+
 *** Search by a Regex Pattern 
 
-#+BEGIN_SRC sql 
+#+header: :results table
+#+header: :db testdb/zotero-db.sqlite
+#+BEGIN_SRC sqlite 
 SELECT itemData.itemID, itemDataValues.value  
 FROM   itemData, itemDataValues, itemAttachments
 WHERE  fieldID = 110 
 AND    itemData.valueID = itemDataValues.valueID
 AND    itemAttachments.sourceItemID = itemData.itemID
-AND    itemDataValues.value REGEXP "math.*" 
+AND    itemDataValues.value REGEXP "*math.*" 
 #+END_SRC
 
-Result: 
-
-#+BEGIN_SRC sql 
-"2987"	"Functional Patterns for the non-mathematician"
-"4842"	"Power of mathematics: Reasoning about functional types"
-"6094"	"Discrete mathematics using a computer"
-#+END_SRC
 *** Text search. 
 **** Search all items which title has a word 
 
 Search all items that have the word "haskell".
 
-#+BEGIN_SRC sql 
+#+header: :results table
+#+header: :db testdb/zotero-db.sqlite
+#+BEGIN_SRC sqlite
 SELECT DISTINCT itemID 
 FROM   fulltextItemWords, fulltextWords
 WHERE  fulltextItemWords.wordID = fulltextWords.wordID
 AND    fulltextWords.word LIKE "%haskell%"
+LIMIT  10
 #+END_SRC 
+
+#+RESULTS:
+|   4 |
+|  33 |
+| 298 |
+| 299 |
+| 332 |
+| 347 |
+| 362 |
+| 441 |
+| 468 |
+| 476 |
 
 **** Search all itesm which title or content has a given word
 
@@ -842,83 +912,50 @@ Insert a new tag if it doesn't exist and return its tagID or ID.
 
 Search all items which has at least one tag of "haskell", "ffi", "fp", "functional"
 
-#+BEGIN_SRC sql 
+#+header: :results table
+#+header: :db testdb/zotero-db.sqlite
+#+BEGIN_SRC sqlite  
   SELECT itemTags.itemID, tags.tagID, tags.Name FROM itemTags, tags 
   WHERE  itemTags.tagID = tags.tagID and tags.Name IN ("haskell", "ffi", "fp", "functional")
+  LIMIT  10 
 #+END_SRC
 
-Sample output: 
+#+RESULTS:
+| 5766 | 182 | haskell |
+| 5792 | 182 | haskell |
+| 5920 | 182 | haskell |
+| 5928 | 182 | haskell |
+| 5928 | 189 | fp      |
+| 5936 | 182 | haskell |
+| 5938 | 189 | fp      |
+| 5943 | 182 | haskell |
+| 5946 | 189 | fp      |
+| 5948 | 189 | fp      |
 
-#+BEGIN_SRC text 
-  itemID|tagID|name
-  5766|182|haskell
-  5792|182|haskell
-  5920|182|haskell
-  5928|182|haskell
-  5928|189|fp
-  5936|182|haskell
-  5938|189|fp
-  5943|182|haskell
-  5946|189|fp
-  5948|189|fp
-  5950|189|fp
-  5952|189|fp
-  5954|189|fp
-  5956|189|fp
-  5958|189|fp
-  5960|189|fp
-  5962|189|fp
-  5965|189|fp
-  5907|182|haskell
-  5907|189|fp
-  5935|182|haskell
-  5935|189|fp
-  5969|182|haskell
-  5969|189|fp
-  5970|182|haskell
-  5973|182|haskell
-  5973|189|fp
-  5975|182|haskell
-  5975|189|fp
-  5977|189|fp
-  5979|189|fp
-  5979|182|haskell
-  5167|189|fp
-  5980|182|haskell
-  5980|189|fp
-  5985|182|haskell
-  5985|189|fp
-  5988|182|haskell
-  5988|189|fp
-  5992|189|fp
-  5992|182|haskell
-  5994|182|haskell
-  ... ... ... 
-#+END_SRC
 
 Refined search return only itemID 
 
-#+BEGIN_SRC sql 
+#+header: :results table
+#+header: :db testdb/zotero-db.sqlite
+#+BEGIN_SRC sqlite 
   SELECT DISTINCT itemTags.itemID FROM itemTags, tags 
-  WHERE  itemTags.tagID = tags.tagID and tags.Name IN ("haskell", "ffi", "fp", "functional") ;        
+  WHERE  itemTags.tagID = tags.tagID and tags.Name IN ("haskell", "ffi", "fp", "functional")
+  LIMIT  10
 #+END_SRC
 
-Sample output:
+#+RESULTS:
+| 3105 |
+| 3109 |
+| 4511 |
+| 4598 |
+| 5035 |
+| 5041 |
+| 5167 |
+| 5766 |
+| 5792 |
+| 5815 |
 
-#+BEGIN_SRC text 
-  itemID
-  5167
-  5766
-  5792
-  5815
-  5907
-  5920
-  5928
-  5935
-  5936
 
-  ...
-#+END_SRC
 *** Search all items which title at least match one of the word of a list 
 
 #+BEGIN_SRC sql  
