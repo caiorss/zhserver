@@ -37,23 +37,6 @@ import qualified System.Environment as Env
 import qualified System.Process as SP
 import qualified System.FilePath as SF
 
-{- | Copy item file to a destination
-- storagePath: Path where zotero's files are stored.
-- dest:        Destination directory.
-- itemID:      ID of item to be copied.
--}
-copyItemTo :: String -> String -> Int -> DBConn ()
-copyItemTo storagePath dest itemID = do
-  itemFile <- Z.itemAttachmentFile itemID
-  case itemFile of
-    Nothing    -> liftIO $ putStrLn $ "Error: Item ID = " ++ show itemID ++ " has no associated file."
-    Just file  -> do liftIO $ createDirectoryIfMissing True dest
-                     let origin = SF.combine storagePath file
-                     let output = SF.joinPath [dest, SF.takeFileName file]
-                     liftIO $ putStrLn $ "Copied file '" ++ origin ++ "' to '" ++ output ++ "'"
-                     liftIO $ copyFile origin output
-
-
 {- | Apply a monadic function to a Maybe value if the value is not Nothing -}
 iterMaybe :: Monad m => Maybe a -> (a -> m ()) -> m ()
 iterMaybe value action = do
@@ -236,7 +219,8 @@ readInt :: String -> Int
 readInt s = read s
 
 wordLike s = "%" ++ s ++ "%"
-            
+
+
 
 copyCollectionTo :: String -> String -> Int -> DBConn ()
 copyCollectionTo storagePath dest collID = do
@@ -252,6 +236,25 @@ copyCollectionTo storagePath dest collID = do
     copyToDest itemFile =
       mapM_ (\file -> copyFile (SF.combine storagePath file) (destPath file)) itemFile
 
+          
+{- | Copy item file to a destination
+- storagePath: Path where zotero's files are stored.
+- dest:        Destination directory.
+- itemID:      ID of item to be copied.
+-}
+copyItemTo :: String -> String -> Int -> DBConn ()
+copyItemTo storagePath dest itemID = do
+  itemFile <- Z.itemAttachmentFile itemID
+  case itemFile of
+    Nothing    -> liftIO $ putStrLn $ "Error: Item ID = " ++ show itemID ++ " has no associated file."
+    Just file  -> do liftIO $ createDirectoryIfMissing True dest
+                     let origin = SF.combine storagePath file
+                     let output = SF.joinPath [dest, SF.takeFileName file]
+                     liftIO $ copyFile origin output
+                     liftIO $ putStrLn $ "Copied file '" ++ origin ++ "' to '" ++ output ++ "'\n\n"
+                     printItemID itemID       
+
+             
 -- @HERE
 parseArgs :: [String] -> String -> DBConn ()
 parseArgs args path = do
