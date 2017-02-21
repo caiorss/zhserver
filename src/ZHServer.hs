@@ -313,10 +313,6 @@ makeRoutes staticPath storagePath = msum
 
 
 
-parseDbDriver uri =
-  T.unpack . (!!0) . T.split (==':') . T.pack $ uri
-  
-
 -- Start server with a given configuration 
 -- 
 runServerConf :: ServerConfig -> IO ()
