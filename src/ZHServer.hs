@@ -32,11 +32,13 @@ import qualified Happstack.Server.Response as Response
 
 import qualified Happstack.Server.Internal.Types as ServerTypes 
 
+import Happstack.Server.Internal.Types
+
 import Happstack.Server (FromReqURI (..), dir, Conf, Conf (..), nullConf, ok
                          , seeOther, simpleHTTP, dir, dirs, path, seeOther, method
                          , Method (GET, POST, HEAD)
                          , ServerPart, ServerPartT, look
-                         , flatten, toResponse 
+                         , flatten, toResponse, askRq
                         
                         )
 
@@ -64,6 +66,8 @@ import qualified Zotero as Z
 import qualified DBUtils
     
 import Zotero (DBConn)
+
+import Text.Show.Pretty (pPrint)
 
 {-
    ReaderT conn (ServerPartT IO) response
@@ -201,6 +205,22 @@ serverRouteParamString param dbFn =
   serverRouteParam return param LC.empty dbFn
 
 
+makeHttpLogger :: ServerApp ServerTypes.Response -> ServerApp ServerTypes.Response
+makeHttpLogger server = do
+  rq <- askRq
+  puts $ "=============== REQUEST ================"
+  puts $ "Method = " ++ (show $ rqMethod rq)
+  puts $ "Paths  = " ++ (show $ rqPaths rq)
+  puts $ "Uri    = " ++ (show $ rqUri rq)
+  puts $ "Query  = " ++ (show $ rqQuery rq)
+  puts $ "Peer   = " ++ (show $ rqPeer rq)
+  puts "\n\nHeaders -------"
+  liftIO $ pPrint $ rqHeaders rq
+  server
+  where
+    puts s = liftIO $ putStrLn s
+
+
 {-- ================ Server Routes Dispatch ========================== -}
 
 makeRoutes :: String -> String -> ServerApp ServerTypes.Response
@@ -293,10 +313,6 @@ makeRoutes staticPath storagePath = msum
 
 
 
-parseDbDriver uri =
-  T.unpack . (!!0) . T.split (==':') . T.pack $ uri
-  
-
 -- Start server with a given configuration 
 -- 
 runServerConf :: ServerConfig -> IO ()
@@ -306,13 +322,13 @@ runServerConf conf = do
   let storagePath = serverStoragePath conf
   let staticPath  = serverStaticPath conf
   let sconf       = Conf port Nothing Nothing 30 Nothing
-  withConnServerDB dbUri sconf (makeRoutes staticPath storagePath)
+  withConnServerDB dbUri sconf (makeHttpLogger $ makeRoutes staticPath storagePath)
 
 
 runServer host port dbUri staticPath storagePath =
   case readMaybe port :: Maybe Int of
     Just p    -> do  let sconf = Conf p Nothing Nothing 30 Nothing
-                     withConnServerDB dbUri sconf (makeRoutes staticPath storagePath)
+                     withConnServerDB dbUri sconf (makeHttpLogger $ makeRoutes staticPath storagePath)
     Nothing   -> putStrLn "Error: Invalid port number"
 
   
