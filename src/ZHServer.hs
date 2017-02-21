@@ -328,7 +328,7 @@ runServerConf conf = do
 runServer host port dbUri staticPath storagePath =
   case readMaybe port :: Maybe Int of
     Just p    -> do  let sconf = Conf p Nothing Nothing 30 Nothing
-                     withConnServerDB dbUri sconf (makeRoutes staticPath storagePath)
+                     withConnServerDB dbUri sconf (makeHttpLogger $ makeRoutes staticPath storagePath)
     Nothing   -> putStrLn "Error: Invalid port number"
 
   
