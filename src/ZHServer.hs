@@ -205,6 +205,22 @@ serverRouteParamString param dbFn =
   serverRouteParam return param LC.empty dbFn
 
 
+makeHttpLogger :: ServerApp ServerTypes.Response -> ServerApp ServerTypes.Response
+makeHttpLogger server = do
+  rq <- askRq
+  puts $ "=============== REQUEST ================"
+  puts $ "Method = " ++ (show $ rqMethod rq)
+  puts $ "Paths  = " ++ (show $ rqPaths rq)
+  puts $ "Uri    = " ++ (show $ rqUri rq)
+  puts $ "Query  = " ++ (show $ rqQuery rq)
+  puts $ "Peer   = " ++ (show $ rqPeer rq)
+  puts "\n\nHeaders -------"
+  liftIO $ pPrint $ rqHeaders rq
+  server
+  where
+    puts s = liftIO $ putStrLn s
+
+
 {-- ================ Server Routes Dispatch ========================== -}
 
 makeRoutes :: String -> String -> ServerApp ServerTypes.Response
