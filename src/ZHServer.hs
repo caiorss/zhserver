@@ -322,7 +322,7 @@ runServerConf conf = do
   let storagePath = serverStoragePath conf
   let staticPath  = serverStaticPath conf
   let sconf       = Conf port Nothing Nothing 30 Nothing
-  withConnServerDB dbUri sconf (makeRoutes staticPath storagePath)
+  withConnServerDB dbUri sconf (makeHttpLogger $ makeRoutes staticPath storagePath)
 
 
 runServer host port dbUri staticPath storagePath =
