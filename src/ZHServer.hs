@@ -38,7 +38,7 @@ import Happstack.Server (FromReqURI (..), dir, Conf, Conf (..), nullConf, ok
                          , seeOther, simpleHTTP, dir, dirs, path, seeOther, method
                          , Method (GET, POST, HEAD)
                          , ServerPart, ServerPartT, look
-                         , flatten, toResponse 
+                         , flatten, toResponse, askRq
                         
                         )
 
