@@ -32,6 +32,8 @@ import qualified Happstack.Server.Response as Response
 
 import qualified Happstack.Server.Internal.Types as ServerTypes 
 
+import Happstack.Server.Internal.Types
+
 import Happstack.Server (FromReqURI (..), dir, Conf, Conf (..), nullConf, ok
                          , seeOther, simpleHTTP, dir, dirs, path, seeOther, method
                          , Method (GET, POST, HEAD)
