@@ -65,6 +65,8 @@ import qualified DBUtils
     
 import Zotero (DBConn)
 
+import Text.Show.Pretty (pPrint)
+
 {-
    ReaderT conn (ServerPartT IO) response
     = conn -> (ServerPartT IO) response
