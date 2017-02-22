@@ -34,19 +34,19 @@ import qualified Happstack.Server.Internal.Types as ServerTypes
 
 import Happstack.Server.Internal.Types
 
-import Happstack.Server (FromReqURI (..), dir, Conf, Conf (..), nullConf, ok
-                         , seeOther, simpleHTTP, dir, dirs, path, seeOther, method
-                         , Method (GET, POST, HEAD)
-                         , ServerPart, ServerPartT, look
-                         , flatten, toResponse, askRq
+-- import Happstack.Server (FromReqURI (..), dir, Conf, Conf (..), nullConf, ok
+--                          , seeOther, simpleHTTP, dir, dirs, path, seeOther, method
+--                          , Method (GET, POST, HEAD)
+--                          , ServerPart, ServerPartT, look
+--                          , flatten, toResponse, askRq, basicAuth
                         
-                        )
+--                         )
 
-import Happstack.Server ( Browsing(EnableBrowsing, DisableBrowsing),
-                          nullConf
-                        , serveDirectory
-                        , simpleHTTP
-                        )
+    
+import qualified Happstack.Server as HS
+    
+
+import Happstack.Server (ServerPart, ServerPartT, flatten, dir, look)
 
 import Happstack.Server.FileServe ( asContentType
                                    ,mimeTypes
@@ -121,7 +121,7 @@ withConnServerDB dbUri conf serverApp = do
   where
     withConn conn conf serverApp = do
       -- Listen http request
-      simpleHTTP conf $ runReaderT serverApp conn
+      HS.simpleHTTP conf $ runReaderT serverApp conn
       -- Disconnect database
       -- HDBC.disconnect conn
       return ()
@@ -137,7 +137,7 @@ withConnServer driver uri conf serverApp = do
   -- Open database Connection
   conn     <- driver  uri
   -- Listen http request
-  simpleHTTP conf $ runReaderT serverApp conn
+  HS.simpleHTTP conf $ runReaderT serverApp conn
   -- Disconnect database
   HDBC.disconnect conn
   return ()
@@ -151,7 +151,7 @@ withConnServer2 ::  (HDBC.IConnection conn, Response.ToMessage a) =>
                  -> IO ()  
 withConnServer2 driver uri conf serverApp = do
   conn1     <- driver  uri
-  simpleHTTP conf $ runReaderT serverWrapper conn1
+  HS.simpleHTTP conf $ runReaderT serverWrapper conn1
   return ()
 
     where
@@ -181,7 +181,7 @@ serverRouteParam :: (String -> Maybe a)  -- Parser Function
                     -> (a -> DBConn b)   -- Database query 
                     -> ServerApp b                    
 serverRouteParam parser paramName err dbFn = do
-  param      <- look paramName
+  param      <- HS.look paramName
   let param' = parser param
   maybe (return err) (\p -> runDbQuery $ dbFn p) param'
 
@@ -207,7 +207,7 @@ serverRouteParamString param dbFn =
 
 makeHttpLogger :: ServerApp ServerTypes.Response -> ServerApp ServerTypes.Response
 makeHttpLogger server = do
-  rq <- askRq
+  rq <- HS.askRq
   puts $ "=============== REQUEST ================"
   puts $ "Method = " ++ (show $ rqMethod rq)
   puts $ "Paths  = " ++ (show $ rqPaths rq)
@@ -233,10 +233,8 @@ makeRoutes :: String -> String -> ServerApp ServerTypes.Response
 makeRoutes staticPath storagePath = msum
 
   [
-    -- 
+    --
     flatten $ dir "api" $ dir "item" $  serverRouteParamID "id" Z.getZoteroItemIdAsListJSON
-    
-    {- REST API -}
 
 
   , flatten $ dir "api" $ dir "collsw"  $ routeItemsWithoutCollection
@@ -300,16 +298,16 @@ makeRoutes staticPath storagePath = msum
     -- Zotero Attachment Files - Serve attachment files in storagePath directory 
     -- API End Point /api/search?content=<search word>
     -- 
-  , flatten $ dir "attachment" $ serveDirectory DisableBrowsing [] storagePath
+  , flatten $ dir "attachment" $ HS.serveDirectory HS.DisableBrowsing [] storagePath
 
 
   -- Single Page App static files
-  , flatten $ serveDirectory DisableBrowsing     [ "index.html",
-                                                   "style.css",
-                                                   "loader.js",
-                                                   "*.html",
-                                                   "*.js"
-                                                  ]
+  , flatten $ HS.serveDirectory HS.DisableBrowsing [  "index.html"
+                                                     ,"style.css"
+                                                     ,"loader.js"
+                                                     ,"*.html"
+                                                     ,"*.js"
+                                                   ]
                                                   staticPath
                                                   
  -- , flatten $ seeOther "static" "/"
