@@ -331,10 +331,8 @@ runServerConf conf = do
   let storagePath = serverStoragePath conf
   let staticPath  = serverStaticPath conf
   let sconf       = makeServerConf port
-   
-  withConnServerDB dbUri sconf (HSA.basicAuth "127.0.0.1" (M.fromList [("zhserver","rocks")])
-                                       $ makeHttpLogger
-                                       $ makeRoutes staticPath storagePath)
+ 
+  withConnServerDB dbUri sconf $ (basicAuth "zhserver" "passwd" $ makeHttpLogger $ makeRoutes staticPath storagePath)
 
 
 runServer host port dbUri staticPath storagePath =
