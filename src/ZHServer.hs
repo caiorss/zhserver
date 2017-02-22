@@ -44,6 +44,7 @@ import Happstack.Server.Internal.Types
 
     
 import qualified Happstack.Server as HS
+import qualified Happstack.Server.Auth as HSA
     
 
 import Happstack.Server (ServerPart, ServerPartT, flatten, dir, look)
@@ -60,6 +61,8 @@ import qualified Database.HDBC as HDBC
 import qualified Database.HDBC.PostgreSQL as Pg
 import qualified Database.HDBC.Sqlite3    as Sqlite3 
 
+import qualified Data.Map as M
+    
 import Text.Printf (printf)
 
 import qualified Zotero as Z
@@ -326,7 +329,10 @@ runServerConf conf = do
   let storagePath = serverStoragePath conf
   let staticPath  = serverStaticPath conf
   let sconf       = makeServerConf port
-  withConnServerDB dbUri sconf (makeHttpLogger $ makeRoutes staticPath storagePath)
+   
+  withConnServerDB dbUri sconf (HSA.basicAuth "127.0.0.1" (M.fromList [("zhserver","rocks")])
+                                       $ makeHttpLogger
+                                       $ makeRoutes staticPath storagePath)
 
 
 runServer host port dbUri staticPath storagePath =
