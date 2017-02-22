@@ -318,7 +318,9 @@ makeRoutes staticPath storagePath = msum
     
   ]
 
-
+basicAuth :: String -> String ->  ServerApp Response ->  ServerApp Response
+basicAuth login passwd server =
+    HSA.basicAuth "127.0.0.1" (M.fromList [(login, passwd)]) server
 
 -- Start server with a given configuration 
 -- 
