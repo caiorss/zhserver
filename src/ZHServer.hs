@@ -216,6 +216,12 @@ makeHttpLogger server = do
   puts $ "Peer   = " ++ (show $ rqPeer rq)
   puts "\n\nHeaders -------"
   liftIO $ pPrint $ rqHeaders rq
+
+  -- Uncomment the line below to print the full request log.
+  --
+  -- puts "------------------\n Full Request Log ---"
+  -- pPrint rq
+
   server
   where
     puts s = liftIO $ putStrLn s
