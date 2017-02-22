@@ -90,10 +90,10 @@ data ServerConfig = ServerConfig
 
 
 
-
-serverConf :: Conf
-serverConf = Conf
-  { port      = 8080
+{- Function which creates a server configuration -}
+makeServerConf :: Int -> Conf
+makeServerConf port = Conf
+  { port      = port
   , validator = Nothing
   , logAccess = Nothing
   , timeout   = 30
