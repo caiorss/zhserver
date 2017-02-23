@@ -44,6 +44,7 @@ import Happstack.Server.Internal.Types
 
     
 import qualified Happstack.Server as HS
+import qualified Happstack.Server.Auth as HSA
     
 
 import Happstack.Server (ServerPart, ServerPartT, flatten, dir, look)
@@ -60,6 +61,8 @@ import qualified Database.HDBC as HDBC
 import qualified Database.HDBC.PostgreSQL as Pg
 import qualified Database.HDBC.Sqlite3    as Sqlite3 
 
+import qualified Data.Map as M
+    
 import Text.Printf (printf)
 
 import qualified Zotero as Z
@@ -78,15 +81,26 @@ import Text.Show.Pretty (pPrint)
 type ServerApp a =  forall conn. (HDBC.IConnection conn)
                     => ReaderT conn (ServerPartT IO) a
 
+{- | Server Authentication -}
+data Auth = AuthEmpty                {- | No Authentication    -}
+          | AuthBasic String String  {- | Basic authentication -}
+          | AuthHtml  String String  {- | Html form Authentication -}
+            deriving (Eq, Read, Show)
 
 data ServerConfig = ServerConfig
                     {
                      serverPort        :: Int      -- Port that server will listen
                     ,serverHost        :: String   -- Host that server will listen
-                    ,serverStaticPath  :: String    -- Single Page App static files like /index.html, /js/script.js
+                    ,serverLogin       :: Auth     -- Server Master login / password
+                    ,serverStaticPath  :: String   -- Single Page App static files like /index.html, /js/script.js
                     ,serverStoragePath :: String   -- Zotero storage Path
                     ,serverDatabase    :: String   -- Server Database URI
                     } deriving (Eq, Show, Read)
+
+
+
+parseInt :: String -> Maybe Int
+parseInt s = readMaybe s
 
 
 
@@ -100,8 +114,32 @@ makeServerConf port = Conf
   , threadGroup = Nothing
   }
 
-parseInt :: String -> Maybe Int 
-parseInt s = readMaybe s
+
+
+basicAuth :: String -> String ->  ServerApp Response ->  ServerApp Response
+basicAuth login passwd server =
+    HSA.basicAuth "127.0.0.1" (M.fromList [(login, passwd)]) server
+
+
+makeHttpLogger :: ServerApp ServerTypes.Response -> ServerApp ServerTypes.Response
+makeHttpLogger server = do
+  rq <- HS.askRq
+  puts $ "=============== REQUEST ================"
+  puts $ "Method = " ++ (show $ rqMethod rq)
+  puts $ "Paths  = " ++ (show $ rqPaths rq)
+  puts $ "Uri    = " ++ (show $ rqUri rq)
+  puts $ "Query  = " ++ (show $ rqQuery rq)
+  puts $ "Peer   = " ++ (show $ rqPeer rq)
+  puts "\n\nHeaders -------"
+  liftIO $ pPrint $ rqHeaders rq
+
+  -- Uncomment the line below to print the full request log.
+  --
+  -- puts "------------------\n Full Request Log ---"
+  -- pPrint rq
+  server
+  where
+    puts s = liftIO $ putStrLn s
 
 
 withConnServerDB ::  Response.ToMessage a =>
@@ -205,27 +243,6 @@ serverRouteParamString param dbFn =
   serverRouteParam return param LC.empty dbFn
 
 
-makeHttpLogger :: ServerApp ServerTypes.Response -> ServerApp ServerTypes.Response
-makeHttpLogger server = do
-  rq <- HS.askRq
-  puts $ "=============== REQUEST ================"
-  puts $ "Method = " ++ (show $ rqMethod rq)
-  puts $ "Paths  = " ++ (show $ rqPaths rq)
-  puts $ "Uri    = " ++ (show $ rqUri rq)
-  puts $ "Query  = " ++ (show $ rqQuery rq)
-  puts $ "Peer   = " ++ (show $ rqPeer rq)
-  puts "\n\nHeaders -------"
-  liftIO $ pPrint $ rqHeaders rq
-
-  -- Uncomment the line below to print the full request log.
-  --
-  -- puts "------------------\n Full Request Log ---"
-  -- pPrint rq
-
-  server
-  where
-    puts s = liftIO $ putStrLn s
-
 
 {-- ================ Server Routes Dispatch ========================== -}
 
@@ -315,18 +332,23 @@ makeRoutes staticPath storagePath = msum
     
   ]
 
-
-
--- Start server with a given configuration 
--- 
+{- | Start server with a given configuration -} 
 runServerConf :: ServerConfig -> IO ()
 runServerConf conf = do
   let dbUri       = serverDatabase conf
   let port        = serverPort conf
   let storagePath = serverStoragePath conf
   let staticPath  = serverStaticPath conf
+  let login       = serverLogin conf                     
   let sconf       = makeServerConf port
-  withConnServerDB dbUri sconf (makeHttpLogger $ makeRoutes staticPath storagePath)
+
+  case login of
+    AuthEmpty                -> withConnServerDB dbUri sconf $ makeHttpLogger $  makeRoutes staticPath storagePath
+                                
+    AuthBasic login passwd   -> withConnServerDB dbUri sconf $ (basicAuth login passwd
+                                                             $ makeHttpLogger
+                                                             $ makeRoutes staticPath storagePath)
+    _                        -> error "Error: Not implemented"
 
 
 runServer host port dbUri staticPath storagePath =
