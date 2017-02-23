@@ -91,7 +91,8 @@ data ServerConfig = ServerConfig
                     {
                      serverPort        :: Int      -- Port that server will listen
                     ,serverHost        :: String   -- Host that server will listen
-                    ,serverStaticPath  :: String    -- Single Page App static files like /index.html, /js/script.js
+                    ,serverLogin       :: Auth     -- Server Master login / password
+                    ,serverStaticPath  :: String   -- Single Page App static files like /index.html, /js/script.js
                     ,serverStoragePath :: String   -- Zotero storage Path
                     ,serverDatabase    :: String   -- Server Database URI
                     } deriving (Eq, Show, Read)
