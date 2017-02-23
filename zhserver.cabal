@@ -2,8 +2,8 @@ name:                zhserver
 version:             0.1.0.0
 -- synopsis:
 -- description:
-homepage:            https://github.com/githubuser/simple#readme
-license:             BSD3
+homepage:            https://github.com/caiorss/zhserver
+license:             Unlicense
 license-file:        LICENSE
 author:              Caio Rodrigues
 maintainer:          caiorss.rodrigues@gmail.com
