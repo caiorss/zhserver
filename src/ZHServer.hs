@@ -99,6 +99,11 @@ data ServerConfig = ServerConfig
 
 
 
+parseInt :: String -> Maybe Int
+parseInt s = readMaybe s
+
+
+
 {- Function which creates a server configuration -}
 makeServerConf :: Int -> Conf
 makeServerConf port = Conf
@@ -109,8 +114,32 @@ makeServerConf port = Conf
   , threadGroup = Nothing
   }
 
-parseInt :: String -> Maybe Int 
-parseInt s = readMaybe s
+
+
+basicAuth :: String -> String ->  ServerApp Response ->  ServerApp Response
+basicAuth login passwd server =
+    HSA.basicAuth "127.0.0.1" (M.fromList [(login, passwd)]) server
+
+
+makeHttpLogger :: ServerApp ServerTypes.Response -> ServerApp ServerTypes.Response
+makeHttpLogger server = do
+  rq <- HS.askRq
+  puts $ "=============== REQUEST ================"
+  puts $ "Method = " ++ (show $ rqMethod rq)
+  puts $ "Paths  = " ++ (show $ rqPaths rq)
+  puts $ "Uri    = " ++ (show $ rqUri rq)
+  puts $ "Query  = " ++ (show $ rqQuery rq)
+  puts $ "Peer   = " ++ (show $ rqPeer rq)
+  puts "\n\nHeaders -------"
+  liftIO $ pPrint $ rqHeaders rq
+
+  -- Uncomment the line below to print the full request log.
+  --
+  -- puts "------------------\n Full Request Log ---"
+  -- pPrint rq
+  server
+  where
+    puts s = liftIO $ putStrLn s
 
 
 withConnServerDB ::  Response.ToMessage a =>
@@ -214,27 +243,6 @@ serverRouteParamString param dbFn =
   serverRouteParam return param LC.empty dbFn
 
 
-makeHttpLogger :: ServerApp ServerTypes.Response -> ServerApp ServerTypes.Response
-makeHttpLogger server = do
-  rq <- HS.askRq
-  puts $ "=============== REQUEST ================"
-  puts $ "Method = " ++ (show $ rqMethod rq)
-  puts $ "Paths  = " ++ (show $ rqPaths rq)
-  puts $ "Uri    = " ++ (show $ rqUri rq)
-  puts $ "Query  = " ++ (show $ rqQuery rq)
-  puts $ "Peer   = " ++ (show $ rqPeer rq)
-  puts "\n\nHeaders -------"
-  liftIO $ pPrint $ rqHeaders rq
-
-  -- Uncomment the line below to print the full request log.
-  --
-  -- puts "------------------\n Full Request Log ---"
-  -- pPrint rq
-
-  server
-  where
-    puts s = liftIO $ putStrLn s
-
 
 {-- ================ Server Routes Dispatch ========================== -}
 
@@ -324,12 +332,6 @@ makeRoutes staticPath storagePath = msum
     
   ]
 
-basicAuth :: String -> String ->  ServerApp Response ->  ServerApp Response
-basicAuth login passwd server =
-    HSA.basicAuth "127.0.0.1" (M.fromList [(login, passwd)]) server
-
--- Start server with a given configuration 
--- 
 runServerConf :: ServerConfig -> IO ()
 runServerConf conf = do
   let dbUri       = serverDatabase conf
