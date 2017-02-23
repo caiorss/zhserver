@@ -81,6 +81,11 @@ import Text.Show.Pretty (pPrint)
 type ServerApp a =  forall conn. (HDBC.IConnection conn)
                     => ReaderT conn (ServerPartT IO) a
 
+{- | Server Authentication -}
+data Auth = AuthEmpty                {- | No Authentication    -}
+          | AuthBasic String String  {- | Basic authentication -}
+          | AuthHtml  String String  {- | Html form Authentication -}
+            deriving (Eq, Read, Show)
 
 data ServerConfig = ServerConfig
                     {
