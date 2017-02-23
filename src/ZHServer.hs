@@ -332,15 +332,23 @@ makeRoutes staticPath storagePath = msum
     
   ]
 
+{- | Start server with a given configuration -} 
 runServerConf :: ServerConfig -> IO ()
 runServerConf conf = do
   let dbUri       = serverDatabase conf
   let port        = serverPort conf
   let storagePath = serverStoragePath conf
   let staticPath  = serverStaticPath conf
+  let login       = serverLogin conf                     
   let sconf       = makeServerConf port
- 
-  withConnServerDB dbUri sconf $ (basicAuth "zhserver" "passwd" $ makeHttpLogger $ makeRoutes staticPath storagePath)
+
+  case login of
+    AuthEmpty                -> withConnServerDB dbUri sconf $ makeHttpLogger $  makeRoutes staticPath storagePath
+                                
+    AuthBasic login passwd   -> withConnServerDB dbUri sconf $ (basicAuth login passwd
+                                                             $ makeHttpLogger
+                                                             $ makeRoutes staticPath storagePath)
+    _                        -> error "Error: Not implemented"
 
 
 runServer host port dbUri staticPath storagePath =
