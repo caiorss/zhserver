@@ -1132,6 +1132,16 @@ insertItem itemTypeID fieldList = do
   return itemID
       where
         sql1 = "INSERT INTO items (itemTypeID, key) VALUES (?, ?)"
+        sql1 = "INSERT INTO items (itemTypeID, key) VALUES (?, ?)"
+
+
+{- | Print Debug string if the environment variable DEBUG is set to true -}
+printDebug :: String -> String -> DBConn ()
+printDebug funName str = liftIO $ do
+  dbg <- Env.lookupEnv "DEBUG"
+  case dbg of
+    Just "true" -> putStrLn $ P.printf "\nDEBUG (%s) = %s" funName str
+    _           -> return ()
 
 
     -- sql7 = "DELETE FROM fullTextItems WHERE itemID = ?"
