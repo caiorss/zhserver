@@ -284,8 +284,8 @@ stripPrefixStr prefix str =
 {- ================== Helper Functions ======================  -}
 
 
-createKey :: IO String 
-createKey = do
+makeKey :: IO String
+makeKey = do
   g <- newStdGen
   return $ map (alphabet!!) $ take 8 $ randomRs (0, 35) g
   where
@@ -1003,7 +1003,7 @@ mergeTags oldTagID newTagID = do
 
 createTag :: String -> DBConn Int
 createTag tagName =  do
-  key <- liftIO $ createKey
+  key <- liftIO $  makeKey
   let sqlValues = [HDBC.SqlString tagName
                   ,HDBC.SqlString key
                   ,HDBC.SqlString tagName
@@ -1085,7 +1085,7 @@ setItemField itemID field value  = do
 {- | Note: Only works in PostgresSQL -}
 insertCollection :: String -> DBConn Int 
 insertCollection name = do
-  key <- liftIO $ createKey
+  key <- liftIO $ makeKey
   id <- fromJust <$> sqlQueryOne sql [HDBC.SqlString name, HDBC.SqlString key] fromSqlToInt
   return id 
   where
