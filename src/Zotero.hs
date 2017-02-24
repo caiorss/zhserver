@@ -193,6 +193,7 @@ type ZoteroFieldValue = String
 {- | ZoteroItem  data -}
 data ZoteroItem =
   ZoteroItem {    zoteroItemID          :: Int                  --  Item ID number
+                , zoteroItemType        :: String 
                 , zoteroItemData        :: [(String, String)]   --  Item data (key, value) pair list
                 , zoteroItemAuthors     :: [ZoteroAuthor]       --  (AuthorID, [firstName, lastName])
                 , zoteroItemTags        :: [(Int, String)]      --  (tagID, tag)
@@ -207,10 +208,11 @@ data ZoteroItem =
 instance FromJSON ZoteroItem
 
 instance ToJSON ZoteroItem where
-  toJSON (ZoteroItem itemID itemData itemAuthors itemTags 
+  toJSON (ZoteroItem itemID itemType itemData itemAuthors itemTags 
           itemColls itemFile itemMime) = object
     [
        "id"       .= itemID
+      ,"type"     .= itemType            
       ,"data"     .= itemData       
       ,"authors"  .= itemAuthors
       ,"tags"     .= itemTags
@@ -310,7 +312,7 @@ createKey = do
 {- | getZoteroItem - Get all Zotero Item data from the database -}
 getZoteroItem :: ZoteroItemID -> DBConn ZoteroItem
 getZoteroItem itemID = do
-
+  itemType    <- getItemType itemID
   itemData    <- getItemData itemID
   itemAuthors <- getItemAuthors itemID
   itemTags    <- getItemTagsData itemID
@@ -319,6 +321,7 @@ getZoteroItem itemID = do
   itemMime    <- return Nothing
 
   return $ ZoteroItem itemID
+                      itemType
                       itemData
                       itemAuthors
                       itemTags
