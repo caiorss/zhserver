@@ -1093,3 +1093,19 @@ getItemDOI = getItemField 26
 
 getItemTitle :: ZoteroItemID -> DBConn (Maybe String)
 getItemTitle = getItemField 110
+
+
+updateItemDataField :: Int -> String -> Int -> DBConn ()
+updateItemDataField  fieldID value itemID = sqlRun sql [ fromStrToHDBC value
+                                                        ,fromIntToHDBC itemID
+                                                        ,fromIntToHDBC fieldID
+                                                       ]
+  where
+    sql = unlines [
+                   "UPDATE itemDataValues"
+                  ,"SET value = ?"
+                  ,"WHERE valueID = ("
+                  ,"  SELECT valueID FROM itemData"
+                  ,"  WHERE itemID = ?"
+                  ,"  AND fieldID = ? )"
+                 ]
