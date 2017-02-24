@@ -147,8 +147,14 @@ withDBConnection ::  DBUriPath -> DBConn () -> IO ()
 withDBConnection dbUri dbAction = do
   conn <- openDBConnection dbUri
   case conn of
-    Just (HDBConnSqlite   c)  -> runReaderT dbAction c >> HDBC.disconnect c
-    Just (HDBConnPostgres c)  -> runReaderT dbAction c >> HDBC.disconnect c
+    Just (HDBConnSqlite   c)  -> do runReaderT dbAction c
+                                    HDBC.commit c
+                                    HDBC.disconnect c
+
+    Just (HDBConnPostgres c)  -> do runReaderT dbAction c
+                                    HDBC.commit c
+                                    HDBC.disconnect c
+
     Nothing                   -> putStrLn "Error: I can't open the database connection"
 
 
