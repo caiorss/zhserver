@@ -1064,3 +1064,17 @@ insertCollection name = do
           \)\
           \SELECT max(collectionID) FROM collections"
 
+
+{- ============  Update Functions  ================ -}
+
+getItemField :: ZoteroFieldID -> ZoteroItemID -> DBConn (Maybe ZoteroFieldValue)
+getItemField fieldID itemID = sqlQueryOne sql [fromIntToHDBC fieldID, fromIntToHDBC itemID] fromSqlToString
+     where
+       sql = unlines [
+        "SELECT  itemDataValues.value"
+        ,"FROM    fields, itemDataValues, itemData"
+        ,"WHERE   itemData.fieldID = fields.fieldID"
+        ,"AND     itemData.valueID = itemDataValues.valueID"
+        ,"AND     itemData.itemID = ?"
+        ,"AND     itemData.fieldID = ?"
+        ]
