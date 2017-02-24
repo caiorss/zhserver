@@ -103,6 +103,11 @@ module Zotero
            ,updateItemISBN
            ,updateItemDOI
 
+           ,insertItem
+           ,insertField
+           ,insertItemID
+           ,deleteItem
+
           {- JSON Export Functions -}
          ,getCollectionsJSON
          ,getTagsJSON          
