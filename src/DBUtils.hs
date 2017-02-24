@@ -329,7 +329,7 @@ sqlRun sql sqlvals = do
   conn    <- ask 
   stmt    <- liftIO $ HDBC.prepare conn sql
   liftIO  $ HDBC.execute stmt sqlvals
-  liftIO  $ HDBC.commit conn 
+  return ()
     
 
 sqlGetLastID :: String -> String -> DBConn Int
