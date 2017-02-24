@@ -52,6 +52,7 @@ module DBUtils
      ,joinStrings
      ,lookupString
      ,lookupInt
+     ,sqlGetLastID
      
     ) where 
 
@@ -63,8 +64,9 @@ import qualified Database.HDBC as HDBC
 import Control.Monad.Trans
 import Control.Monad.Trans.Reader
 import qualified Data.Text as T 
-
+import qualified Text.Printf as Printf
 import Data.Int (Int64)
+import Data.Maybe (fromJust)
     
 {---------------- Types -------------------------}
 
@@ -281,13 +283,13 @@ sqlQueryRow sql sqlvals coercion = do
 sqlQueryOne :: SQL -> [HDBC.SqlValue] -> (HDBC.SqlValue -> b) -> DBConn (Maybe b)
 sqlQueryOne sql sqlvals projection = do
   conn   <- ask 
-  stmt   <- liftIO $  HDBC.prepare conn sql
+ql stmt   <- liftIO $  HDBC.prepare conn sql
   liftIO $ HDBC.execute stmt sqlvals
   row     <- liftIO $ HDBC.fetchRow stmt
   liftIO $ HDBC.commit conn 
   return $ (!!0) . (map projection) <$> row
 
-   
+{- | Run a SQL statement that returns no value -}   
 sqlRun :: SQL -> [HDBC.SqlValue] -> DBConn ()
 sqlRun sql sqlvals = do
   conn    <- ask 
@@ -296,4 +298,7 @@ sqlRun sql sqlvals = do
   liftIO  $ HDBC.commit conn 
     
 
-                     
+sqlGetLastID :: String -> String -> DBConn Int
+sqlGetLastID table column = fromJust <$> sqlQueryOne sql [] fromSqlToInt
+  where
+    sql = Printf.printf "SELECT max(%s) FROM %S" column table 
