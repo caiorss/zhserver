@@ -1109,3 +1109,29 @@ updateItemDataField  fieldID value itemID = sqlRun sql [ fromStrToHDBC value
                   ,"  WHERE itemID = ?"
                   ,"  AND fieldID = ? )"
                  ]
+
+
+{- | Update item title -}
+updateItemTitle :: String -> Int -> DBConn ()
+updateItemTitle  = updateItemDataField 110
+
+{- | Update item publisher -}
+updateItemPublisher :: String -> Int -> DBConn ()
+updateItemPublisher = updateItemDataField 8
+
+{- | Update item Date -}
+updateItemDate :: String -> Int -> DBConn ()
+updateItemDate = updateItemDataField 14
+
+{- | Update item Abstract -}
+updateItemAbstract :: String -> Int -> DBConn ()
+updateItemAbstract  = updateItemDataField 90
+
+updateItemDOI :: String -> Int -> DBConn ()
+updateItemDOI = updateItemDataField 26
+
+updateItemISBN :: String -> Int -> DBConn ()
+updateItemISBN = updateItemDataField 11
+
+updateItemISSN :: String -> Int -> DBConn ()
+updateItemISSN  = updateItemDataField 13
