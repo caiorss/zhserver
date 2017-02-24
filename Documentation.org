@@ -3,6 +3,11 @@
 #+KEYWORKDS: zotero papers docs documents patent search metadata notes haskell database 
 #+STARTUP: contents 
 
+#+INFOJS_OPT: view:info toc:t ltoc:t ftoc:nil mouse:underline button:nil path:theme/org-info.js
+#+HTML_HEAD: <link href="theme/style.css" rel="stylesheet"> 
+
+
+
 * Development Documentation 
 ** REPL Testing and Exploration in the REPL
 *** Zotero Module 
@@ -742,7 +747,226 @@ Haskell PostgresSQL Database Driver
 Haskell AESON - Json library 
 
  - [[https://hackage.haskell.org/package/aeson][aeson: Fast JSON parsing and encoding]]
-** Database Documentation 
+* Database Documentation 
+** Database Tables 
+*** Items
+
+#+CAPTION: Table items
+| Comlumn            | Type   | Example             | Description           |
+|--------------------+--------+---------------------+-----------------------|
+| itemID             | int    | 100                 | Unique item ID number |
+| itemTypeID         | int    | 14                  | Document type         |
+| dateAdded          | string | 2014-08-25 02:38:25 | -                     |
+| dateModified       | string | 2014-08-25 02:39:28 | -                     |
+| clientDateModified | string | 2014-08-25 02:39:28 | -                     |
+| libraryID          | null   | null                | -                     |
+| key                | string | VI786R6C            | 8-letters random key  |
+
+*** itemAttachments
+
+#+CAPTION: Table itemAttachments
+| Column         | Type   | Example                                           | Description                             |
+|----------------+--------+---------------------------------------------------+-----------------------------------------|
+| itemID         | int    | 6642                                              | Unique item ID which attachment belongs |
+| sourceItemID   | int    | 6643                                              |                                         |
+| linkMode       |        | 1                                                 |                                         |
+| mimeType       | string | application/pdf                                   | File mime type                          |
+| charsetID      | int    | 1                                                 | ID of file charset                      |
+| path           | string | 'storage:Server Message Block (SMB) Protocol.pdf' | File name                               |
+| originalPath   | string | null                                              |                                         |
+| syncState      | int    | 0                                                 |                                         |
+| storageModTime | null   | null                                              |                                         |
+| storageHash    | null   | null                                              |                                         |
+|                |        |                                                   |                                         |
+|                |        |                                                   |                                         |
+ 
+Example: 
+
+#+BEGIN_SRC text 
+  sqlite> SELECT * FROM itemAttachments LIMIT 1715, 5 ;
+
+  itemID      sourceItemID  linkMode    mimeType         charsetID   path                                                      originalPath  syncState   storageModTime  storageHash
+  ----------  ------------  ----------  ---------------  ----------  --------------------------------------------------------  ------------  ----------  --------------  -----------
+  2641                      0           application/pdf              storage:Chapter - Steam Distribution and Utilization.pdf                0                                      
+  2643        2642          1           text/html        1           storage:discover-some-useful-python-numpy-functions.html                0                                      
+  2645        2644          1           text/html        1           storage:common-pitfalls-to-avoid-while-converting-matlab                0                                      
+  2647        2646          1           text/html        1           storage:gotchas-in-python-for-matlab-users.html                         0                                      
+  2649        2648          1           text/html        1           storage:578881-automated-stock-market-trading-simulation                0                                      
+  sqlite> 
+#+END_SRC
+
+*** ItemData 
+
+#+CAPTION: Table itemData
+| Column  | Type | Example | Description           |
+|---------+------+---------+-----------------------|
+| itemID  | int  |     110 | Unique item ID number |
+| fieldID | int  |      90 | ID of field name      |
+| valueID | int  |      93 | ID of field value     |
+
+*** ItemDataValues 
+
+#+CAPTION: Table ItemDataValues
+| Column  | Type   | Example                                | Description                  |
+|---------+--------+----------------------------------------+------------------------------|
+| valueID | int    | 9221                                   | Unique ID of item value      |
+| value   | string | 'swp0003.dvi - returnCalculations.pdf' | Value of field for each item |
+
+*** ItemTypes 
+
+#+CAPTION: Table itemData
+| Column             | Type   | Example | Description       |
+|--------------------+--------+---------+-------------------|
+| itemTypeID         | 7      |       8 | ID of item type   |
+| typeName           | thesis |  letter | Name of item type |
+| templateItemTypeID | int    |       2 | ?                 |
+| display            | int    |       1 | ?                 |
+
+Example:
+
+#+BEGIN_SRC text 
+  sqlite> SELECT * FROM itemTypes ;
+  itemTypeID  typeName    templateItemTypeID  display   
+  ----------  ----------  ------------------  ----------
+  1           note                            0         
+  2           book                            2         
+  3           bookSectio  2                   2         
+  4           journalArt                      2         
+  5           magazineAr                      2         
+  6           newspaperA                      2         
+  7           thesis                          1
+       ...     ...  ...  ...
+  29          tvBroadcas                      1         
+  30          radioBroad                      1         
+  31          podcast                         1         
+  32          computerPr                      1         
+  33          conference                      1         
+  34          document                        2         
+  35          encycloped                      1         
+  36          dictionary                      1 
+#+END_SRC
+
+
+*** fields
+
+#+CAPTION: Table fields
+| Column        | Type  | Example | Description   |
+|---------------+-------+---------+---------------|
+| fieldID       | 10    |         | ID of field   |
+| fieldName     | pages |         | Name of field |
+| fieldFormatID | null  | null    | -             |
+
+
+#+CAPTION: Examples
+|    fieldID | fieldName  | fieldFormatID |
+| ---------- | ---------- | ------------- |
+|          1 | url        |               |
+|          2 | rights     |               |
+|          3 | series     |               |
+|          4 | volume     |               |
+|          5 | issue      |               |
+|          6 | edition    |               |
+|          7 | place      |               |
+|          8 | publisher  |               |
+|         10 | pages      |               |
+|         11 | ISBN       |               |
+|        ... | ....       | ....          |
+|            |            |               |
+|        110 | *title*    |               |
+|        115 | bookTitle  |               |
+|        116 | shortTitle |               |
+|        117 | docketNumb |               |
+|        118 | numPages   |               |
+|        119 | programTit |               |
+|        120 | issuingAut |               |
+|        121 | filingDate |               |
+|        122 | genre      |               |
+|        123 | archive    |               |
+
+*** fileTypes
+
+#+CAPTION: Table fileTypes.
+| Column     | Type   | Example | Description |
+|------------+--------+---------+-------------|
+| fileTypeID | int    | 2       | -           |
+| fileType   | string | image   | -           |
+
+Example:
+
+#+BEGIN_SRC text 
+  sqlite> SELECT * FROM fileTypes ;
+
+  fileTypeID  fileType  
+  ----------  ----------
+  1           webpage   
+  2           image     
+  3           pdf       
+  4           audio     
+  5           video     
+  6           document  
+  7           presentati
+  sqlite> 
+#+END_SRC
+
+*** tags 
+
+#+CAPTION: Table tags
+| Column             | Type   | Example             | Description                |
+|--------------------+--------+---------------------+----------------------------|
+| tagID              | int    | 6                   | Unique tag ID              |
+| name               | string | numerical           | Tag name                   |
+| type               | int    | 0                   | -                          |
+| dateAdded          | string | 2014-08-25 13:44:26 | -                          |
+| dateModified       | string | 2014-08-25 13:44:26 | -                          |
+| clientDateModified | string | 2014-08-25 13:44:26 | -                          |
+| libraryID          | null   | null                | -                          |
+| key                | string | AMPGN8ZN            | unique 8-letter random key |
+|                    |        |                     |                            |
+
+Example:
+
+#+BEGIN_SRC text 
+  sqlite> SELECT * FROM tags LIMIT 20, 5 ;
+
+  tagID       name        type        dateAdded            dateModified         clientDateModified   libraryID   key       
+  ----------  ----------  ----------  -------------------  -------------------  -------------------  ----------  ----------
+  21          regular     0           2014-08-25 13:48:22  2014-08-25 13:48:22  2014-08-25 13:48:22              WZW8DQ6N  
+  22          expression  0           2014-08-25 13:48:25  2014-08-25 13:48:25  2014-08-25 13:48:25              U2W8DN3F  
+  23          mathcad     0           2014-08-25 13:49:04  2014-08-25 13:49:04  2014-08-25 13:49:04              68E7JGVZ  
+  24          project     0           2014-08-25 13:49:06  2014-12-12 17:32:33  2014-12-12 17:32:33              Z92A4JHU  
+  25          documentat  0           2014-08-25 13:49:10  2016-04-22 22:35:22  2016-04-22 22:35:22              ZBS82VN5  
+  sqlite> 
+#+END_SRC
+
+*** itemTags 
+
+#+CAPTION: Table itemTags
+| Column | Type | Example | Description |
+|--------+------+---------+-------------|
+| itemID | int  | 116     | ID of item  |
+| tagID  | int  | 1       | ID of tag   |
+
+
+Example: 
+
+#+BEGIN_SRC text 
+  sqlite> SELECT * FROM itemTags LIMIT 20, 10 ;
+  itemID      tagID     
+  ----------  ----------
+  36          14        
+  15          1         
+  15          15        
+  15          16        
+  15          17        
+  23          1         
+  23          18        
+  23          19        
+  37          1         
+  37          20        
+  sqlite> 
+#+END_SRC
+
+** Database manipulation
 *** Get all collections 
 
 #+header: :results table
@@ -780,8 +1004,6 @@ ORDER BY collectionName
 |  65 | GUI Toolkit                                                      |
 
 
-
-
 *** Get all items from a given collection 
 
 Get all items from collection "SMB Protocol" which id = 335.
@@ -805,7 +1027,6 @@ Get all items from collection "SMB Protocol" which id = 335.
 | 6645 |
 | 6647 |
 | 6648 |
-
 
 *** Search Titles that contains a word 
 
@@ -833,8 +1054,6 @@ Search all titles that contains the string "functional".
 | 2798 | functional programming                                                                                       |   |
 | 2804 | Concepts and Terminology (Functional Transformation)                                                         |   |
 | 2807 | Purely functional data structures                                                                            |   |
-
-
 
 *** Search by a Regex Pattern 
 
@@ -955,7 +1174,6 @@ Refined search return only itemID
 | 5792 |
 | 5815 |
 
-
 *** Search all items which title at least match one of the word of a list 
 
 #+BEGIN_SRC sql  
@@ -1029,4 +1247,3 @@ Selects all items which tag or title matches all "%ocaml%" or "%monad%".
           )
   GROUP BY itemData.itemID
 #+END_SRC
-
