@@ -44,12 +44,12 @@ module Zotero
          ,getCollections
        --  ,showCollections
          ,collectionItems
-         ,itemTagsData
-         ,itemTags
-         ,itemData
-         ,itemAttachmentData
-         ,itemAttachmentFile
-         ,itemAuthors
+         ,getItemTagsData
+         ,getItemTags
+         ,getItemData
+         ,getItemAttachmentData
+         ,getItemAttachmentFile
+         ,getItemAuthors
          ,sqlQuery
          ,sqlQueryAll
          ,sqlQueryRow
@@ -289,11 +289,11 @@ createKey = do
 getZoteroItem :: ZoteroItemID -> DBConn ZoteroItem
 getZoteroItem itemID = do
 
-  itemData    <- itemData itemID
-  itemAuthors <- itemAuthors itemID
-  itemTags    <- itemTagsData itemID
-  itemColls   <- itemCollections itemID
-  itemFile    <- itemAttachmentFile itemID
+  itemData    <- getItemData itemID
+  itemAuthors <- getItemAuthors itemID
+  itemTags    <- getItemTagsData itemID
+  itemColls   <- getItemCollections itemID
+  itemFile    <- getItemAttachmentFile itemID
   itemMime    <- return Nothing
 
   return $ ZoteroItem itemID
@@ -382,8 +382,8 @@ collectionItems collID = do
     sql = "SELECT  itemID FROM collectionItems WHERE collectionID = ?"
 
 {- | Returns all tags of a given item -}
-itemTagsData :: ZoteroItemID -> DBConn ZoteroItemTags
-itemTagsData itemID = do
+getItemTagsData :: ZoteroItemID -> DBConn ZoteroItemTags
+getItemTagsData itemID = do
   let itemID' = fromIntToInt64 itemID 
   sqlQueryAll sql [HDBC.SqlInt64 itemID'] projection
   where
@@ -397,16 +397,16 @@ itemTagsData itemID = do
 
 
 {- | Return only the tag names of a given itemID  -}
-itemTags :: ZoteroItemID -> DBConn [String]
-itemTags itemID =
-  map snd <$> itemTagsData itemID 
+getItemTags :: ZoteroItemID -> DBConn [String]
+getItemTags itemID =
+  map snd <$> getItemTagsData itemID 
 
 {-| Returns all collections that an item benlongs to
 
    itemCollections :: itemID -> [(Collection ID, Collection Name)]
 -}
-itemCollections :: Int -> DBConn [(Int, String)]
-itemCollections  itemID = do
+getItemCollections :: Int -> DBConn [(Int, String)]
+getItemCollections  itemID = do
 
     let itemID' = fromIntToInt64 itemID    
     sqlQueryAll sql [HDBC.SqlInt64 itemID'] projection
@@ -503,8 +503,8 @@ getTagsJSON :: DBConn BLI.ByteString
 getTagsJSON  =  encode <$> getTags
 
 {- | Get Zotero item attachment file. -}
-itemAttachmentData :: ZoteroItemID -> DBConn (Maybe [String])
-itemAttachmentData itemID = do 
+getItemAttachmentData :: ZoteroItemID -> DBConn (Maybe [String])
+getItemAttachmentData itemID = do 
   
   let itemID' = fromIntToInt64 itemID
 
@@ -535,10 +535,10 @@ itemAttachmentData itemID = do
 
 -}
 
-itemAttachmentFile :: Int -> DBConn (Maybe FilePath)
-itemAttachmentFile itemID = do
+getItemAttachmentFile :: Int -> DBConn (Maybe FilePath)
+getItemAttachmentFile itemID = do
   
-  attachmentData <- itemAttachmentData itemID
+  attachmentData <- getItemAttachmentData itemID
   return $  attachmetFile attachmentData
 
   where
@@ -562,8 +562,8 @@ itemAttachmentFile itemID = do
 
 --itemData :: HDBC.IConnection conn => conn -> Int -> IO [(String, String)
 
-itemData ::  ZoteroItemID -> DBConn [(String, String)]
-itemData itemID = do   
+getItemData ::  ZoteroItemID -> DBConn [(String, String)]
+getItemData itemID = do   
   
   let itemID' = fromIntToInt64 itemID 
 
@@ -583,8 +583,8 @@ itemData itemID = do
       (fromSqlToString $row !! 0, fromSqlToString $ row !! 1)
 
 {-  Query authors given the itemID.-}
-itemAuthors :: ZoteroItemID -> DBConn [ZoteroAuthor]
-itemAuthors itemID = do 
+getItemAuthors :: ZoteroItemID -> DBConn [ZoteroAuthor]
+getItemAuthors itemID = do 
 
   let itemID' = fromIntToInt64 itemID
 
@@ -949,9 +949,6 @@ renameTag id name = do
           \WHERE  tagID = ?"
 
 
-
-
-
 renameCollection :: Int -> String -> DBConn ()
 renameCollection id name = do
   let id' = fromIntToInt64 id
@@ -1035,9 +1032,10 @@ addTagNameToItem itemID' tagName' = do
                   ,"AND NOT EXISTS (SELECT 1 FROM itemTags WHERE tagID = ? AND itemID = ?)"
                   ]
 
-addTagsToItem :: Int -> [String] -> DBConn ()
+{- | Add multiple tags to an itemID -}          
+addTagsToItem :: ZoteroItemID -> [ZoteroTagName] -> DBConn ()
 addTagsToItem itemID tags = mapM_ (addTagNameToItem itemID) tags
-
+                            
 renameAuthor :: Int -> String -> String -> DBConn ()
 renameAuthor id firstName lastName = do
   
