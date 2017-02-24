@@ -170,10 +170,12 @@ withDBConnection2 dbUri dbAction = do
   case conn of
     Just (HDBConnSqlite   c)  -> do out <- runReaderT dbAction c
                                     HDBC.disconnect c
+                                    HDBC.commit c
                                     return (Just out)
 
     Just (HDBConnPostgres c)  -> do out <- runReaderT dbAction c
                                     HDBC.disconnect c
+                                    HDBC.commit c
                                     return (Just out)
 
     Nothing                   -> return Nothing
