@@ -1122,6 +1122,18 @@ insertField itemID (fieldID, value) = do
     sql2 = "INSERT INTO itemData VALUES (?, ?, ?)"
 
 
+
+insertItem itemTypeID fieldList = do
+  -- Insert item type into table items and get itemID
+  key    <- liftIO makeKey
+  sqlRun sql1 [fromIntToHDBC itemTypeID, fromStrToHDBC key]
+  itemID <- sqlGetLastID "items" "itemID"
+  mapM_ (insertField itemID) fieldList
+  return itemID
+      where
+        sql1 = "INSERT INTO items (itemTypeID, key) VALUES (?, ?)"
+
+
     -- sql7 = "DELETE FROM fullTextItems WHERE itemID = ?"
     -- sql8 = "DELETE FROM fullTextItemWords WHERE itemID = ?"
 
