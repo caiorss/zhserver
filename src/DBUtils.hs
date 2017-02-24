@@ -31,6 +31,7 @@ module DBUtils
      ,runDBConn
      ,withDBConnection
      ,withDBConnection2
+     ,withDBConnection3
      ,withConnection
      ,makeSearchIdFun
      ,makeSearchNameIdFun
@@ -40,16 +41,23 @@ module DBUtils
      ,fromSqlToInt
      ,fromSqlToString
 
+      ,fromIntToHDBC
+      ,fromStrToHDBC
       
      ,sqlQuery
      ,sqlQueryAll
      ,sqlQueryRow
      ,sqlQueryOne
      ,sqlRun 
+     ,sqlRunMany
+     ,sqlCommit
 
+     ,sqlDeleteRowsWhereID
+     ,sqlDeleteRowsTablesWhereID
      ,joinStrings
      ,lookupString
      ,lookupInt
+     ,sqlGetLastID
      
     ) where 
 
@@ -61,8 +69,9 @@ import qualified Database.HDBC as HDBC
 import Control.Monad.Trans
 import Control.Monad.Trans.Reader
 import qualified Data.Text as T 
-
+import qualified Text.Printf as Printf
 import Data.Int (Int64)
+import Data.Maybe (fromJust)
     
 {---------------- Types -------------------------}
 
@@ -132,9 +141,13 @@ openDBConnection dbUri =
 runDBConn :: HDBConn -> DBConn a -> IO a
 runDBConn hdbconn dbAction =
   case hdbconn of
-    HDBConnSqlite   c  -> runReaderT dbAction c
-    HDBConnPostgres c  -> runReaderT dbAction c
+    HDBConnSqlite   c  -> do out <- runReaderT dbAction c
+                             HDBC.commit c
+                             return out
 
+    HDBConnPostgres c  -> do out <- runReaderT dbAction c
+                             HDBC.commit c
+                             return out
 
 
 
@@ -143,8 +156,14 @@ withDBConnection ::  DBUriPath -> DBConn () -> IO ()
 withDBConnection dbUri dbAction = do
   conn <- openDBConnection dbUri
   case conn of
-    Just (HDBConnSqlite   c)  -> runReaderT dbAction c >> HDBC.disconnect c
-    Just (HDBConnPostgres c)  -> runReaderT dbAction c >> HDBC.disconnect c
+    Just (HDBConnSqlite   c)  -> do runReaderT dbAction c
+                                    HDBC.commit c
+                                    HDBC.disconnect c
+
+    Just (HDBConnPostgres c)  -> do runReaderT dbAction c
+                                    HDBC.commit c
+                                    HDBC.disconnect c
+
     Nothing                   -> putStrLn "Error: I can't open the database connection"
 
 
@@ -155,13 +174,36 @@ withDBConnection2 dbUri dbAction = do
   case conn of
     Just (HDBConnSqlite   c)  -> do out <- runReaderT dbAction c
                                     HDBC.disconnect c
+                                    HDBC.commit c
                                     return (Just out)
 
     Just (HDBConnPostgres c)  -> do out <- runReaderT dbAction c
                                     HDBC.disconnect c
+                                    HDBC.commit c
                                     return (Just out)
 
     Nothing                   -> return Nothing
+
+
+
+withDBConnection3 ::  String -> DBConn a -> IO a
+withDBConnection3 dbUri dbAction = do
+  conn <- openDBConnection dbUri
+  case conn of
+    Just (HDBConnSqlite   c)  ->  HDBC.withTransaction c $ \ conn -> do
+                                     out <- runReaderT dbAction c
+                                     -- HDBC.commit c
+                                     -- HDBC.disconnect c
+                                     return out
+
+    Just (HDBConnPostgres c)  -> do out <- runReaderT dbAction c
+                                    HDBC.disconnect c
+                                    HDBC.commit c
+                                    return out
+
+    Nothing                   -> error "Error: Invalid database URI."
+
+
 
 
 withConnection :: HDBC.IConnection  conn => IO conn -> (conn -> IO r) -> IO r
@@ -197,7 +239,14 @@ fromInt64ToInt = fromIntegral
 fromIntToInt64 :: Int -> Int64
 fromIntToInt64 = fromIntegral
 
+{- | Convert number to HDBC value -}
+fromIntToHDBC :: Int -> HDBC.SqlValue
+fromIntToHDBC n = HDBC.SqlInt64 $ fromIntegral n                 
 
+{- | Convert string to HDBC string -}                  
+fromStrToHDBC s = HDBC.SqlString s                 
+                  
+                  
 {- | Join strings by separator -}
 joinStrings :: String -> [String] -> String
 joinStrings sep strs =
@@ -275,16 +324,57 @@ sqlQueryOne sql sqlvals projection = do
   stmt   <- liftIO $  HDBC.prepare conn sql
   liftIO $ HDBC.execute stmt sqlvals
   row     <- liftIO $ HDBC.fetchRow stmt
-  liftIO $ HDBC.commit conn 
+  -- liftIO $ HDBC.commit conn
   return $ (!!0) . (map projection) <$> row
 
-   
+{- | Run a SQL statement that returns no value -}   
 sqlRun :: SQL -> [HDBC.SqlValue] -> DBConn ()
 sqlRun sql sqlvals = do
   conn    <- ask 
   stmt    <- liftIO $ HDBC.prepare conn sql
   liftIO  $ HDBC.execute stmt sqlvals
-  liftIO  $ HDBC.commit conn 
-    
+  return ()
 
-                     
+sqlRunMany :: SQL -> [[HDBC.SqlValue]] -> DBConn ()
+sqlRunMany sql valueList = do
+  conn <- ask
+  stmt <- liftIO $ HDBC.prepare conn sql
+  liftIO $ HDBC.executeMany stmt valueList
+  return ()
+
+sqlCommit :: DBConn () -> DBConn ()
+sqlCommit dbAction = do
+  conn <- ask
+  dbAction
+  liftIO $ HDBC.commit conn
+  return ()
+
+sqlGetLastID :: String -> String -> DBConn Int
+sqlGetLastID table column = fromJust <$> sqlQueryOne sql [] fromSqlToInt
+  where
+    sql = Printf.printf "SELECT max( %s ) FROM %s" column table
+
+{- | Delete all rows from [table] where [column] = keyID.
+
+Example:
+
+@
+  > sqlDeleteRowsWhereID "itemID" "items" 200
+@
+
+It executes the sql statement:
+
+@
+  > DELETE FROM items WHERE itemID = 200
+@
+
+-}
+sqlDeleteRowsWhereID :: String -> String -> Int -> DBConn ()
+sqlDeleteRowsWhereID column table keyID =
+    sqlRun sql [fromIntToHDBC keyID]
+    where
+      sql = Printf.printf "DELETE FROM %s WHERE %s = ?" table column
+
+sqlDeleteRowsTablesWhereID :: String -> [String] -> Int -> DBConn ()
+sqlDeleteRowsTablesWhereID column tables keyID =
+  mapM_ (\ tab -> sqlDeleteRowsWhereID column tab keyID) tables

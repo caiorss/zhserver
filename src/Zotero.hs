@@ -85,6 +85,29 @@ module Zotero
           ,searchTag
           ,searchCollection
 
+           -- Item fields -------
+           --
+          ,getItemURL
+          ,getItemISBN
+          ,getItemISSN
+          ,getItemDOI
+          ,getItemTitle
+
+           -- Update Functions -----
+           --
+           ,updateItemDataField
+           ,updateItemTitle
+           ,updateItemDate
+           ,updateItemAbstract
+           ,updateItemISSN
+           ,updateItemISBN
+           ,updateItemDOI
+
+           ,insertItem
+           ,insertField
+           ,insertItemID
+           ,deleteItem
+
           {- JSON Export Functions -}
          ,getCollectionsJSON
          ,getTagsJSON          
@@ -146,8 +169,12 @@ import qualified Data.ByteString.Lazy.Internal as BLI
 import qualified Text.Printf as P
 import qualified Data.Text as T
 
+import qualified System.Environment as Env
+
 import System.Random (getStdGen, newStdGen, randomRs)    
 import DBUtils    
+
+
 
 -- withDBConnection2 dbUri dbAction = do
 --   withDBConnection dbUri (ioToDBConn dbAction)
@@ -168,9 +195,14 @@ type ZoteroItemMime   = String
 {- | Collection ID type alias -}
 type ZoteroCollectionID = Int
 
+type ZoteroFieldID = Int
+type ZoteroFieldValue = String
+
+
 {- | ZoteroItem  data -}
 data ZoteroItem =
   ZoteroItem {    zoteroItemID          :: Int                  --  Item ID number
+                , zoteroItemType        :: String 
                 , zoteroItemData        :: [(String, String)]   --  Item data (key, value) pair list
                 , zoteroItemAuthors     :: [ZoteroAuthor]       --  (AuthorID, [firstName, lastName])
                 , zoteroItemTags        :: [(Int, String)]      --  (tagID, tag)
@@ -185,10 +217,11 @@ data ZoteroItem =
 instance FromJSON ZoteroItem
 
 instance ToJSON ZoteroItem where
-  toJSON (ZoteroItem itemID itemData itemAuthors itemTags 
+  toJSON (ZoteroItem itemID itemType itemData itemAuthors itemTags 
           itemColls itemFile itemMime) = object
     [
        "id"       .= itemID
+      ,"type"     .= itemType            
       ,"data"     .= itemData       
       ,"authors"  .= itemAuthors
       ,"tags"     .= itemTags
@@ -260,8 +293,8 @@ stripPrefixStr prefix str =
 {- ================== Helper Functions ======================  -}
 
 
-createKey :: IO String 
-createKey = do
+makeKey :: IO String
+makeKey = do
   g <- newStdGen
   return $ map (alphabet!!) $ take 8 $ randomRs (0, 35) g
   where
@@ -288,7 +321,7 @@ createKey = do
 {- | getZoteroItem - Get all Zotero Item data from the database -}
 getZoteroItem :: ZoteroItemID -> DBConn ZoteroItem
 getZoteroItem itemID = do
-
+  itemType    <- getItemType itemID
   itemData    <- getItemData itemID
   itemAuthors <- getItemAuthors itemID
   itemTags    <- getItemTagsData itemID
@@ -297,12 +330,23 @@ getZoteroItem itemID = do
   itemMime    <- return Nothing
 
   return $ ZoteroItem itemID
+                      itemType
                       itemData
                       itemAuthors
                       itemTags
                       itemColls
                       itemFile
                       itemMime
+
+
+getItemType :: Int -> DBConn String
+getItemType itemID = fromJust <$> sqlQueryOne sql [fromIntToHDBC itemID] fromSqlToString
+  where
+    sql = unlines [
+           "SELECT itemTypes.typeName FROM itemTypes, items"
+          ,"WHERE items.itemID = ?"
+          ,"AND   items.itemTypeID = itemTypes.itemTypeID"
+          ]
 
 
 {- | Get name of tag given its ID -}
@@ -527,14 +571,6 @@ getItemAttachmentData itemID = do
 
 
 
-{-
-    ["/home/tux/Downloads/Python Packaging for Production.pdf",
-     "7ZPVKJQH","application/pdf",
-     "attachment"
-     ]
-
--}
-
 getItemAttachmentFile :: Int -> DBConn (Maybe FilePath)
 getItemAttachmentFile itemID = do
   
@@ -564,13 +600,9 @@ getItemAttachmentFile itemID = do
 
 getItemData ::  ZoteroItemID -> DBConn [(String, String)]
 getItemData itemID = do   
-  
   let itemID' = fromIntToInt64 itemID 
-
   sqlQueryAll  sql [HDBC.SqlInt64 itemID'] projection
-
   where
-     
     sql = unlines $
       ["SELECT  fields.fieldName, itemDataValues.value",
        "FROM    fields, itemDataValues, itemData",
@@ -611,20 +643,6 @@ ignore ioValue = do
   a <- ioValue
   return ()
 
--- :{
--- let mapM2 :: (a -> IO b) -> [a] -> IO [b]
---     mapM2 fn xs = sequence $ map fn xs 
--- :}
-
-{-
-Copy a zotero collection to a given directory given the
-collection ID and the destiny directory.
-
- - conn   -> Database Connection
- - collID -> Collection ID
- - dest   -> Destiny directory 
-
--}
 
 getZoteroItemJSON :: ZoteroItemID -> DBConn BLI.ByteString
 getZoteroItemJSON itemID = do 
@@ -735,16 +753,11 @@ getRelatedTagsJSON tagID = do
   tags <- getRelatedTags tagID
   return $ encode tags
 
-
 getTagsFromCollection :: Int -> DBConn [ZoteroTag] 
 getTagsFromCollection  collID = do 
-
   let collID' = fromIntToInt64 collID 
-
   sqlQueryAll sql [HDBC.SqlInt64 collID'] projection 
-  
   where
-
     projection row = ZoteroTag (fromSqlToInt    (row !! 0))
                                (fromSqlToString (row !! 1))    
     
@@ -999,7 +1012,7 @@ mergeTags oldTagID newTagID = do
 
 createTag :: String -> DBConn Int
 createTag tagName =  do
-  key <- liftIO $ createKey
+  key <- liftIO $  makeKey
   let sqlValues = [HDBC.SqlString tagName
                   ,HDBC.SqlString key
                   ,HDBC.SqlString tagName
@@ -1081,7 +1094,7 @@ setItemField itemID field value  = do
 {- | Note: Only works in PostgresSQL -}
 insertCollection :: String -> DBConn Int 
 insertCollection name = do
-  key <- liftIO $ createKey
+  key <- liftIO $ makeKey
   id <- fromJust <$> sqlQueryOne sql [HDBC.SqlString name, HDBC.SqlString key] fromSqlToInt
   return id 
   where
@@ -1091,3 +1104,160 @@ insertCollection name = do
           \)\
           \SELECT max(collectionID) FROM collections"
 
+
+insertItemID :: Int -> DBConn Int
+insertItemID itemTypeID = do
+  key    <- liftIO makeKey
+  sqlRun sql1 [fromIntToHDBC itemTypeID, fromStrToHDBC key]
+  itemID <- fromJust <$> sqlQueryOne sql2 [fromStrToHDBC key] fromSqlToInt
+  return itemID
+  where
+    sql1 = "INSERT INTO items (itemTypeID, key) VALUES (?, ?)"
+    sql2 = "SELECT itemID FROM items WHERE key = ?"
+
+insertField :: Int -> (Int, String) -> DBConn ()
+insertField itemID (fieldID, value) = do
+  -- Insert value into table itemDataValues and get valueID
+  sqlRun sql1 [fromStrToHDBC value]
+  valueID <- sqlGetLastID "itemDataValues" "valueID"
+  -- Insert into table itemData
+  sqlRun sql2 [ fromIntToHDBC itemID
+               ,fromIntToHDBC fieldID
+               ,fromIntToHDBC valueID
+              ]
+  where
+    sql1 = "INSERT INTO itemDataValues (value) VALUES (?)"
+    sql2 = "INSERT INTO itemData VALUES (?, ?, ?)"
+
+
+
+insertItem itemTypeID fieldList = do
+  -- Insert item type into table items and get itemID
+  key    <- liftIO makeKey
+  sqlRun sql1 [fromIntToHDBC itemTypeID, fromStrToHDBC key]
+  itemID <- sqlGetLastID "items" "itemID"
+  mapM_ (insertField itemID) fieldList
+  return itemID
+      where
+        sql1 = "INSERT INTO items (itemTypeID, key) VALUES (?, ?)"
+
+
+{- | Print Debug string if the environment variable DEBUG is set to true -}
+printDebug :: String -> String -> DBConn ()
+printDebug funName str = liftIO $ do
+  dbg <- Env.lookupEnv "DEBUG"
+  case dbg of
+    Just "true" -> putStrLn $ P.printf "\nDEBUG (%s) = %s" funName str
+    _           -> return ()
+
+
+deleteItem :: Int -> DBConn ()
+deleteItem itemID =  do
+
+  -- sqlRun sqlDeleteDataValues [fromIntToHDBC itemID]
+
+  valueIDCols <- sqlQueryRow sqlValueID [fromIntToHDBC itemID] fromSqlToInt 
+
+  sqlCommit $ sqlDeleteRowsWhereID "itemID" "itemData" itemID
+                         
+  -- sqlCommit $ sqlRunMany sqlDeleteItemDataValues [map fromIntToHDBC valueIDCols]
+                       
+  sqlRun sqlDeleteWords [fromIntToHDBC itemID]
+
+  sqlDeleteRowsWhereID "sourceItemID" "itemAttachments" itemID
+  sqlDeleteRowsTablesWhereID "itemID" tables itemID
+       where
+         tables = [
+                 -- "itemData"
+                 "itemTags"
+                ,"itemCreators"
+                ,"highlights"
+                ,"itemNotes"
+                ,"collectionItems"
+                ,"itemSeeAlso"
+                ,"itemAttachments"
+                ,"items"
+                ]
+         
+         sqlDeleteItemDataValues =  "DELETE FROM itemDataValues WHERE valueID = ?"
+
+         sqlValueID = "SELECT valueID from ItemData WHERE itemID = ?"
+                      
+         sqlDeleteWords = "DELETE FROM fullTextWords \
+                          \WHERE wordID IN (SELECT wordID FROM fullTextItemWords WHERE itemID = ?)"
+
+    -- sql7 = "DELETE FROM fullTextItems WHERE itemID = ?"
+    -- sql8 = "DELETE FROM fullTextItemWords WHERE itemID = ?"
+
+
+
+{- ============  Update Functions  ================ -}
+
+getItemField :: ZoteroFieldID -> ZoteroItemID -> DBConn (Maybe ZoteroFieldValue)
+getItemField fieldID itemID = sqlQueryOne sql [fromIntToHDBC fieldID, fromIntToHDBC itemID] fromSqlToString
+     where
+       sql = unlines [
+        "SELECT  itemDataValues.value"
+        ,"FROM    fields, itemDataValues, itemData"
+        ,"WHERE   itemData.fieldID = fields.fieldID"
+        ,"AND     itemData.valueID = itemDataValues.valueID"
+        ,"AND     itemData.itemID = ?"
+        ,"AND     itemData.fieldID = ?"
+        ]
+
+getItemURL :: ZoteroItemID -> DBConn (Maybe String)
+getItemURL = getItemField 1
+
+getItemISBN :: ZoteroItemID -> DBConn (Maybe String)
+getItemISBN = getItemField 11
+
+getItemISSN :: ZoteroItemID -> DBConn (Maybe String)
+getItemISSN = getItemField 13
+
+getItemDOI :: ZoteroItemID -> DBConn (Maybe String)
+getItemDOI = getItemField 26
+
+getItemTitle :: ZoteroItemID -> DBConn (Maybe String)
+getItemTitle = getItemField 110
+
+
+updateItemDataField :: Int -> String -> Int -> DBConn ()
+updateItemDataField  fieldID value itemID = sqlRun sql [ fromStrToHDBC value
+                                                        ,fromIntToHDBC itemID
+                                                        ,fromIntToHDBC fieldID
+                                                       ]
+  where
+    sql = unlines [
+                   "UPDATE itemDataValues"
+                  ,"SET value = ?"
+                  ,"WHERE valueID = ("
+                  ,"  SELECT valueID FROM itemData"
+                  ,"  WHERE itemID = ?"
+                  ,"  AND fieldID = ? )"
+                 ]
+
+
+{- | Update item title -}
+updateItemTitle :: String -> Int -> DBConn ()
+updateItemTitle  = updateItemDataField 110
+
+{- | Update item publisher -}
+updateItemPublisher :: String -> Int -> DBConn ()
+updateItemPublisher = updateItemDataField 8
+
+{- | Update item Date -}
+updateItemDate :: String -> Int -> DBConn ()
+updateItemDate = updateItemDataField 14
+
+{- | Update item Abstract -}
+updateItemAbstract :: String -> Int -> DBConn ()
+updateItemAbstract  = updateItemDataField 90
+
+updateItemDOI :: String -> Int -> DBConn ()
+updateItemDOI = updateItemDataField 26
+
+updateItemISBN :: String -> Int -> DBConn ()
+updateItemISBN = updateItemDataField 11
+
+updateItemISSN :: String -> Int -> DBConn ()
+updateItemISSN  = updateItemDataField 13

@@ -132,7 +132,7 @@ function jsonToZoteroItemDOM(json){
     var url = data["url"]
     var itemID = json["id"] ;
     var file = json["file"];
-
+    var itemType = json["type"]
 
     var downloadLink = $h("a").set({
         href:   "/attachment/" + file,
@@ -162,10 +162,11 @@ function jsonToZoteroItemDOM(json){
     });
 
     var authorLinks = json["authors"].map(function(author){
+        var name = author.first + " " + author.last ;
         return $h("a").set({
-             href:    "/#!author?id=" + author.id
+             href:    makeAuthorURL(author.id, name)
             ,target:  "_blank"
-            ,child:   author.first + " " + author.last 
+            ,child:  name 
 
         });
 
@@ -180,20 +181,36 @@ function jsonToZoteroItemDOM(json){
             , target:  "_blank"
             , child:   row[1]
         });
-    })
+    });
 
 
     var itemIdUrl = $h("a").set({
          href:  ("/#!item?id=" + itemID.toString())
         ,target: "_blank"
         ,child:  itemID.toString()
-    })
+    });
+
+    if (data["DOI"]){
+        var doiUrl = $h("a").set({
+            href:  "https://doi.org/" + data["DOI"]
+           ,target:  "_blank"
+           ,child: data["DOI"]
+        });
+    } else {
+        var doiUrl = "";
+
+        }
     
    var table =  htmlTable().setRows(
         [
-            ["id",            itemIdUrl],
-            ["url",           urlLink],          
-            ["Download",      downloadLink],
+            ["Id",            itemIdUrl],
+            ["Type",          itemType],
+            ["Url",           urlLink],
+            ["DOI",           doiUrl],
+            ["ISBN",          data["ISBN"]],
+            ["ISSN",          data["ISSN"]],
+            ["Access Date",   data["accessDate"]],
+            ["Download",      downloadLink],            
             ["Authors",       bulletList(authorLinks).set({"class": "itemAttribRow"}) ],            
             ["Collections",   bulletList(collsLinks).set({"class": "itemAttribRow"}) ],            
             ["Tags",          bulletList(tagLinks).set({"class": "itemAttribRow"}) ]
@@ -565,7 +582,7 @@ function routeDispatcher (){
         showTagID(tagID);
 
     // Route /authors?id=200 - Show all authors data     
-    } else if (route.match (/authors\?id=(.+)&name=(.+)/)){
+    } else if (route.match (/authors\?id=(.+)/)){
 
         var id = route.match (/authors\?id=(.+)/)[1];
         showAuthorID(id);
