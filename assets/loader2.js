@@ -194,8 +194,12 @@ function jsonToZoteroItemDOM(json){
         [
             ["Id",            itemIdUrl],
             ["Type",          itemType],
-            ["url",           urlLink],          
-            ["Download",      downloadLink],
+            ["Url",           urlLink],
+            ["DOI",           data["DOI"]],
+            ["ISBN",          data["ISBN"]],
+            ["ISSN",          data["ISSN"]],
+            ["Access Date",   data["accessDate"]],
+            ["Download",      downloadLink],            
             ["Authors",       bulletList(authorLinks).set({"class": "itemAttribRow"}) ],            
             ["Collections",   bulletList(collsLinks).set({"class": "itemAttribRow"}) ],            
             ["Tags",          bulletList(tagLinks).set({"class": "itemAttribRow"}) ]
