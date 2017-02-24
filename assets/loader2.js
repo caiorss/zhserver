@@ -162,10 +162,11 @@ function jsonToZoteroItemDOM(json){
     });
 
     var authorLinks = json["authors"].map(function(author){
+        var name = author.first + " " + author.last ;
         return $h("a").set({
-             href:    "/#!author?id=" + author.id
+             href:    makeAuthorURL(author.id, name)
             ,target:  "_blank"
-            ,child:   author.first + " " + author.last 
+            ,child:  name 
 
         });
 
@@ -566,7 +567,7 @@ function routeDispatcher (){
         showTagID(tagID);
 
     // Route /authors?id=200 - Show all authors data     
-    } else if (route.match (/authors\?id=(.+)&name=(.+)/)){
+    } else if (route.match (/authors\?id=(.+)/)){
 
         var id = route.match (/authors\?id=(.+)/)[1];
         showAuthorID(id);
