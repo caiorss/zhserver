@@ -1153,14 +1153,23 @@ printDebug funName str = liftIO $ do
 
 deleteItem :: Int -> DBConn ()
 deleteItem itemID =  do
+
   -- sqlRun sqlDeleteDataValues [fromIntToHDBC itemID]
+
+  valueIDCols <- sqlQueryRow sqlValueID [fromIntToHDBC itemID] fromSqlToInt 
+
+  sqlCommit $ sqlDeleteRowsWhereID "itemID" "itemData" itemID
+                         
+  -- sqlCommit $ sqlRunMany sqlDeleteItemDataValues [map fromIntToHDBC valueIDCols]
+                       
   sqlRun sqlDeleteWords [fromIntToHDBC itemID]
+
   sqlDeleteRowsWhereID "sourceItemID" "itemAttachments" itemID
   sqlDeleteRowsTablesWhereID "itemID" tables itemID
        where
          tables = [
-                 "itemData"
-                ,"itemTags"
+                 -- "itemData"
+                 "itemTags"
                 ,"itemCreators"
                 ,"highlights"
                 ,"itemNotes"
@@ -1169,9 +1178,11 @@ deleteItem itemID =  do
                 ,"itemAttachments"
                 ,"items"
                 ]
-         sqlDeleteDataValues =  "DELETE FROM itemDataValues \
-                                \WHERE valueID IN (SELECT valueID FROM itemData WHERE itemID = ?)"
+         
+         sqlDeleteItemDataValues =  "DELETE FROM itemDataValues WHERE valueID = ?"
 
+         sqlValueID = "SELECT valueID from ItemData WHERE itemID = ?"
+                      
          sqlDeleteWords = "DELETE FROM fullTextWords \
                           \WHERE wordID IN (SELECT wordID FROM fullTextItemWords WHERE itemID = ?)"
 
