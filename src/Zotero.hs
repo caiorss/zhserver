@@ -1137,7 +1137,6 @@ insertItem itemTypeID fieldList = do
   return itemID
       where
         sql1 = "INSERT INTO items (itemTypeID, key) VALUES (?, ?)"
-        sql1 = "INSERT INTO items (itemTypeID, key) VALUES (?, ?)"
 
 
 {- | Print Debug string if the environment variable DEBUG is set to true -}
