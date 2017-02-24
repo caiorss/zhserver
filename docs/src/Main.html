@@ -96,10 +96,10 @@ with basic http authentication and sqlite database.
     ServerConfig {
                   serverPort         = 8090
                 , serverHost         = &quot;0.0.0.0&quot;
-                , serverLogin        = AuthBasic &quot;amin&quot; &quot;admin-password&quot;
+                , serverLogin        = AuthBasic &quot;admin&quot; &quot;admin-password&quot;
                 , serverStaticPath   = &quot;./assets&quot;             
                 , serverStoragePath  = &quot;testdb/storage&quot;
-                , serverDatabase     = &quot;sqlite://testdb/zotero.sqlite&quot;             
+                , serverDatabase     = &quot;sqlite://///testdb//zotero.sqlite&quot;             
                 }
 
 @
@@ -114,7 +114,7 @@ without authentication and postgres-sql password.
                   , serverLogin        = AuthEmpty
                   , serverStaticPath   = &quot;./assets&quot;             
                   , serverStoragePath  = &quot;testdb/storage&quot;
-                  , serverDatabase     = &quot;postgres://postgres@localhost/zotero&quot;             
+                  , serverDatabase     = &quot;postgres:///postgres@localhost//zotero&quot;             
                   }
 
 @
