@@ -603,20 +603,6 @@ ignore ioValue = do
   a <- ioValue
   return ()
 
--- :{
--- let mapM2 :: (a -> IO b) -> [a] -> IO [b]
---     mapM2 fn xs = sequence $ map fn xs 
--- :}
-
-{-
-Copy a zotero collection to a given directory given the
-collection ID and the destiny directory.
-
- - conn   -> Database Connection
- - collID -> Collection ID
- - dest   -> Destiny directory 
-
--}
 
 getZoteroItemJSON :: ZoteroItemID -> DBConn BLI.ByteString
 getZoteroItemJSON itemID = do 
