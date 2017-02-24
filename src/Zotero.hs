@@ -1121,7 +1121,10 @@ insertField itemID (fieldID, value) = do
   sqlRun sql1 [fromStrToHDBC value]
   valueID <- sqlGetLastID "itemDataValues" "valueID"
   -- Insert into table itemData
-  sqlRun sql2 [fromIntToHDBC itemID, fromIntToHDBC fieldID, fromIntToHDBC valueID]
+  sqlRun sql2 [ fromIntToHDBC itemID
+               ,fromIntToHDBC fieldID
+               ,fromIntToHDBC valueID
+              ]
   where
     sql1 = "INSERT INTO itemDataValues (value) VALUES (?)"
     sql2 = "INSERT INTO itemData VALUES (?, ?, ?)"
