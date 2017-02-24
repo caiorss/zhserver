@@ -168,6 +168,10 @@ type ZoteroItemMime   = String
 {- | Collection ID type alias -}
 type ZoteroCollectionID = Int
 
+type ZoteroFieldID = Int
+type ZoteroFieldValue = String
+
+
 {- | ZoteroItem  data -}
 data ZoteroItem =
   ZoteroItem {    zoteroItemID          :: Int                  --  Item ID number
