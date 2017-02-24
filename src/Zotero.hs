@@ -1110,6 +1110,18 @@ insertItemID itemTypeID = do
     sql1 = "INSERT INTO items (itemTypeID, key) VALUES (?, ?)"
     sql2 = "SELECT itemID FROM items WHERE key = ?"
 
+insertField :: Int -> (Int, String) -> DBConn ()
+insertField itemID (fieldID, value) = do
+  -- Insert value into table itemDataValues and get valueID
+  sqlRun sql1 [fromStrToHDBC value]
+  valueID <- sqlGetLastID "itemDataValues" "valueID"
+  -- Insert into table itemData
+  sqlRun sql2 [fromIntToHDBC itemID, fromIntToHDBC fieldID, fromIntToHDBC valueID]
+  where
+    sql1 = "INSERT INTO itemDataValues (value) VALUES (?)"
+    sql2 = "INSERT INTO itemData VALUES (?, ?, ?)"
+
+
     -- sql7 = "DELETE FROM fullTextItems WHERE itemID = ?"
     -- sql8 = "DELETE FROM fullTextItemWords WHERE itemID = ?"
 
