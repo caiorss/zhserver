@@ -58,7 +58,7 @@ iterMaybeError2 a b errorHandler action  = do
    order to make easier to locate the author.
 -}   
 printItemAuthor conn itemID = do
-  authorData <- runReaderT (Z.itemAuthors itemID) conn
+  authorData <- runReaderT (Z.getItemAuthors itemID) conn
   mapM_ printRow authorData
   where
     printRow author = printf "%s: %s, %s\n" (Z.zoteroAuthorFirstName author)
@@ -227,7 +227,7 @@ wordLike s = "%" ++ s ++ "%"
 copyCollectionTo :: String -> String -> Int -> DBConn ()
 copyCollectionTo storagePath dest collID = do
   items       <- Z.collectionItems collID
-  attachments <- mapM (\item -> Z.itemAttachmentFile item ) items
+  attachments <- mapM (\item -> Z.getItemAttachmentFile item ) items
   liftIO $ createDirectoryIfMissing True dest
   liftIO $ mapM_ copyToDest attachments
   where
@@ -246,7 +246,7 @@ copyCollectionTo storagePath dest collID = do
 -}
 copyItemTo :: String -> String -> Int -> DBConn ()
 copyItemTo storagePath dest itemID = do
-  itemFile <- Z.itemAttachmentFile itemID
+  itemFile <- Z.getItemAttachmentFile itemID
   case itemFile of
     Nothing    -> liftIO $ putStrLn $ "Error: Item ID = " ++ show itemID ++ " has no associated file."
     Just file  -> do liftIO $ createDirectoryIfMissing True dest
