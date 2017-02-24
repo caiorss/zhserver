@@ -268,7 +268,7 @@ parseArgs args path = do
     ["item", "-show",  itemID]                     -> printItemID (read itemID :: Int)
     ["item", "-open", itemID]                      -> openItem path (readInt itemID)
     ["item", "-copy", itemID, destPath]            -> copyItemTo path destPath (readInt itemID)                                                      
-    ["item", "-delete", itemID]                    -> undefined
+    ["item", "-delete", itemID]                    -> Z.deleteItem (readInt itemID)
     
     ["item", "-add-tag", itemID,  tagNames] -> do Z.addTagsToItem (readInt itemID) (words tagNames)
                                                   printItemID (readInt itemID)
