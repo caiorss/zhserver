@@ -181,21 +181,32 @@ function jsonToZoteroItemDOM(json){
             , target:  "_blank"
             , child:   row[1]
         });
-    })
+    });
 
 
     var itemIdUrl = $h("a").set({
          href:  ("/#!item?id=" + itemID.toString())
         ,target: "_blank"
         ,child:  itemID.toString()
-    })
+    });
+
+    if (data["DOI"]){
+        var doiUrl = $h("a").set({
+            href:  "https://doi.org/" + data["DOI"]
+           ,target:  "_blank"
+           ,child: data["DOI"]
+        });
+    } else {
+        var doiUrl = "";
+
+        }
     
    var table =  htmlTable().setRows(
         [
             ["Id",            itemIdUrl],
             ["Type",          itemType],
             ["Url",           urlLink],
-            ["DOI",           data["DOI"]],
+            ["DOI",           doiUrl],
             ["ISBN",          data["ISBN"]],
             ["ISSN",          data["ISSN"]],
             ["Access Date",   data["accessDate"]],
