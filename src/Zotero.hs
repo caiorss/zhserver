@@ -1144,8 +1144,34 @@ printDebug funName str = liftIO $ do
     _           -> return ()
 
 
+deleteItem :: Int -> DBConn ()
+deleteItem itemID =  do
+  -- sqlRun sqlDeleteDataValues [fromIntToHDBC itemID]
+  sqlRun sqlDeleteWords [fromIntToHDBC itemID]
+  sqlDeleteRowsWhereID "sourceItemID" "itemAttachments" itemID
+  sqlDeleteRowsTablesWhereID "itemID" tables itemID
+       where
+         tables = [
+                 "itemData"
+                ,"itemTags"
+                ,"itemCreators"
+                ,"highlights"
+                ,"itemNotes"
+                ,"collectionItems"
+                ,"itemSeeAlso"
+                ,"itemAttachments"
+                ,"items"
+                ]
+         sqlDeleteDataValues =  "DELETE FROM itemDataValues \
+                                \WHERE valueID IN (SELECT valueID FROM itemData WHERE itemID = ?)"
+
+         sqlDeleteWords = "DELETE FROM fullTextWords \
+                          \WHERE wordID IN (SELECT wordID FROM fullTextItemWords WHERE itemID = ?)"
+
     -- sql7 = "DELETE FROM fullTextItems WHERE itemID = ?"
     -- sql8 = "DELETE FROM fullTextItemWords WHERE itemID = ?"
+
+
 
 {- ============  Update Functions  ================ -}
 
