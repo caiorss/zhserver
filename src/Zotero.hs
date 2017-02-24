@@ -85,6 +85,24 @@ module Zotero
           ,searchTag
           ,searchCollection
 
+           -- Item fields -------
+           --
+          ,getItemURL
+          ,getItemISBN
+          ,getItemISSN
+          ,getItemDOI
+          ,getItemTitle
+
+           -- Update Functions -----
+           --
+           ,updateItemDataField
+           ,updateItemTitle
+           ,updateItemDate
+           ,updateItemAbstract
+           ,updateItemISSN
+           ,updateItemISBN
+           ,updateItemDOI
+
           {- JSON Export Functions -}
          ,getCollectionsJSON
          ,getTagsJSON          
