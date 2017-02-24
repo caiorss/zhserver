@@ -137,9 +137,13 @@ openDBConnection dbUri =
 runDBConn :: HDBConn -> DBConn a -> IO a
 runDBConn hdbconn dbAction =
   case hdbconn of
-    HDBConnSqlite   c  -> runReaderT dbAction c
-    HDBConnPostgres c  -> runReaderT dbAction c
+    HDBConnSqlite   c  -> do out <- runReaderT dbAction c
+                             HDBC.commit c
+                             return out
 
+    HDBConnPostgres c  -> do out <- runReaderT dbAction c
+                             HDBC.commit c
+                             return out
 
 
 
