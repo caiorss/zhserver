@@ -51,6 +51,7 @@ module DBUtils
      ,sqlRun 
 
      ,sqlDeleteRowsWhereID
+     ,sqlDeleteRowsTablesWhereID
      ,joinStrings
      ,lookupString
      ,lookupInt
@@ -359,3 +360,7 @@ sqlDeleteRowsWhereID column table keyID =
     sqlRun sql [fromIntToHDBC keyID]
     where
       sql = Printf.printf "DELETE FROM %s WHERE %s = ?" table column
+
+sqlDeleteRowsTablesWhereID :: String -> [String] -> Int -> DBConn ()
+sqlDeleteRowsTablesWhereID column tables keyID =
+  mapM_ (\ tab -> sqlDeleteRowsWhereID column tab keyID) tables
