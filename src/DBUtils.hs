@@ -49,6 +49,8 @@ module DBUtils
      ,sqlQueryRow
      ,sqlQueryOne
      ,sqlRun 
+     ,sqlRunMany
+     ,sqlCommit
 
      ,sqlDeleteRowsWhereID
      ,sqlDeleteRowsTablesWhereID
