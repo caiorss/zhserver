@@ -97,6 +97,11 @@ update: $(sample-db)
 $(sample-db): $(sample-db-src)
 	cp $(sample-db-src) $(sample-db)
 
+
+test-zotero: dbtest
+	cd src && env DEBUG=true stack runhaskell test_zhserver.hs
+
+
 #========= Clean Rules ===================#
 
 doc:
