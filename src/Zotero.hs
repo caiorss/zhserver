@@ -1100,22 +1100,16 @@ insertCollection name = do
           \SELECT max(collectionID) FROM collections"
 
 
-
-deleteItem :: Int -> DBConn ()
-deleteItem itemID = do
-  sqlRun sql1 [fromIntToHDBC itemID]
-  sqlRun sql2 [fromIntToHDBC itemID]
-  sqlRun sql3 [fromIntToHDBC itemID]
-  sqlRun sql4 [fromIntToHDBC itemID]
-  sqlRun sql5 [fromIntToHDBC itemID]
-  sqlRun sql6 [fromIntToHDBC itemID]
+insertItemID :: Int -> DBConn Int
+insertItemID itemTypeID = do
+  key    <- liftIO makeKey
+  sqlRun sql1 [fromIntToHDBC itemTypeID, fromStrToHDBC key]
+  itemID <- fromJust <$> sqlQueryOne sql2 [fromStrToHDBC key] fromSqlToInt
+  return itemID
   where
-    sql1 = "DELETE FROM items WHERE itemID = ?"
-    sql2 = "DELETE FROM itemData WHERE itemID = ?"
-    sql3 = "DELETE FROM itemTags WHERE itemID = ?"
-    sql4 = "DELETE FROM itemAttachments WHERE itemID = ?"
-    sql5 = "DELETE FROM itemTags WHERE itemID = ?"
-    sql6 = "DELETE FROM itemCreators WHERE itemID = ?"
+    sql1 = "INSERT INTO items (itemTypeID, key) VALUES (?, ?)"
+    sql2 = "SELECT itemID FROM items WHERE key = ?"
+
     -- sql7 = "DELETE FROM fullTextItems WHERE itemID = ?"
     -- sql8 = "DELETE FROM fullTextItemWords WHERE itemID = ?"
 
