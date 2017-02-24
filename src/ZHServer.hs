@@ -81,12 +81,45 @@ import Text.Show.Pretty (pPrint)
 type ServerApp a =  forall conn. (HDBC.IConnection conn)
                     => ReaderT conn (ServerPartT IO) a
 
-{- | Server Authentication -}
-data Auth = AuthEmpty                {- | No Authentication    -}
-          | AuthBasic String String  {- | Basic authentication -}
-          | AuthHtml  String String  {- | Html form Authentication -}
-            deriving (Eq, Read, Show)
+{-| Server Authentication -}
+data Auth = AuthEmpty                --   No Authentication   
+          | AuthBasic String String  --   Basic authentication 
+          | AuthHtml  String String  --   Html form Authentication 
+          deriving (Eq, Read, Show)
 
+{-| Server startup configuration 
+
+Example: Server configuration listening all hosts (0.0.0.0) port 8090
+with basic http authentication and sqlite database.
+
+@
+    ServerConfig {
+                  serverPort         = 8090
+                , serverHost         = "0.0.0.0"
+                , serverLogin        = AuthBasic "amin" "admin-password"
+                , serverStaticPath   = "./assets"             
+                , serverStoragePath  = "testdb/storage"
+                , serverDatabase     = "sqlite://testdb/zotero.sqlite"             
+                }
+
+@
+
+Example: Server configuration listening all hosts (0.0.0.0) port 8080 
+without authentication and postgres-sql password.
+
+@
+     ServerConfig {
+                    serverPort         = 8090
+                  , serverHost         = "0.0.0.0"
+                  , serverLogin        = AuthEmpty
+                  , serverStaticPath   = "./assets"             
+                  , serverStoragePath  = "testdb/storage"
+                  , serverDatabase     = "postgres://postgres@localhost/zotero"             
+                  }
+
+@
+
+-}                   
 data ServerConfig = ServerConfig
                     {
                      serverPort        :: Int      -- Port that server will listen
@@ -503,4 +536,5 @@ parseArgs args =
 main :: IO () 
 main = do
   getArgs >>= parseArgs
-  
+
+          
