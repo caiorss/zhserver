@@ -527,14 +527,6 @@ getItemAttachmentData itemID = do
 
 
 
-{-
-    ["/home/tux/Downloads/Python Packaging for Production.pdf",
-     "7ZPVKJQH","application/pdf",
-     "attachment"
-     ]
-
--}
-
 getItemAttachmentFile :: Int -> DBConn (Maybe FilePath)
 getItemAttachmentFile itemID = do
   
@@ -564,13 +556,9 @@ getItemAttachmentFile itemID = do
 
 getItemData ::  ZoteroItemID -> DBConn [(String, String)]
 getItemData itemID = do   
-  
   let itemID' = fromIntToInt64 itemID 
-
   sqlQueryAll  sql [HDBC.SqlInt64 itemID'] projection
-
   where
-     
     sql = unlines $
       ["SELECT  fields.fieldName, itemDataValues.value",
        "FROM    fields, itemDataValues, itemData",
@@ -735,16 +723,11 @@ getRelatedTagsJSON tagID = do
   tags <- getRelatedTags tagID
   return $ encode tags
 
-
 getTagsFromCollection :: Int -> DBConn [ZoteroTag] 
 getTagsFromCollection  collID = do 
-
   let collID' = fromIntToInt64 collID 
-
   sqlQueryAll sql [HDBC.SqlInt64 collID'] projection 
-  
   where
-
     projection row = ZoteroTag (fromSqlToInt    (row !! 0))
                                (fromSqlToString (row !! 1))    
     
