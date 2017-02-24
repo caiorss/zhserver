@@ -327,6 +327,16 @@ getZoteroItem itemID = do
                       itemMime
 
 
+getItemType :: Int -> DBConn String
+getItemType itemID = fromJust <$> sqlQueryOne sql [fromIntToHDBC itemID] fromSqlToString
+  where
+    sql = unlines [
+           "SELECT itemTypes.typeName FROM itemTypes, items"
+          ,"WHERE items.itemID = ?"
+          ,"AND   items.itemTypeID = itemTypes.itemTypeID"
+          ]
+
+
 {- | Get name of tag given its ID -}
 getTagName :: ZoteroTagID -> DBConn (Maybe String)
 getTagName tagID = sqlQueryOne sql [HDBC.SqlInt64 $  fromIntToInt64 tagID] fromSqlToString
