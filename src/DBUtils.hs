@@ -332,7 +332,13 @@ sqlRun sql sqlvals = do
   stmt    <- liftIO $ HDBC.prepare conn sql
   liftIO  $ HDBC.execute stmt sqlvals
   return ()
-    
+
+sqlRunMany :: SQL -> [[HDBC.SqlValue]] -> DBConn ()
+sqlRunMany sql valueList = do
+  conn <- ask
+  stmt <- liftIO $ HDBC.prepare conn sql
+  liftIO $ HDBC.executeMany stmt valueList
+  return ()
 
 sqlGetLastID :: String -> String -> DBConn Int
 sqlGetLastID table column = fromJust <$> sqlQueryOne sql [] fromSqlToInt
