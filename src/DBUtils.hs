@@ -317,10 +317,10 @@ sqlQueryRow sql sqlvals coercion = do
 sqlQueryOne :: SQL -> [HDBC.SqlValue] -> (HDBC.SqlValue -> b) -> DBConn (Maybe b)
 sqlQueryOne sql sqlvals projection = do
   conn   <- ask 
-ql stmt   <- liftIO $  HDBC.prepare conn sql
+  stmt   <- liftIO $  HDBC.prepare conn sql
   liftIO $ HDBC.execute stmt sqlvals
   row     <- liftIO $ HDBC.fetchRow stmt
-  liftIO $ HDBC.commit conn 
+  -- liftIO $ HDBC.commit conn
   return $ (!!0) . (map projection) <$> row
 
 {- | Run a SQL statement that returns no value -}   
