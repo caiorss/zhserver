@@ -132,7 +132,7 @@ function jsonToZoteroItemDOM(json){
     var url = data["url"]
     var itemID = json["id"] ;
     var file = json["file"];
-
+    var itemType = json["type"]
 
     var downloadLink = $h("a").set({
         href:   "/attachment/" + file,
@@ -191,7 +191,8 @@ function jsonToZoteroItemDOM(json){
     
    var table =  htmlTable().setRows(
         [
-            ["id",            itemIdUrl],
+            ["Id",            itemIdUrl],
+            ["Type",          itemType],
             ["url",           urlLink],          
             ["Download",      downloadLink],
             ["Authors",       bulletList(authorLinks).set({"class": "itemAttribRow"}) ],            
