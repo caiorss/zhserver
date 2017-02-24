@@ -40,6 +40,8 @@ module DBUtils
      ,fromSqlToInt
      ,fromSqlToString
 
+      ,fromIntToHDBC
+      ,fromStrToHDBC
       
      ,sqlQuery
      ,sqlQueryAll
@@ -197,7 +199,14 @@ fromInt64ToInt = fromIntegral
 fromIntToInt64 :: Int -> Int64
 fromIntToInt64 = fromIntegral
 
+{- | Convert number to HDBC value -}
+fromIntToHDBC :: Int -> HDBC.SqlValue
+fromIntToHDBC n = HDBC.SqlInt64 $ fromIntegral n                 
 
+{- | Convert string to HDBC string -}                  
+fromStrToHDBC s = HDBC.SqlString s                 
+                  
+                  
 {- | Join strings by separator -}
 joinStrings :: String -> [String] -> String
 joinStrings sep strs =
