@@ -337,8 +337,7 @@ sqlRun sql sqlvals = do
 sqlGetLastID :: String -> String -> DBConn Int
 sqlGetLastID table column = fromJust <$> sqlQueryOne sql [] fromSqlToInt
   where
-    sql = Printf.printf "SELECT max(%s) FROM %S" column table 
-
+    sql = Printf.printf "SELECT max( %s ) FROM %s" column table
 
 {- | Delete all rows from [table] where [column] = keyID.
 
