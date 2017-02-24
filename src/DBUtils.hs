@@ -31,6 +31,7 @@ module DBUtils
      ,runDBConn
      ,withDBConnection
      ,withDBConnection2
+     ,withDBConnection3
      ,withConnection
      ,makeSearchIdFun
      ,makeSearchNameIdFun
@@ -172,6 +173,27 @@ withDBConnection2 dbUri dbAction = do
                                     return (Just out)
 
     Nothing                   -> return Nothing
+
+
+
+withDBConnection3 ::  String -> DBConn a -> IO a
+withDBConnection3 dbUri dbAction = do
+  conn <- openDBConnection dbUri
+  case conn of
+    Just (HDBConnSqlite   c)  ->  HDBC.withTransaction c $ \ conn -> do
+                                     out <- runReaderT dbAction c
+                                     -- HDBC.commit c
+                                     -- HDBC.disconnect c
+                                     return out
+
+    Just (HDBConnPostgres c)  -> do out <- runReaderT dbAction c
+                                    HDBC.disconnect c
+                                    HDBC.commit c
+                                    return out
+
+    Nothing                   -> error "Error: Invalid database URI."
+
+
 
 
 withConnection :: HDBC.IConnection  conn => IO conn -> (conn -> IO r) -> IO r
