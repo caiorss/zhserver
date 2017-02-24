@@ -340,6 +340,13 @@ sqlRunMany sql valueList = do
   liftIO $ HDBC.executeMany stmt valueList
   return ()
 
+sqlCommit :: DBConn () -> DBConn ()
+sqlCommit dbAction = do
+  conn <- ask
+  dbAction
+  liftIO $ HDBC.commit conn
+  return ()
+
 sqlGetLastID :: String -> String -> DBConn Int
 sqlGetLastID table column = fromJust <$> sqlQueryOne sql [] fromSqlToInt
   where
