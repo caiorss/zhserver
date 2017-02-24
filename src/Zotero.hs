@@ -1078,3 +1078,18 @@ getItemField fieldID itemID = sqlQueryOne sql [fromIntToHDBC fieldID, fromIntToH
         ,"AND     itemData.itemID = ?"
         ,"AND     itemData.fieldID = ?"
         ]
+
+getItemURL :: ZoteroItemID -> DBConn (Maybe String)
+getItemURL = getItemField 1
+
+getItemISBN :: ZoteroItemID -> DBConn (Maybe String)
+getItemISBN = getItemField 11
+
+getItemISSN :: ZoteroItemID -> DBConn (Maybe String)
+getItemISSN = getItemField 13
+
+getItemDOI :: ZoteroItemID -> DBConn (Maybe String)
+getItemDOI = getItemField 26
+
+getItemTitle :: ZoteroItemID -> DBConn (Maybe String)
+getItemTitle = getItemField 110
