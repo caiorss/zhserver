@@ -50,6 +50,7 @@ module DBUtils
      ,sqlQueryOne
      ,sqlRun 
 
+     ,sqlDeleteRowsWhereID
      ,joinStrings
      ,lookupString
      ,lookupInt
@@ -336,3 +337,25 @@ sqlGetLastID :: String -> String -> DBConn Int
 sqlGetLastID table column = fromJust <$> sqlQueryOne sql [] fromSqlToInt
   where
     sql = Printf.printf "SELECT max(%s) FROM %S" column table 
+
+
+{- | Delete all rows from [table] where [column] = keyID.
+
+Example:
+
+@
+  > sqlDeleteRowsWhereID "itemID" "items" 200
+@
+
+It executes the sql statement:
+
+@
+  > DELETE FROM items WHERE itemID = 200
+@
+
+-}
+sqlDeleteRowsWhereID :: String -> String -> Int -> DBConn ()
+sqlDeleteRowsWhereID column table keyID =
+    sqlRun sql [fromIntToHDBC keyID]
+    where
+      sql = Printf.printf "DELETE FROM %s WHERE %s = ?" table column
