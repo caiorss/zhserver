@@ -455,6 +455,19 @@ routeSearchByContentAndTitleLike :: ServerApp LC.ByteString
 routeSearchByContentAndTitleLike =
   serverRouteParamString "content" Z.searchByContentAndTitleLikeJSON
 
+
+routeGetAllItems :: ServerApp LC.ByteString
+routeGetAllItems = do
+  conn <- ask
+  paging <- parseInt <$> look "paging"
+  offset <- parseInt <$> look "offset"
+
+  case (paging, offset) of
+    (Just pa, Just off) -> let n = pa * off
+                           in runDbQuery (Z.getAllItemsJSON pa n)
+
+    _                   -> return (LC.pack "Error wrong parameters")
+
 {- | Server http request with all items without collections. -}
 routeItemsWithoutCollection :: ServerApp LC.ByteString
 routeItemsWithoutCollection = do
