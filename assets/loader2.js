@@ -281,8 +281,33 @@ function showCollections () {
     console.log("Displayed Collections OK");    
 }
 
-//------------ Show Not in Collection ------------- //
+//------------ Show Zotero Items ------------- //
 
+function showZoteroItems (paging, offset){
+    setPageTitle("All Items");
+    cleanContentArea();
+
+    var offsetNext = parseInt(offset) + 1;
+    var offsetPrev = parseInt(offset) - 1;
+
+    var nextlink = $h("a").set({
+         "href":   "#!/items?paging=" + paging + "&offset=" + offsetNext
+        ,"class":  "pageLink"
+        ,"child":  "Next"
+    });
+
+    var prevlink = $h("a").set({
+        "href":   "#!/items?paging=" + paging + "&offset=" + offsetPrev
+       ,"class":  "pageLink"
+       ,"child":  "Previous"
+    });
+
+    $d("#content").append(prevlink.node);
+    $d("#content").append(nextlink.node);
+
+    showZoteroItemsFromUrl("/api/items?paging=" + paging + "&offset=" + offset);
+
+};
 
 
 //------------- Show CollectionID --------------//
