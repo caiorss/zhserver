@@ -1,15 +1,26 @@
 
+h1 {
+    text-align: center;
+    color: rgb(78,98,114);
+    font-size: 37px;
+}    
+
+h2 {
+    text-align: center;
+    color: rgb(78,98,114);
+}    
+
+
 a:visited {
     text-decoration: none;
+    color: blue;
 }
 
 a:active {
     text-decoration: underline;
+    color: blue;
 }
 
-h1, h2 {
-    text-align: center;    
-}    
 
 
 #content {
@@ -24,11 +35,6 @@ h1, h2 {
     font-size: 12pt;
     max-width: 80%;
 }
-
-
-/* .filterItem { */
-/*     display: none; */
-/* } */
 
 
 #top {
@@ -64,14 +70,33 @@ h1, h2 {
     margin:        0;
     padding:       0;
     margin-right:  6px;
+    /* margin-top:   -20px; */
 
-    background-color: #C5E5F1;
+    background-color: darkcyan;
+    
 }    
 
-#navpanel li a:hover {
-    background-color: #555;
-    color: cyan;
-    
+.navbutton {
+    display: block;
+    width:   90%;
+    height:  30px;
+    background:  darkblue;
+    padding: 10px;
+    text-align: left;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+}    
+
+.navbutton:active {
+    color: white;
+    text-decoration: none;
+
+}
+
+.navbutton:visited {
+    color: white;
+    text-decoration: none;
 }    
 
 #searchPanel {
@@ -139,17 +164,6 @@ th {
     width: 20%;
 }
 
-/* .itemTable td:nth-child(2) { */
-/*     /\* background-color: lightgray; *\/ */
-/*     width: 90%; */
-
-/*     white-space:nowrap; */
-   
-    
-/* } */
-
-
-
 .itemTable tbody tr:nth-child(1) td:nth-child(2) {
    /* Styles goes here */
      font-weight: bold;
@@ -173,19 +187,56 @@ th {
     max-width: 80%;
     overflow:  hidden;
     word-wrap: break-word;
-    margin-top: 10px;
+    margin-top: 15px;    
+    padding-top: 15px;
+    display: table-cell;
+    margin-bottom: 1em;
 }
 
 .filterItem li {
-    margin-top: 10px;
+    margin:     1em 0;    
     display:    inline-block;
     font-size:  14px;
+    /* margin: 0 0 10px 0; */
+}
+
+
+
+
+.filterItem a {
+    color: red;
+}
+
+.filterItem a:visited{
+    color: red;
 }
 
 
 .pageLink {
+    margin-top: 120px;
     margin-left: 10px;
+    width:   115px;
+    height:  15px;
+    background:  darkblue;
+    padding: 10px;
+    text-align: left;
+    border-radius: 15px;
+    color: white;
+    font-weight: bold;    
 }    
+
+.pageLink:active {
+    color: white;
+    text-decoration: none;
+
+}
+
+.pageLink:visited {
+    color: white;
+    text-decoration: none;
+}    
+
+
 
 .zoteroItem {
 
