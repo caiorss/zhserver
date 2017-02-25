@@ -574,27 +574,27 @@ function routeDispatcher (){
 
     //alert(route);
 
-    // Route /tags - display all tags 
+    // Route /#!tags - display all tags
     if (route == "tags"  ){
         showTags();
 
-    // Route /colls - display all collections     
+    // Route /#!colls - display all collections
     } else if (route == "colls") {
 
         showCollections ();
 
-    // Route /authors - display all authors     
+    // Route /#!authors - display all authors
     } else if (route == "authors"){
 
         showAuthors ();
 
-    // Route /colls?id=X  - display a given collection     
+    // Route /#!colls?id=X  - display a given collection
     } else if (route.match (/colls\?id=(.+)/)){
 
         var collID = route.match (/colls\?id=(.+)/)[1];
         showCollectionID(collID);
 
-    // Route /tags - display all items with given tagID     
+    // Route /#!tags - display all items with given tagID
     } else if (route.match (/tags\?id=(.+)/)){
 
         var tagdata = route.match (/tags\?id=(.+)&name=(.+)/)        
@@ -607,14 +607,14 @@ function routeDispatcher (){
   
         showTagID(tagID);
 
-    // Route /authors?id=200 - Show all authors data     
+    // Route /#!authors?id=200 - Show all authors data
     } else if (route.match (/authors\?id=(.+)/)){
 
         var id = route.match (/authors\?id=(.+)/)[1];
         showAuthorID(id);
     }
 
-    // Route /item?id=200 - Show a single item, given its ID.
+    // Route /#!item?id=200 - Show a single item, given its ID.
     else if (route.match (/item\?id=(.+)/)){
 
         var id = route.match (/item\?id=(.+)/)[1];
