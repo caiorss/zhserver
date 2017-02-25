@@ -35,11 +35,11 @@ function cleanContentArea (){
 /*---------------  URL Formats ---------------------- */ 
 
 function makeCollectionURL(collID, name){
-    return "/#!colls?id=" + collID.toString() + "&name=" + name 
+    return "/#!colls?id=" + collID.toString() + "&name=" + name ;
 }
 
 function makeTagURL(tagID, name){
-    return "/#!tags?id=" + tagID.toString() + "&name=" + name 
+    return "/#!tags?id=" + tagID.toString() + "&name=" + name ;
 }
 
 
