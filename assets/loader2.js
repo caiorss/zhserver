@@ -48,6 +48,11 @@ function makeAuthorURL(authorID, name){
 }
 
 
+function makeItemsURL(paging, offset){
+    return "#!items?paging=" + paging + "&offset=" + offset;
+}
+
+
 function reportConnectioError (input){
     var dom = document.querySelector("#content");
     dom.textContent = "Error: I can't connect to server";
