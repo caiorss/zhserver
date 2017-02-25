@@ -72,7 +72,8 @@ module Zotero
           ,getSubcollectionsIDNames
           ,getAllSubCollections
           ,getAllSubCollectionsItems
-
+          ,getAllItems 
+           
        
           ,renameTag
           ,mergeTags
@@ -126,8 +127,8 @@ module Zotero
          ,getCollectionsTopJSON
          ,itemsWithoutCollectionsJSON
          ,getZoteroItemIdAsListJSON
-
          ,getItemsFromAuthor
+         ,getAllItemsJSON
 
          ,searchByTitleTagsAndInWords
          ,searchByTitleTagsOrInWords
@@ -488,7 +489,19 @@ itemsWithoutCollectionsJSON paging offset = do
   items <- itemsWithoutCollections paging offset 
   json  <- getZoteroItemsJSON items
   return json 
-  
+
+
+getAllItems :: Int -> Int -> DBConn [ZoteroItemID]
+getAllItems paging offset =
+    sqlQueryRow sql [fromIntToHDBC paging, fromIntToHDBC offset] fromSqlToInt
+    where
+      sql = "SELECT sourceItemID FROM itemAttachments WHERE sourceItemID NOT NULL LIMIT ? OFFSET ? "
+
+getAllItemsJSON :: Int -> Int -> DBConn BLI.ByteString
+getAllItemsJSON paging offset = do
+    items <- getAllItems paging offset
+    getZoteroItemsJSON items
+         
 {- | Get all sub collections from a parent collection. -}
 getSubcollections :: ZoteroCollectionID -> DBConn [ZoteroCollectionID]
 getSubcollections collID = do
