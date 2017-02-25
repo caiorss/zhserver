@@ -35,16 +35,21 @@ function cleanContentArea (){
 /*---------------  URL Formats ---------------------- */ 
 
 function makeCollectionURL(collID, name){
-    return "/#!colls?id=" + collID.toString() + "&name=" + name 
+    return "/#!colls?id=" + collID.toString() + "&name=" + name ;
 }
 
 function makeTagURL(tagID, name){
-    return "/#!tags?id=" + tagID.toString() + "&name=" + name 
+    return "/#!tags?id=" + tagID.toString() + "&name=" + name ;
 }
 
 
 function makeAuthorURL(authorID, name){
     return "#!authors?id=" + authorID.toString() + "&name=" + encodeURI(name) ;
+}
+
+
+function makeItemsURL(paging, offset){
+    return "#!items?paging=" + paging + "&offset=" + offset;
 }
 
 
@@ -173,8 +178,6 @@ function jsonToZoteroItemDOM(json){
     });
 
     
-
-    
     var collsLinks = json["colls"].map(function (row) {
         return $h("a").set({
               href:     makeCollectionURL(row[0], row[1])
@@ -254,8 +257,6 @@ function showZoteroItemsFromUrl(url){
               var json = parseJson(data);
               var docFragment = document.createDocumentFragment();
               
-              
-              
               json.forEach(function (itemjson){
                   zotItem = jsonToZoteroItemDOM(itemjson);
                   docFragment.appendChild(zotItem.node);
@@ -280,8 +281,33 @@ function showCollections () {
     console.log("Displayed Collections OK");    
 }
 
-//------------ Show Not in Collection ------------- //
+//------------ Show Zotero Items ------------- //
 
+function showZoteroItems (paging, offset){
+    setPageTitle("All Items");
+    cleanContentArea();
+
+    var offsetNext = parseInt(offset) + 1;
+    var offsetPrev = parseInt(offset) - 1;
+
+    var nextlink = $h("a").set({
+         "href":   "#!/items?paging=" + paging + "&offset=" + offsetNext
+        ,"class":  "pageLink"
+        ,"child":  "Next"
+    });
+
+    var prevlink = $h("a").set({
+        "href":   "#!/items?paging=" + paging + "&offset=" + offsetPrev
+       ,"class":  "pageLink"
+       ,"child":  "Previous"
+    });
+
+    $d("#content").append(prevlink.node);
+    $d("#content").append(nextlink.node);
+
+    showZoteroItemsFromUrl("/api/items?paging=" + paging + "&offset=" + offset);
+
+};
 
 
 //------------- Show CollectionID --------------//
@@ -548,27 +574,27 @@ function routeDispatcher (){
 
     //alert(route);
 
-    // Route /tags - display all tags 
+    // Route /#!tags - display all tags
     if (route == "tags"  ){
         showTags();
 
-    // Route /colls - display all collections     
+    // Route /#!colls - display all collections
     } else if (route == "colls") {
 
         showCollections ();
 
-    // Route /authors - display all authors     
+    // Route /#!authors - display all authors
     } else if (route == "authors"){
 
         showAuthors ();
 
-    // Route /colls?id=X  - display a given collection     
+    // Route /#!colls?id=X  - display a given collection
     } else if (route.match (/colls\?id=(.+)/)){
 
         var collID = route.match (/colls\?id=(.+)/)[1];
         showCollectionID(collID);
 
-    // Route /tags - display all items with given tagID     
+    // Route /#!tags - display all items with given tagID
     } else if (route.match (/tags\?id=(.+)/)){
 
         var tagdata = route.match (/tags\?id=(.+)&name=(.+)/)        
@@ -581,18 +607,26 @@ function routeDispatcher (){
   
         showTagID(tagID);
 
-    // Route /authors?id=200 - Show all authors data     
+    // Route /#!authors?id=200 - Show all authors data
     } else if (route.match (/authors\?id=(.+)/)){
 
         var id = route.match (/authors\?id=(.+)/)[1];
         showAuthorID(id);
     }
 
-    // Route /item?id=200 - Show a single item, given its ID.
+    // Route /#!item?id=200 - Show a single item, given its ID.
     else if (route.match (/item\?id=(.+)/)){
 
         var id = route.match (/item\?id=(.+)/)[1];
          searchByItemID(id);
+    }
+
+    else if (route.match (/items\?paging=(.+)&offset=(.+)/)) {
+        var match = route.match (/items\?paging=(.+)&offset=(.+)/);
+        var paging = match[1];
+        var offset = match[2];
+        showZoteroItems(paging, offset);
+                           
     }
 
     // Default route that will be executed if not route is matched.

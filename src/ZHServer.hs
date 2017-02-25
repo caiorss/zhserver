@@ -2,6 +2,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE RecordWildCards #-}
 
+-- # LANGUAGE OverloadedStrings #
 
 {- |
 Module      : Main
@@ -286,6 +287,7 @@ makeRoutes staticPath storagePath = msum
     --
     flatten $ dir "api" $ dir "item" $  serverRouteParamID "id" Z.getZoteroItemIdAsListJSON
 
+  , flatten $ dir "api" $ dir "items" $ routeGetAllItems         
 
   , flatten $ dir "api" $ dir "collsw"  $ routeItemsWithoutCollection
           
@@ -343,7 +345,7 @@ makeRoutes staticPath storagePath = msum
 
   -- Search items which content contains word   
   , flatten $ dir "api" $ dir "search" $ routeSearchByContentAndTitleLike 
-   
+
     
     -- Zotero Attachment Files - Serve attachment files in storagePath directory 
     -- API End Point /api/search?content=<search word>
@@ -454,6 +456,19 @@ routeRealatedTags = serverRouteParamID "id" Z.getRelatedTagsJSON
 routeSearchByContentAndTitleLike :: ServerApp LC.ByteString
 routeSearchByContentAndTitleLike =
   serverRouteParamString "content" Z.searchByContentAndTitleLikeJSON
+
+
+routeGetAllItems :: ServerApp LC.ByteString
+routeGetAllItems = do
+  conn <- ask
+  paging <- parseInt <$> look "paging"
+  offset <- parseInt <$> look "offset"
+
+  case (paging, offset) of
+    (Just pa, Just off) -> let n = pa * off
+                           in runDbQuery (Z.getAllItemsJSON pa n)
+
+    _                   -> return (LC.pack "Error wrong parameters")
 
 {- | Server http request with all items without collections. -}
 routeItemsWithoutCollection :: ServerApp LC.ByteString
