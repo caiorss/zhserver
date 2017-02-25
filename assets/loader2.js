@@ -178,8 +178,6 @@ function jsonToZoteroItemDOM(json){
     });
 
     
-
-    
     var collsLinks = json["colls"].map(function (row) {
         return $h("a").set({
               href:     makeCollectionURL(row[0], row[1])
@@ -258,8 +256,6 @@ function showZoteroItemsFromUrl(url){
               var anchor = $d("#content");
               var json = parseJson(data);
               var docFragment = document.createDocumentFragment();
-              
-              
               
               json.forEach(function (itemjson){
                   zotItem = jsonToZoteroItemDOM(itemjson);
