@@ -2,6 +2,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE RecordWildCards #-}
 
+-- # LANGUAGE OverloadedStrings #
 
 {- |
 Module      : Main
@@ -286,6 +287,7 @@ makeRoutes staticPath storagePath = msum
     --
     flatten $ dir "api" $ dir "item" $  serverRouteParamID "id" Z.getZoteroItemIdAsListJSON
 
+  , flatten $ dir "api" $ dir "items" $ routeGetAllItems         
 
   , flatten $ dir "api" $ dir "collsw"  $ routeItemsWithoutCollection
           
@@ -343,7 +345,7 @@ makeRoutes staticPath storagePath = msum
 
   -- Search items which content contains word   
   , flatten $ dir "api" $ dir "search" $ routeSearchByContentAndTitleLike 
-   
+
     
     -- Zotero Attachment Files - Serve attachment files in storagePath directory 
     -- API End Point /api/search?content=<search word>
