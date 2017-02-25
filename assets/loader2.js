@@ -621,6 +621,14 @@ function routeDispatcher (){
          searchByItemID(id);
     }
 
+    else if (route.match (/items\?paging=(.+)&offset=(.+)/)) {
+        var match = route.match (/items\?paging=(.+)&offset=(.+)/);
+        var paging = match[1];
+        var offset = match[2];
+        showZoteroItems(paging, offset);
+                           
+    }
+
     // Default route that will be executed if not route is matched.
     else{
         // reportConnectioError("Error: Route note found")(100);
