@@ -183,6 +183,10 @@ th {
 }
 
 
+.pageLink {
+    margin-left: 10px;
+}    
+
 .zoteroItem {
 
    border-bottom-width: 3px;
