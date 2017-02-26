@@ -277,8 +277,14 @@ serverRouteParamString param dbFn =
   serverRouteParam return param LC.empty dbFn
 
 
+serverRoute :: DBConn LC.ByteString -> ServerApp LC.ByteString
+serverRoute dbAction = do
+  runDbQuery dbAction
+
 
 {-- ================ Server Routes Dispatch ========================== -}
+
+apiRoute route = flatten $ dir "api" $ route
 
 makeRoutes :: String -> String -> ServerApp ServerTypes.Response
 makeRoutes staticPath storagePath = msum
@@ -289,8 +295,13 @@ makeRoutes staticPath storagePath = msum
 
   , flatten $ dir "api" $ dir "items" $ routeGetAllItems         
 
-  , flatten $ dir "api" $ dir "collsw"  $ routeItemsWithoutCollection
-          
+
+    -- ============== Collection Navigation ==================== --
+    , apiRoute $ dir "subcolls" $ serverRouteParamID "id" Z.getSubcollectionsJSON
+    , apiRoute $ dir "subcolls" $ serverRoute Z.getCollectionsTopJSON
+
+
+
     -- Return all items from a given collection
     -- 
     -- /api/colls?id=23423

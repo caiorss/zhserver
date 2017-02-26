@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <!-- <title>this website</title> -->
-    <!-- <description>Application server for Zotero Database</description> -->
+  
 
-    <title>ZhServer - Document Repository Server</title>
+    <title>ZhServer - Document Repository Server</title> 
     
     <link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
     
@@ -70,7 +69,8 @@
 
     <div id="navpanel">
       <table>
-        <tr><td><a class="navbutton" href="/#!colls">Collections</a></td></tr>
+        <tr><td><a class="navbutton" href="/#!subcolls">Collections</a></td></tr>        
+        <tr><td><a class="navbutton" href="/#!colls">All Collections</a></td></tr>
         <tr><td><a class="navbutton" href="/#!tags">Tags</a></td></tr>
         <tr><td><a class="navbutton" href="/#!authors">Authors</a></td></tr>
         <tr><td><a class="navbutton" href="/#!items?paging=20&offset=0">All Items</a></td></tr>
@@ -79,8 +79,10 @@
      </table>
     </div>  
   
-  <div id="content">  
-  </div>  
+    <div id="content">
+      <ul id="items">        
+      </ul>
+    </div>  
   
 	</body>
 </html>

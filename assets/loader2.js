@@ -96,7 +96,13 @@ function insertItemTypes (urlFunction, idLabel, valLabel){
             docFragment.appendChild(li.node)
         });
 
-        $d("#content").append(docFragment);
+        var ul = $h("ul").set({
+            "class" : "rowItems",
+            "child" :  docFragment
+        });
+
+        $d("#content").append(ul.node);
+
 
     }
     
@@ -281,6 +287,32 @@ function showCollections () {
     console.log("Displayed Collections OK");    
 }
 
+
+function showTopCollections(){
+    setPageTitle("Top Collections");
+    cleanContentArea();
+    var insertColls = insertItemTypes ((id, name) => "/#!subcolls?id=" + id + "&name=" + name, "id", "name");
+    doXHR("/api/subcolls", compose(parseJson, insertColls) , reportConnectioError);
+    console.log("Displayed Collections OK");
+}
+
+function showSubCollection(collID, name){
+    setPageTitle("Sub Collections: " + name);
+    cleanContentArea();
+    var insertColls = insertItemTypes ((id, name) => "/#!subcolls?id=" + id + "&name=" + name, "id", "name");
+
+    var display = function (json) {
+        insertColls(parseJson(json));
+        showZoteroItemsFromUrl("/api/colls?id=" + collID);
+    };
+
+    doXHR("/api/subcolls?id=" + collID, display, reportConnectioError);
+    // showCollectionID(collID);
+    console.log("Displayed Collections OK");
+}
+
+
+
 //------------ Show Zotero Items ------------- //
 
 function showZoteroItems (paging, offset){
@@ -314,8 +346,16 @@ function showZoteroItems (paging, offset){
 
 function showCollectionID(uri){
     // setPageTitle ("Collection ID: " + collID.toString())
-    var name = decodeURI(uri.split("&")[1].split("=")[1]);
-    var id   = uri.split("&")[0];
+    var n = uri.toString().split("&").lenght ;
+    if (n == 2)
+    {
+        var name = decodeURI(uri.split("&")[1].split("=")[1]);
+        var id   = uri.split("&")[0];
+    } else {
+        var name = "";
+        var id = uri;
+    }
+
     setPageTitle("Collection: " + name);
     cleanContentArea();
     showZoteroItemsFromUrl("/api/colls?id=" + uri);
@@ -574,8 +614,21 @@ function routeDispatcher (){
 
     //alert(route);
 
+    if (route.match (/subcolls\?id=(.+)&name=(.+)/)) {
+        var match = route.match (/subcolls\?id=(.+)&name=(.+)/)
+        var id   = match[1];
+        var name = match[2];
+        showSubCollection(id, name);
+                           
+    }  
+    
+    else if (route.match(/subcolls/)){
+        showTopCollections();
+    }
+
+      
     // Route /#!tags - display all tags
-    if (route == "tags"  ){
+    else if (route == "tags"  ){
         showTags();
 
     // Route /#!colls - display all collections
@@ -634,16 +687,16 @@ function routeDispatcher (){
         // reportConnectioError("Error: Route note found")(100);
         showCollections ();
         // alert("Error: Route doesn't exist or not implemented.");
-    }
+    };
 
-} // End of function routeDispatcher
+}; // End of function routeDispatcher
 
 
 function cleanForm(){
     document.getElementById("searchbox").value = "";
     document.getElementById("filterbox").value = "";
     displayAll();
-}
+};
 
 
 // Entry point: This function is called when the page loads.
