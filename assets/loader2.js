@@ -614,8 +614,21 @@ function routeDispatcher (){
 
     //alert(route);
 
+    if (route.match (/subcolls\?id=(.+)&name=(.+)/)) {
+        var match = route.match (/subcolls\?id=(.+)&name=(.+)/)
+        var id   = match[1];
+        var name = match[2];
+        showSubCollection(id, name);
+                           
+    }  
+    
+    else if (route.match(/subcolls/)){
+        showTopCollections();
+    }
+
+      
     // Route /#!tags - display all tags
-    if (route == "tags"  ){
+    else if (route == "tags"  ){
         showTags();
 
     // Route /#!colls - display all collections
@@ -674,16 +687,16 @@ function routeDispatcher (){
         // reportConnectioError("Error: Route note found")(100);
         showCollections ();
         // alert("Error: Route doesn't exist or not implemented.");
-    }
+    };
 
-} // End of function routeDispatcher
+}; // End of function routeDispatcher
 
 
 function cleanForm(){
     document.getElementById("searchbox").value = "";
     document.getElementById("filterbox").value = "";
     displayAll();
-}
+};
 
 
 // Entry point: This function is called when the page loads.
