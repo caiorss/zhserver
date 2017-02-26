@@ -69,7 +69,6 @@ module Zotero
           ,itemsWithoutCollections
 
           ,getSubcollections
-          ,getSubcollectionsIDNames
           ,getAllSubCollections
           ,getAllSubCollectionsItems
           ,getAllItems 
@@ -129,6 +128,8 @@ module Zotero
          ,getZoteroItemIdAsListJSON
          ,getItemsFromAuthor
          ,getAllItemsJSON
+         ,getSubcollectionsJSON
+
 
          ,searchByTitleTagsAndInWords
          ,searchByTitleTagsOrInWords
@@ -340,6 +341,10 @@ getZoteroItem itemID = do
                       itemMime
 
 
+
+rowToZoteroColl row =
+    ZoteroColl (fromSqlToInt (row !! 0))  (fromSqlToString (row !! 1))
+                      
 getItemType :: Int -> DBConn String
 getItemType itemID = fromJust <$> sqlQueryOne sql [fromIntToHDBC itemID] fromSqlToString
   where
@@ -503,24 +508,31 @@ getAllItemsJSON paging offset = do
     getZoteroItemsJSON items
          
 {- | Get all sub collections from a parent collection. -}
-getSubcollections :: ZoteroCollectionID -> DBConn [ZoteroCollectionID]
-getSubcollections collID = do
-  sqlQueryRow sql [HDBC.SqlInt64 $ fromIntToInt64 collID] fromSqlToInt
-  where
-    sql = unlines [ "SELECT collectionID FROM collections"
-                  ,"WHERE  parentCollectionID = ?"
-                  ]
+-- getSubcollections :: ZoteroCollectionID -> DBConn [ZoteroCollectionID]
+-- getSubcollections collID = do
+--   sqlQueryRow sql [HDBC.SqlInt64 $ fromIntToInt64 collID] fromSqlToInt
+--   where
+--     sql = unlines [ "SELECT collectionID FROM collections"
+--                   ,"WHERE  parentCollectionID = ?"
+--                   ]
+
+
 {- | Get subcollecotions ID and Name from a parent collection. -}
-getSubcollectionsIDNames :: ZoteroCollectionID -> DBConn [(Int, String)]
-getSubcollectionsIDNames collID = do
+getSubcollections :: ZoteroCollectionID -> DBConn [(Int, String)]
+getSubcollections collID = do
   sqlQueryAll sql [HDBC.SqlInt64  $ fromIntToInt64 collID ] projection
   where
-    projection row = (fromSqlToInt (row !! 0) , fromSqlToString (row !! 1))
+   projection row = (fromSqlToInt (row !! 0), fromSqlToString (row !! 1))
 
-    sql = unlines [ "SELECT collectionID, collectionName FROM collections"
+   sql = unlines [ "SELECT collectionID, collectionName FROM collections"
                   ,"WHERE  parentCollectionID = ?"
                   ]
 
+getSubcollectionsJSON :: ZoteroCollectionID -> DBConn BLI.ByteString
+getSubcollectionsJSON collID = do
+  encode . map (\ (collID, name) -> ZoteroColl collID name) <$> getSubcollections collID
+                         
+          
 {- | @IN-PROGRESS -}
 mapconcatM :: Monad m => (a -> m [b]) -> [a] -> m [b]
 mapconcatM fn xs = aux fn xs []
@@ -533,7 +545,7 @@ mapconcatM fn xs = aux fn xs []
 
 getAllSubCollections :: ZoteroCollectionID -> DBConn [(Int, String)]
 getAllSubCollections collID  = do
-  subcolls <- getSubcollectionsIDNames collID
+  subcolls <- getSubcollections collID
   colls    <- mapconcatM (\(cID, cName) -> getAllSubCollections cID) subcolls
   return $ subcolls ++ colls
 
