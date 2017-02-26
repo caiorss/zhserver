@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Development Documentation</title>
-<!-- 2017-02-19 dom 14:24 -->
+<!-- 2017-02-26 dom 03:18 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Caio Rodrigues Soares Silva" />
@@ -90,6 +90,79 @@
     { background-color: #ffff00; color: #000000; font-weight: bold; }
   /*]]>*/-->
 </style>
+<link href="theme/style.css" rel="stylesheet">
+
+<script type="text/javascript" src="theme/org-info.js">
+/**
+ *
+ * @source: theme/org-info.js
+ *
+ * @licstart  The following is the entire license notice for the
+ *  JavaScript code in theme/org-info.js.
+ *
+ * Copyright (C) 2012-2013 Free Software Foundation, Inc.
+ *
+ *
+ * The JavaScript code in this tag is free software: you can
+ * redistribute it and/or modify it under the terms of the GNU
+ * General Public License (GNU GPL) as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option)
+ * any later version.  The code is distributed WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+ *
+ * As additional permission under GNU GPL version 3 section 7, you
+ * may distribute non-source (e.g., minimized or compacted) forms of
+ * that code without the copy of the GNU GPL normally required by
+ * section 4, provided you include this license notice and a URL
+ * through which recipients can access the Corresponding Source.
+ *
+ * @licend  The above is the entire license notice
+ * for the JavaScript code in theme/org-info.js.
+ *
+ */
+</script>
+
+<script type="text/javascript">
+
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+
+<!--/*--><![CDATA[/*><!--*/
+org_html_manager.set("TOC_DEPTH", "3");
+org_html_manager.set("LINK_HOME", "");
+org_html_manager.set("LINK_UP", "");
+org_html_manager.set("LOCAL_TOC", "1");
+org_html_manager.set("VIEW_BUTTONS", "0");
+org_html_manager.set("MOUSE_HINT", "underline");
+org_html_manager.set("FIXED_TOC", "0");
+org_html_manager.set("TOC", "1");
+org_html_manager.set("VIEW", "info");
+org_html_manager.setup();  // activate after the parameters are set
+/*]]>*///-->
+</script>
 <script type="text/javascript">
 /*
 @licstart  The following is the entire license notice for the
@@ -158,16 +231,35 @@ for the JavaScript code in this tag.
 </ul>
 </li>
 <li><a href="#sec-1-3">1.3. Haskell Related Documentation</a></li>
-<li><a href="#sec-1-4">1.4. Database Documentation</a>
+</ul>
+</li>
+<li><a href="#sec-2">2. Database Documentation</a>
 <ul>
-<li><a href="#sec-1-4-1">1.4.1. Search Titles that contains a word</a></li>
-<li><a href="#sec-1-4-2">1.4.2. Search by a Regex Pattern</a></li>
-<li><a href="#sec-1-4-3">1.4.3. Text search.</a></li>
-<li><a href="#sec-1-4-4">1.4.4. Insert Tag</a></li>
-<li><a href="#sec-1-4-5">1.4.5. Search items which has at least one tag</a></li>
-<li><a href="#sec-1-4-6">1.4.6. Search all items which title at least match one of the word of a list</a></li>
-<li><a href="#sec-1-4-7">1.4.7. Search all items which title contains all words in a list</a></li>
-<li><a href="#sec-1-4-8">1.4.8. Search all items which title or tags matches all words in a list</a></li>
+<li><a href="#sec-2-1">2.1. Database Tables</a>
+<ul>
+<li><a href="#sec-2-1-1">2.1.1. Items</a></li>
+<li><a href="#sec-2-1-2">2.1.2. itemAttachments</a></li>
+<li><a href="#sec-2-1-3">2.1.3. ItemData</a></li>
+<li><a href="#sec-2-1-4">2.1.4. ItemDataValues</a></li>
+<li><a href="#sec-2-1-5">2.1.5. ItemTypes</a></li>
+<li><a href="#sec-2-1-6">2.1.6. fields</a></li>
+<li><a href="#sec-2-1-7">2.1.7. fileTypes</a></li>
+<li><a href="#sec-2-1-8">2.1.8. tags</a></li>
+<li><a href="#sec-2-1-9">2.1.9. itemTags</a></li>
+</ul>
+</li>
+<li><a href="#sec-2-2">2.2. Database manipulation</a>
+<ul>
+<li><a href="#sec-2-2-1">2.2.1. Get all collections</a></li>
+<li><a href="#sec-2-2-2">2.2.2. Get all items from a given collection</a></li>
+<li><a href="#sec-2-2-3">2.2.3. Search Titles that contains a word</a></li>
+<li><a href="#sec-2-2-4">2.2.4. Search by a Regex Pattern</a></li>
+<li><a href="#sec-2-2-5">2.2.5. Text search.</a></li>
+<li><a href="#sec-2-2-6">2.2.6. Insert Tag</a></li>
+<li><a href="#sec-2-2-7">2.2.7. Search items which has at least one tag</a></li>
+<li><a href="#sec-2-2-8">2.2.8. Search all items which title at least match one of the word of a list</a></li>
+<li><a href="#sec-2-2-9">2.2.9. Search all items which title contains all words in a list</a></li>
+<li><a href="#sec-2-2-10">2.2.10. Search all items which title or tags matches all words in a list</a></li>
 </ul>
 </li>
 </ul>
@@ -175,6 +267,8 @@ for the JavaScript code in this tag.
 </ul>
 </div>
 </div>
+
+
 
 <div id="outline-container-sec-1" class="outline-2">
 <h2 id="sec-1"><span class="section-number-2">1</span> Development Documentation</h2>
@@ -1032,98 +1126,934 @@ Haskell AESON - Json library
 </ul>
 </div>
 </div>
-<div id="outline-container-sec-1-4" class="outline-3">
-<h3 id="sec-1-4"><span class="section-number-3">1.4</span> Database Documentation</h3>
-<div class="outline-text-3" id="text-1-4">
-</div><div id="outline-container-sec-1-4-1" class="outline-4">
-<h4 id="sec-1-4-1"><span class="section-number-4">1.4.1</span> Search Titles that contains a word</h4>
-<div class="outline-text-4" id="text-1-4-1">
+</div>
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Database Documentation</h2>
+<div class="outline-text-2" id="text-2">
+</div><div id="outline-container-sec-2-1" class="outline-3">
+<h3 id="sec-2-1"><span class="section-number-3">2.1</span> Database Tables</h3>
+<div class="outline-text-3" id="text-2-1">
+</div><div id="outline-container-sec-2-1-1" class="outline-4">
+<h4 id="sec-2-1-1"><span class="section-number-4">2.1.1</span> Items</h4>
+<div class="outline-text-4" id="text-2-1-1">
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption class="t-above"><span class="table-number">Table 1:</span> Table items</caption>
+
+<colgroup>
+<col  class="left" />
+
+<col  class="left" />
+
+<col  class="left" />
+
+<col  class="left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">Comlumn</th>
+<th scope="col" class="left">Type</th>
+<th scope="col" class="left">Example</th>
+<th scope="col" class="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left">itemID</td>
+<td class="left">int</td>
+<td class="left">100</td>
+<td class="left">Unique item ID number</td>
+</tr>
+
+<tr>
+<td class="left">itemTypeID</td>
+<td class="left">int</td>
+<td class="left">14</td>
+<td class="left">Document type</td>
+</tr>
+
+<tr>
+<td class="left">dateAdded</td>
+<td class="left">string</td>
+<td class="left">2014-08-25 02:38:25</td>
+<td class="left">-</td>
+</tr>
+
+<tr>
+<td class="left">dateModified</td>
+<td class="left">string</td>
+<td class="left">2014-08-25 02:39:28</td>
+<td class="left">-</td>
+</tr>
+
+<tr>
+<td class="left">clientDateModified</td>
+<td class="left">string</td>
+<td class="left">2014-08-25 02:39:28</td>
+<td class="left">-</td>
+</tr>
+
+<tr>
+<td class="left">libraryID</td>
+<td class="left">null</td>
+<td class="left">null</td>
+<td class="left">-</td>
+</tr>
+
+<tr>
+<td class="left">key</td>
+<td class="left">string</td>
+<td class="left">VI786R6C</td>
+<td class="left">8-letters random key</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div id="outline-container-sec-2-1-2" class="outline-4">
+<h4 id="sec-2-1-2"><span class="section-number-4">2.1.2</span> itemAttachments</h4>
+<div class="outline-text-4" id="text-2-1-2">
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption class="t-above"><span class="table-number">Table 2:</span> Table itemAttachments</caption>
+
+<colgroup>
+<col  class="left" />
+
+<col  class="left" />
+
+<col  class="left" />
+
+<col  class="left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">Column</th>
+<th scope="col" class="left">Type</th>
+<th scope="col" class="left">Example</th>
+<th scope="col" class="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left">itemID</td>
+<td class="left">int</td>
+<td class="left">6642</td>
+<td class="left">Unique item ID which attachment belongs</td>
+</tr>
+
+<tr>
+<td class="left">sourceItemID</td>
+<td class="left">int</td>
+<td class="left">6643</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="left">linkMode</td>
+<td class="left">&#xa0;</td>
+<td class="left">1</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="left">mimeType</td>
+<td class="left">string</td>
+<td class="left">application/pdf</td>
+<td class="left">File mime type</td>
+</tr>
+
+<tr>
+<td class="left">charsetID</td>
+<td class="left">int</td>
+<td class="left">1</td>
+<td class="left">ID of file charset</td>
+</tr>
+
+<tr>
+<td class="left">path</td>
+<td class="left">string</td>
+<td class="left">'storage:Server Message Block (SMB) Protocol.pdf'</td>
+<td class="left">File name</td>
+</tr>
+
+<tr>
+<td class="left">originalPath</td>
+<td class="left">string</td>
+<td class="left">null</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="left">syncState</td>
+<td class="left">int</td>
+<td class="left">0</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="left">storageModTime</td>
+<td class="left">null</td>
+<td class="left">null</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="left">storageHash</td>
+<td class="left">null</td>
+<td class="left">null</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="left">&#xa0;</td>
+<td class="left">&#xa0;</td>
+<td class="left">&#xa0;</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="left">&#xa0;</td>
+<td class="left">&#xa0;</td>
+<td class="left">&#xa0;</td>
+<td class="left">&#xa0;</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+Example: 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-text">sqlite&gt; SELECT * FROM itemAttachments LIMIT 1715, 5 ;
+
+itemID      sourceItemID  linkMode    mimeType         charsetID   path                                                      originalPath  syncState   storageModTime  storageHash
+----------  ------------  ----------  ---------------  ----------  --------------------------------------------------------  ------------  ----------  --------------  -----------
+2641                      0           application/pdf              storage:Chapter - Steam Distribution and Utilization.pdf                0                                      
+2643        2642          1           text/html        1           storage:discover-some-useful-python-numpy-functions.html                0                                      
+2645        2644          1           text/html        1           storage:common-pitfalls-to-avoid-while-converting-matlab                0                                      
+2647        2646          1           text/html        1           storage:gotchas-in-python-for-matlab-users.html                         0                                      
+2649        2648          1           text/html        1           storage:578881-automated-stock-market-trading-simulation                0                                      
+sqlite&gt;
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-2-1-3" class="outline-4">
+<h4 id="sec-2-1-3"><span class="section-number-4">2.1.3</span> ItemData</h4>
+<div class="outline-text-4" id="text-2-1-3">
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption class="t-above"><span class="table-number">Table 3:</span> Table itemData</caption>
+
+<colgroup>
+<col  class="left" />
+
+<col  class="left" />
+
+<col  class="right" />
+
+<col  class="left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">Column</th>
+<th scope="col" class="left">Type</th>
+<th scope="col" class="right">Example</th>
+<th scope="col" class="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left">itemID</td>
+<td class="left">int</td>
+<td class="right">110</td>
+<td class="left">Unique item ID number</td>
+</tr>
+
+<tr>
+<td class="left">fieldID</td>
+<td class="left">int</td>
+<td class="right">90</td>
+<td class="left">ID of field name</td>
+</tr>
+
+<tr>
+<td class="left">valueID</td>
+<td class="left">int</td>
+<td class="right">93</td>
+<td class="left">ID of field value</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div id="outline-container-sec-2-1-4" class="outline-4">
+<h4 id="sec-2-1-4"><span class="section-number-4">2.1.4</span> ItemDataValues</h4>
+<div class="outline-text-4" id="text-2-1-4">
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption class="t-above"><span class="table-number">Table 4:</span> Table ItemDataValues</caption>
+
+<colgroup>
+<col  class="left" />
+
+<col  class="left" />
+
+<col  class="left" />
+
+<col  class="left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">Column</th>
+<th scope="col" class="left">Type</th>
+<th scope="col" class="left">Example</th>
+<th scope="col" class="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left">valueID</td>
+<td class="left">int</td>
+<td class="left">9221</td>
+<td class="left">Unique ID of item value</td>
+</tr>
+
+<tr>
+<td class="left">value</td>
+<td class="left">string</td>
+<td class="left">'swp0003.dvi - returnCalculations.pdf'</td>
+<td class="left">Value of field for each item</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div id="outline-container-sec-2-1-5" class="outline-4">
+<h4 id="sec-2-1-5"><span class="section-number-4">2.1.5</span> ItemTypes</h4>
+<div class="outline-text-4" id="text-2-1-5">
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption class="t-above"><span class="table-number">Table 5:</span> Table itemData</caption>
+
+<colgroup>
+<col  class="left" />
+
+<col  class="left" />
+
+<col  class="right" />
+
+<col  class="left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">Column</th>
+<th scope="col" class="left">Type</th>
+<th scope="col" class="right">Example</th>
+<th scope="col" class="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left">itemTypeID</td>
+<td class="left">7</td>
+<td class="right">8</td>
+<td class="left">ID of item type</td>
+</tr>
+
+<tr>
+<td class="left">typeName</td>
+<td class="left">thesis</td>
+<td class="right">letter</td>
+<td class="left">Name of item type</td>
+</tr>
+
+<tr>
+<td class="left">templateItemTypeID</td>
+<td class="left">int</td>
+<td class="right">2</td>
+<td class="left">?</td>
+</tr>
+
+<tr>
+<td class="left">display</td>
+<td class="left">int</td>
+<td class="right">1</td>
+<td class="left">?</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+Example:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-text">sqlite&gt; SELECT * FROM itemTypes ;
+itemTypeID  typeName    templateItemTypeID  display   
+----------  ----------  ------------------  ----------
+1           note                            0         
+2           book                            2         
+3           bookSectio  2                   2         
+4           journalArt                      2         
+5           magazineAr                      2         
+6           newspaperA                      2         
+7           thesis                          1
+     ...     ...  ...  ...
+29          tvBroadcas                      1         
+30          radioBroad                      1         
+31          podcast                         1         
+32          computerPr                      1         
+33          conference                      1         
+34          document                        2         
+35          encycloped                      1         
+36          dictionary                      1
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-sec-2-1-6" class="outline-4">
+<h4 id="sec-2-1-6"><span class="section-number-4">2.1.6</span> fields</h4>
+<div class="outline-text-4" id="text-2-1-6">
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption class="t-above"><span class="table-number">Table 6:</span> Table fields</caption>
+
+<colgroup>
+<col  class="left" />
+
+<col  class="left" />
+
+<col  class="left" />
+
+<col  class="left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">Column</th>
+<th scope="col" class="left">Type</th>
+<th scope="col" class="left">Example</th>
+<th scope="col" class="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left">fieldID</td>
+<td class="left">10</td>
+<td class="left">&#xa0;</td>
+<td class="left">ID of field</td>
+</tr>
+
+<tr>
+<td class="left">fieldName</td>
+<td class="left">pages</td>
+<td class="left">&#xa0;</td>
+<td class="left">Name of field</td>
+</tr>
+
+<tr>
+<td class="left">fieldFormatID</td>
+<td class="left">null</td>
+<td class="left">null</td>
+<td class="left">-</td>
+</tr>
+</tbody>
+</table>
+
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption class="t-above"><span class="table-number">Table 7:</span> Examples</caption>
+
+<colgroup>
+<col  class="right" />
+
+<col  class="left" />
+
+<col  class="left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="right">fieldID</td>
+<td class="left">fieldName</td>
+<td class="left">fieldFormatID</td>
+</tr>
+
+<tr>
+<td class="right">----------</td>
+<td class="left">----------</td>
+<td class="left">-------------</td>
+</tr>
+
+<tr>
+<td class="right">1</td>
+<td class="left">url</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="right">2</td>
+<td class="left">rights</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="right">3</td>
+<td class="left">series</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="right">4</td>
+<td class="left">volume</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="right">5</td>
+<td class="left">issue</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="right">6</td>
+<td class="left">edition</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="right">7</td>
+<td class="left">place</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="right">8</td>
+<td class="left">publisher</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="right">10</td>
+<td class="left">pages</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="right">11</td>
+<td class="left">ISBN</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="right">&#x2026;</td>
+<td class="left">&#x2026;.</td>
+<td class="left">&#x2026;.</td>
+</tr>
+
+<tr>
+<td class="right">&#xa0;</td>
+<td class="left">&#xa0;</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="right">110</td>
+<td class="left"><b>title</b></td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="right">115</td>
+<td class="left">bookTitle</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="right">116</td>
+<td class="left">shortTitle</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="right">117</td>
+<td class="left">docketNumb</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="right">118</td>
+<td class="left">numPages</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="right">119</td>
+<td class="left">programTit</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="right">120</td>
+<td class="left">issuingAut</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="right">121</td>
+<td class="left">filingDate</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="right">122</td>
+<td class="left">genre</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="right">123</td>
+<td class="left">archive</td>
+<td class="left">&#xa0;</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div id="outline-container-sec-2-1-7" class="outline-4">
+<h4 id="sec-2-1-7"><span class="section-number-4">2.1.7</span> fileTypes</h4>
+<div class="outline-text-4" id="text-2-1-7">
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption class="t-above"><span class="table-number">Table 8:</span> Table fileTypes.</caption>
+
+<colgroup>
+<col  class="left" />
+
+<col  class="left" />
+
+<col  class="left" />
+
+<col  class="left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">Column</th>
+<th scope="col" class="left">Type</th>
+<th scope="col" class="left">Example</th>
+<th scope="col" class="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left">fileTypeID</td>
+<td class="left">int</td>
+<td class="left">2</td>
+<td class="left">-</td>
+</tr>
+
+<tr>
+<td class="left">fileType</td>
+<td class="left">string</td>
+<td class="left">image</td>
+<td class="left">-</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+Example:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-text">sqlite&gt; SELECT * FROM fileTypes ;
+
+fileTypeID  fileType  
+----------  ----------
+1           webpage   
+2           image     
+3           pdf       
+4           audio     
+5           video     
+6           document  
+7           presentati
+sqlite&gt;
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-2-1-8" class="outline-4">
+<h4 id="sec-2-1-8"><span class="section-number-4">2.1.8</span> tags</h4>
+<div class="outline-text-4" id="text-2-1-8">
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption class="t-above"><span class="table-number">Table 9:</span> Table tags</caption>
+
+<colgroup>
+<col  class="left" />
+
+<col  class="left" />
+
+<col  class="left" />
+
+<col  class="left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">Column</th>
+<th scope="col" class="left">Type</th>
+<th scope="col" class="left">Example</th>
+<th scope="col" class="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left">tagID</td>
+<td class="left">int</td>
+<td class="left">6</td>
+<td class="left">Unique tag ID</td>
+</tr>
+
+<tr>
+<td class="left">name</td>
+<td class="left">string</td>
+<td class="left">numerical</td>
+<td class="left">Tag name</td>
+</tr>
+
+<tr>
+<td class="left">type</td>
+<td class="left">int</td>
+<td class="left">0</td>
+<td class="left">-</td>
+</tr>
+
+<tr>
+<td class="left">dateAdded</td>
+<td class="left">string</td>
+<td class="left">2014-08-25 13:44:26</td>
+<td class="left">-</td>
+</tr>
+
+<tr>
+<td class="left">dateModified</td>
+<td class="left">string</td>
+<td class="left">2014-08-25 13:44:26</td>
+<td class="left">-</td>
+</tr>
+
+<tr>
+<td class="left">clientDateModified</td>
+<td class="left">string</td>
+<td class="left">2014-08-25 13:44:26</td>
+<td class="left">-</td>
+</tr>
+
+<tr>
+<td class="left">libraryID</td>
+<td class="left">null</td>
+<td class="left">null</td>
+<td class="left">-</td>
+</tr>
+
+<tr>
+<td class="left">key</td>
+<td class="left">string</td>
+<td class="left">AMPGN8ZN</td>
+<td class="left">unique 8-letter random key</td>
+</tr>
+
+<tr>
+<td class="left">&#xa0;</td>
+<td class="left">&#xa0;</td>
+<td class="left">&#xa0;</td>
+<td class="left">&#xa0;</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+Example:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-text">sqlite&gt; SELECT * FROM tags LIMIT 20, 5 ;
+
+tagID       name        type        dateAdded            dateModified         clientDateModified   libraryID   key       
+----------  ----------  ----------  -------------------  -------------------  -------------------  ----------  ----------
+21          regular     0           2014-08-25 13:48:22  2014-08-25 13:48:22  2014-08-25 13:48:22              WZW8DQ6N  
+22          expression  0           2014-08-25 13:48:25  2014-08-25 13:48:25  2014-08-25 13:48:25              U2W8DN3F  
+23          mathcad     0           2014-08-25 13:49:04  2014-08-25 13:49:04  2014-08-25 13:49:04              68E7JGVZ  
+24          project     0           2014-08-25 13:49:06  2014-12-12 17:32:33  2014-12-12 17:32:33              Z92A4JHU  
+25          documentat  0           2014-08-25 13:49:10  2016-04-22 22:35:22  2016-04-22 22:35:22              ZBS82VN5  
+sqlite&gt;
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-2-1-9" class="outline-4">
+<h4 id="sec-2-1-9"><span class="section-number-4">2.1.9</span> itemTags</h4>
+<div class="outline-text-4" id="text-2-1-9">
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption class="t-above"><span class="table-number">Table 10:</span> Table itemTags</caption>
+
+<colgroup>
+<col  class="left" />
+
+<col  class="left" />
+
+<col  class="right" />
+
+<col  class="left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">Column</th>
+<th scope="col" class="left">Type</th>
+<th scope="col" class="right">Example</th>
+<th scope="col" class="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left">itemID</td>
+<td class="left">int</td>
+<td class="right">116</td>
+<td class="left">ID of item</td>
+</tr>
+
+<tr>
+<td class="left">tagID</td>
+<td class="left">int</td>
+<td class="right">1</td>
+<td class="left">ID of tag</td>
+</tr>
+</tbody>
+</table>
+
+
+<p>
+Example: 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-text">sqlite&gt; SELECT * FROM itemTags LIMIT 20, 10 ;
+itemID      tagID     
+----------  ----------
+36          14        
+15          1         
+15          15        
+15          16        
+15          17        
+23          1         
+23          18        
+23          19        
+37          1         
+37          20        
+sqlite&gt;
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-2-2" class="outline-3">
+<h3 id="sec-2-2"><span class="section-number-3">2.2</span> Database manipulation</h3>
+<div class="outline-text-3" id="text-2-2">
+</div><div id="outline-container-sec-2-2-1" class="outline-4">
+<h4 id="sec-2-2-1"><span class="section-number-4">2.2.1</span> Get all collections</h4>
+<div class="outline-text-4" id="text-2-2-1">
+<div class="org-src-container">
+
+<pre class="src src-sqlite"><span class="org-keyword">SELECT</span>   collectionID, collectionName 
+<span class="org-keyword">FROM</span>     collections 
+<span class="org-keyword">ORDER</span> <span class="org-keyword">BY</span> collectionName
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-sec-2-2-2" class="outline-4">
+<h4 id="sec-2-2-2"><span class="section-number-4">2.2.2</span> Get all items from a given collection</h4>
+<div class="outline-text-4" id="text-2-2-2">
+<p>
+Get all items from collection "SMB Protocol" which id = 335.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sqlite"><span class="org-keyword">SELECT</span>  itemID <span class="org-keyword">FROM</span> collectionItems <span class="org-keyword">WHERE</span> collectionID = 335
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-2-2-3" class="outline-4">
+<h4 id="sec-2-2-3"><span class="section-number-4">2.2.3</span> Search Titles that contains a word</h4>
+<div class="outline-text-4" id="text-2-2-3">
 <p>
 Search all titles that contains the string "functional".
 </p>
 
 <div class="org-src-container">
 
-<pre class="src src-sql"><span class="org-keyword">SELECT</span> itemData.itemID, itemDataValues.<span class="org-keyword">value</span>  
+<pre class="src src-sqlite"><span class="org-keyword">SELECT</span> itemData.itemID, itemDataValues.<span class="org-keyword">value</span>  
 <span class="org-keyword">FROM</span>   itemData, itemDataValues, itemAttachments
 <span class="org-keyword">WHERE</span>  fieldID = 110 
 <span class="org-keyword">AND</span>    itemData.valueID = itemDataValues.valueID
 <span class="org-keyword">AND</span>    itemAttachments.sourceItemID = itemData.itemID
-<span class="org-keyword">AND</span>    itemDataValues.<span class="org-keyword">value</span> <span class="org-keyword">LIKE</span> "%functional%"
-</pre>
-</div>
-
-
-<div class="org-src-container">
-
-<pre class="src src-sql">sqlite&gt; 
-sqlite&gt; <span class="org-keyword">SELECT</span> itemData.itemID, itemDataValues.<span class="org-keyword">value</span>  
-   ...&gt; <span class="org-keyword">FROM</span>   itemData, itemDataValues, itemAttachments
-   ...&gt; <span class="org-keyword">WHERE</span>  fieldID = 110 
-   ...&gt; <span class="org-keyword">AND</span>    itemData.valueID = itemDataValues.valueID
-   ...&gt; <span class="org-keyword">AND</span>    itemAttachments.sourceItemID = itemData.itemID
-   ...&gt; <span class="org-keyword">AND</span>    itemDataValues.<span class="org-keyword">value</span> <span class="org-keyword">LIKE</span> "%functional%" 
-   ...&gt; ;
-1936|Functional Programming
-2688|Currently struggling. Can someone help em transition <span class="org-keyword">from</span> functional programming <span class="org-keyword">to</span> <span class="org-keyword">using</span> OOP? : learnpython
-2750|<span class="org-keyword">When</span> <span class="org-keyword">to</span> use functional programming languages <span class="org-keyword">and</span> techniques - TechRepublic
-2752|<span class="org-keyword">Where</span> functional programming fits <span class="org-keyword">in</span> - TechRepublic
-2754|Commercial Uses: Going functional <span class="org-keyword">on</span> exotic trades
-2772|Functional Programming <span class="org-keyword">in</span> the Financial Industry | <span class="org-keyword">Open</span> Parallel
-2794|An introduction <span class="org-keyword">to</span> functional programming
-2798|functional programming | Math &#8745; Programming
-...
+<span class="org-keyword">AND</span>    itemDataValues.<span class="org-keyword">value</span> <span class="org-keyword">LIKE</span> "%functional%" 
+<span class="org-keyword">LIMIT</span> 10
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-sec-1-4-2" class="outline-4">
-<h4 id="sec-1-4-2"><span class="section-number-4">1.4.2</span> Search by a Regex Pattern</h4>
-<div class="outline-text-4" id="text-1-4-2">
+
+<div id="outline-container-sec-2-2-4" class="outline-4">
+<h4 id="sec-2-2-4"><span class="section-number-4">2.2.4</span> Search by a Regex Pattern</h4>
+<div class="outline-text-4" id="text-2-2-4">
 <div class="org-src-container">
 
-<pre class="src src-sql"><span class="org-keyword">SELECT</span> itemData.itemID, itemDataValues.<span class="org-keyword">value</span>  
+<pre class="src src-sqlite"><span class="org-keyword">SELECT</span> itemData.itemID, itemDataValues.<span class="org-keyword">value</span>  
 <span class="org-keyword">FROM</span>   itemData, itemDataValues, itemAttachments
 <span class="org-keyword">WHERE</span>  fieldID = 110 
 <span class="org-keyword">AND</span>    itemData.valueID = itemDataValues.valueID
 <span class="org-keyword">AND</span>    itemAttachments.sourceItemID = itemData.itemID
-<span class="org-keyword">AND</span>    itemDataValues.<span class="org-keyword">value</span> REGEXP "math.*"
-</pre>
-</div>
-
-<p>
-Result: 
-</p>
-
-<div class="org-src-container">
-
-<pre class="src src-sql">"2987"  "Functional Patterns <span class="org-keyword">for</span> the non-mathematician"
-"4842"  "Power <span class="org-keyword">of</span> mathematics: Reasoning about functional types"
-"6094"  "Discrete mathematics <span class="org-keyword">using</span> a computer"
+<span class="org-keyword">AND</span>    itemDataValues.<span class="org-keyword">value</span> REGEXP "*math.*"
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-sec-1-4-3" class="outline-4">
-<h4 id="sec-1-4-3"><span class="section-number-4">1.4.3</span> Text search.</h4>
-<div class="outline-text-4" id="text-1-4-3">
-</div><ol class="org-ol"><li><a id="sec-1-4-3-1" name="sec-1-4-3-1"></a>Search all items which title has a word<br  /><div class="outline-text-5" id="text-1-4-3-1">
+
+<div id="outline-container-sec-2-2-5" class="outline-4">
+<h4 id="sec-2-2-5"><span class="section-number-4">2.2.5</span> Text search.</h4>
+<div class="outline-text-4" id="text-2-2-5">
+</div><ol class="org-ol"><li><a id="sec-2-2-5-1" name="sec-2-2-5-1"></a>Search all items which title has a word<br  /><div class="outline-text-5" id="text-2-2-5-1">
 <p>
 Search all items that have the word "haskell".
 </p>
 
 <div class="org-src-container">
 
-<pre class="src src-sql"><span class="org-keyword">SELECT</span> <span class="org-keyword">DISTINCT</span> itemID 
+<pre class="src src-sqlite"><span class="org-keyword">SELECT</span> <span class="org-keyword">DISTINCT</span> itemID 
 <span class="org-keyword">FROM</span>   fulltextItemWords, fulltextWords
 <span class="org-keyword">WHERE</span>  fulltextItemWords.wordID = fulltextWords.wordID
 <span class="org-keyword">AND</span>    fulltextWords.word <span class="org-keyword">LIKE</span> "%haskell%"
+<span class="org-keyword">LIMIT</span>  10
 </pre>
 </div>
 </div>
 </li>
 
-<li><a id="sec-1-4-3-2" name="sec-1-4-3-2"></a>Search all itesm which title or content has a given word<br  /><div class="outline-text-5" id="text-1-4-3-2">
+<li><a id="sec-2-2-5-2" name="sec-2-2-5-2"></a>Search all itesm which title or content has a given word<br  /><div class="outline-text-5" id="text-2-2-5-2">
 <p>
 Search all items that have the word "haskell" in the title or in the
 content.
@@ -1147,9 +2077,9 @@ content.
 </li></ol>
 </div>
 
-<div id="outline-container-sec-1-4-4" class="outline-4">
-<h4 id="sec-1-4-4"><span class="section-number-4">1.4.4</span> Insert Tag</h4>
-<div class="outline-text-4" id="text-1-4-4">
+<div id="outline-container-sec-2-2-6" class="outline-4">
+<h4 id="sec-2-2-6"><span class="section-number-4">2.2.6</span> Insert Tag</h4>
+<div class="outline-text-4" id="text-2-2-6">
 <p>
 Insert a new tag if it doesn't exist and return its tagID or ID.
 </p>
@@ -1167,72 +2097,21 @@ Insert a new tag if it doesn't exist and return its tagID or ID.
 </div>
 </div>
 
-<div id="outline-container-sec-1-4-5" class="outline-4">
-<h4 id="sec-1-4-5"><span class="section-number-4">1.4.5</span> Search items which has at least one tag</h4>
-<div class="outline-text-4" id="text-1-4-5">
+<div id="outline-container-sec-2-2-7" class="outline-4">
+<h4 id="sec-2-2-7"><span class="section-number-4">2.2.7</span> Search items which has at least one tag</h4>
+<div class="outline-text-4" id="text-2-2-7">
 <p>
 Search all items which has at least one tag of "haskell", "ffi", "fp", "functional"
 </p>
 
 <div class="org-src-container">
 
-<pre class="src src-sql"><span class="org-keyword">SELECT</span> itemTags.itemID, tags.tagID, tags.<span class="org-keyword">Name</span> <span class="org-keyword">FROM</span> itemTags, tags 
+<pre class="src src-sqlite"><span class="org-keyword">SELECT</span> itemTags.itemID, tags.tagID, tags.<span class="org-keyword">Name</span> <span class="org-keyword">FROM</span> itemTags, tags 
 <span class="org-keyword">WHERE</span>  itemTags.tagID = tags.tagID <span class="org-keyword">and</span> tags.<span class="org-keyword">Name</span> <span class="org-keyword">IN</span> ("haskell", "ffi", "fp", "functional")
+<span class="org-keyword">LIMIT</span>  10
 </pre>
 </div>
 
-<p>
-Sample output: 
-</p>
-
-<div class="org-src-container">
-
-<pre class="src src-text">itemID|tagID|name
-5766|182|haskell
-5792|182|haskell
-5920|182|haskell
-5928|182|haskell
-5928|189|fp
-5936|182|haskell
-5938|189|fp
-5943|182|haskell
-5946|189|fp
-5948|189|fp
-5950|189|fp
-5952|189|fp
-5954|189|fp
-5956|189|fp
-5958|189|fp
-5960|189|fp
-5962|189|fp
-5965|189|fp
-5907|182|haskell
-5907|189|fp
-5935|182|haskell
-5935|189|fp
-5969|182|haskell
-5969|189|fp
-5970|182|haskell
-5973|182|haskell
-5973|189|fp
-5975|182|haskell
-5975|189|fp
-5977|189|fp
-5979|189|fp
-5979|182|haskell
-5167|189|fp
-5980|182|haskell
-5980|189|fp
-5985|182|haskell
-5985|189|fp
-5988|182|haskell
-5988|189|fp
-5992|189|fp
-5992|182|haskell
-5994|182|haskell
-... ... ...
-</pre>
-</div>
 
 <p>
 Refined search return only itemID 
@@ -1240,36 +2119,17 @@ Refined search return only itemID
 
 <div class="org-src-container">
 
-<pre class="src src-sql"><span class="org-keyword">SELECT</span> <span class="org-keyword">DISTINCT</span> itemTags.itemID <span class="org-keyword">FROM</span> itemTags, tags 
-<span class="org-keyword">WHERE</span>  itemTags.tagID = tags.tagID <span class="org-keyword">and</span> tags.<span class="org-keyword">Name</span> <span class="org-keyword">IN</span> ("haskell", "ffi", "fp", "functional") ;
-</pre>
-</div>
-
-<p>
-Sample output:
-</p>
-
-<div class="org-src-container">
-
-<pre class="src src-text">itemID
-5167
-5766
-5792
-5815
-5907
-5920
-5928
-5935
-5936
-
-...
+<pre class="src src-sqlite"><span class="org-keyword">SELECT</span> <span class="org-keyword">DISTINCT</span> itemTags.itemID <span class="org-keyword">FROM</span> itemTags, tags 
+<span class="org-keyword">WHERE</span>  itemTags.tagID = tags.tagID <span class="org-keyword">and</span> tags.<span class="org-keyword">Name</span> <span class="org-keyword">IN</span> ("haskell", "ffi", "fp", "functional")
+<span class="org-keyword">LIMIT</span>  10
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-sec-1-4-6" class="outline-4">
-<h4 id="sec-1-4-6"><span class="section-number-4">1.4.6</span> Search all items which title at least match one of the word of a list</h4>
-<div class="outline-text-4" id="text-1-4-6">
+
+<div id="outline-container-sec-2-2-8" class="outline-4">
+<h4 id="sec-2-2-8"><span class="section-number-4">2.2.8</span> Search all items which title at least match one of the word of a list</h4>
+<div class="outline-text-4" id="text-2-2-8">
 <div class="org-src-container">
 
 <pre class="src src-sql"><span class="org-keyword">SELECT</span> itemData.itemID, itemDataValues.<span class="org-keyword">value</span>   
@@ -1314,9 +2174,9 @@ Output:
 </div>
 </div>
 </div>
-<div id="outline-container-sec-1-4-7" class="outline-4">
-<h4 id="sec-1-4-7"><span class="section-number-4">1.4.7</span> Search all items which title contains all words in a list</h4>
-<div class="outline-text-4" id="text-1-4-7">
+<div id="outline-container-sec-2-2-9" class="outline-4">
+<h4 id="sec-2-2-9"><span class="section-number-4">2.2.9</span> Search all items which title contains all words in a list</h4>
+<div class="outline-text-4" id="text-2-2-9">
 <div class="org-src-container">
 
 <pre class="src src-sql"><span class="org-keyword">SELECT</span> itemData.itemID, itemDataValues.<span class="org-keyword">value</span>   
@@ -1335,9 +2195,9 @@ Output:
 </div>
 </div>
 </div>
-<div id="outline-container-sec-1-4-8" class="outline-4">
-<h4 id="sec-1-4-8"><span class="section-number-4">1.4.8</span> Search all items which title or tags matches all words in a list</h4>
-<div class="outline-text-4" id="text-1-4-8">
+<div id="outline-container-sec-2-2-10" class="outline-4">
+<h4 id="sec-2-2-10"><span class="section-number-4">2.2.10</span> Search all items which title or tags matches all words in a list</h4>
+<div class="outline-text-4" id="text-2-2-10">
 <p>
 Selects all items which tag or title matches all "%ocaml%" or "%monad%".
 </p>
@@ -1365,7 +2225,7 @@ Selects all items which tag or title matches all "%ocaml%" or "%monad%".
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Caio Rodrigues Soares Silva</p>
-<p class="date">Created: 2017-02-19 dom 14:24</p>
+<p class="date">Created: 2017-02-26 dom 03:18</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.1.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
