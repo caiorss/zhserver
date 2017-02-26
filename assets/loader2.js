@@ -290,6 +290,23 @@ function showTopCollections(){
     console.log("Displayed Collections OK");
 }
 
+function showSubCollection(collID, name){
+    setPageTitle("Sub Collections: " + name);
+    cleanContentArea();
+    var insertColls = insertItemTypes ((id, name) => "/#!subcolls?id=" + id + "&name=" + name, "id", "name");
+
+    var display = function (json) {
+        insertColls(parseJson(json));
+        showZoteroItemsFromUrl("/api/colls?id=" + collID);
+    };
+
+    doXHR("/api/subcolls?id=" + collID, display, reportConnectioError);
+    // showCollectionID(collID);
+    console.log("Displayed Collections OK");
+}
+
+
+
 //------------ Show Zotero Items ------------- //
 
 function showZoteroItems (paging, offset){
