@@ -295,8 +295,6 @@ makeRoutes staticPath storagePath = msum
 
   , flatten $ dir "api" $ dir "items" $ routeGetAllItems         
 
-  , flatten $ dir "api" $ dir "collsw"  $ routeItemsWithoutCollection
-          
     -- Return all items from a given collection
     -- 
     -- /api/colls?id=23423
