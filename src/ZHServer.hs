@@ -284,6 +284,8 @@ serverRoute dbAction = do
 
 {-- ================ Server Routes Dispatch ========================== -}
 
+apiRoute route = flatten $ dir "api" $ route
+
 makeRoutes :: String -> String -> ServerApp ServerTypes.Response
 makeRoutes staticPath storagePath = msum
 
