@@ -96,7 +96,13 @@ function insertItemTypes (urlFunction, idLabel, valLabel){
             docFragment.appendChild(li.node)
         });
 
-        $d("#content").append(docFragment);
+        var ul = $h("ul").set({
+            "class" : "rowItems",
+            "child" :  docFragment
+        });
+
+        $d("#content").append(ul.node);
+
 
     }
     
