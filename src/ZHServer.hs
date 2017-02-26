@@ -277,6 +277,10 @@ serverRouteParamString param dbFn =
   serverRouteParam return param LC.empty dbFn
 
 
+serverRoute :: DBConn LC.ByteString -> ServerApp LC.ByteString
+serverRoute dbAction = do
+  runDbQuery dbAction
+
 
 {-- ================ Server Routes Dispatch ========================== -}
 
