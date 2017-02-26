@@ -281,6 +281,15 @@ function showCollections () {
     console.log("Displayed Collections OK");    
 }
 
+
+function showTopCollections(){
+    setPageTitle("Top Collections");
+    cleanContentArea();
+    var insertColls = insertItemTypes ((id, name) => "/#!subcolls?id=" + id + "&name=" + name, "id", "name");
+    doXHR("/api/subcolls", compose(parseJson, insertColls) , reportConnectioError);
+    console.log("Displayed Collections OK");
+}
+
 //------------ Show Zotero Items ------------- //
 
 function showZoteroItems (paging, offset){
