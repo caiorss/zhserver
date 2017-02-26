@@ -295,6 +295,13 @@ makeRoutes staticPath storagePath = msum
 
   , flatten $ dir "api" $ dir "items" $ routeGetAllItems         
 
+
+    -- ============== Collection Navigation ==================== --
+    , apiRoute $ dir "subcolls" $ serverRouteParamID "id" Z.getSubcollectionsJSON
+    , apiRoute $ dir "subcolls" $ serverRoute Z.getCollectionsTopJSON
+
+
+
     -- Return all items from a given collection
     -- 
     -- /api/colls?id=23423
