@@ -340,8 +340,16 @@ function showZoteroItems (paging, offset){
 
 function showCollectionID(uri){
     // setPageTitle ("Collection ID: " + collID.toString())
-    var name = decodeURI(uri.split("&")[1].split("=")[1]);
-    var id   = uri.split("&")[0];
+    var n = uri.toString().split("&").lenght ;
+    if (n == 2)
+    {
+        var name = decodeURI(uri.split("&")[1].split("=")[1]);
+        var id   = uri.split("&")[0];
+    } else {
+        var name = "";
+        var id = uri;
+    }
+
     setPageTitle("Collection: " + name);
     cleanContentArea();
     showZoteroItemsFromUrl("/api/colls?id=" + uri);
