@@ -86,7 +86,7 @@ printCollectionsTop  = do
 {- | Print all subcollections of a collection -}
 printSubCollections :: Int -> DBConn ()
 printSubCollections collID = do
-  colls <- Z.getSubcollectionsIDNames collID
+  colls <- Z.getSubcollections collID
   liftIO $ mapM_ print colls
 
 {- | Print all subcollections recursively of a given collection defined by its ID -}
