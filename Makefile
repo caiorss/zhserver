@@ -1,16 +1,31 @@
 all: server 
 
 app = zhserver.bin
-src = src/ZHServer.hs src/DBUtils.hs src/Zotero.hs
+
+# Sources to build the serve r
+server_src = src/ZHServer.hs src/DBUtils.hs src/Zotero.hs
+
+# Sources to build command line database client 
+zhclient_src = src/Zotero.hs src/zhclient.hs src/DBUtils.hs 
 
 config = src/zhserver.conf
 
-zhclient:
-	stack exec -- ghc --make -o zhclient.bin src/zhclient.hs src/DBUtils.hs src/Zotero.hs
+# Needed dependencies to build the project 
+packages := HDBC HDBC-sqlite3 HDBC-postgresql happstack-server pretty-show HUnit
 
-server: $(src)
-	stack exec -- ghc --make -o $(app) $(src)
-	# stack exec -- ghc src/ZHServer.hs -o bin/ZHServer.bin
+LTS=lts-7.9
+
+packages-p = $(addprefix --package ,$(packages))
+
+BUILD := stack --resolver $(LTS) --install-ghc exec $(packages-p) -- ghc 
+
+
+server: $(server_src)
+	$(BUILD) --make -o $(app) $(server_src)
+
+zhclient: $(zhclient_src)
+	stack exec -- ghc --make -o zhclient.bin $(zhclient_src)
+
 
 ## Linux Centos specific dependencies
 deps-centos:
