@@ -3,7 +3,7 @@ version:             0.1.0.0
 -- synopsis:
 -- description:
 homepage:            https://github.com/caiorss/zhserver
-license:             Unlicense
+license:             PublicDomain
 license-file:        LICENSE
 author:              Caio Rodrigues
 maintainer:          caiorss.rodrigues@gmail.com
@@ -40,6 +40,7 @@ executable zhserver-exe
 
   build-depends:       base
                      , simple
+                     , containers
                      , mtl
                      , transformers
                      , filepath
