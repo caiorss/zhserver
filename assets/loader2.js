@@ -184,116 +184,65 @@ function jsonToZoteroItemDOM(json){
     var data = arrayToObj(json["data"]);
 
    // console.log(data)
-    var title = data["title"]
+
     var url = data["url"]
     var itemID = json["id"] ;
     var file = json["file"];
     var itemType = json["type"]
 
-    var downloadLink = $h("a").set({
-        href:   "/attachment/" + file,
-        target: "_blank",
-        child:  "Download"
-    })
+    var tagLinks = json["tags"].map(row => 
+        formatText("<a href='{{url}}' _target='_blank'>{{label}}", {
+              url:   makeTagURL(row[0], row[1])
+            , label: row[1]
+        }));
 
-    var urlLink = $h("a").set({
-        href   :   url,
-        target : "_blank",
-        child  : "Link"
-    })
+    var itemIdUrl = htmlLinkNewTab(itemID, "/#!item?id=" + itemID);
+    var downloadLink = htmlLinkNewTab("Download", "/attachment/" + file);
+    var urlLink = htmlLinkNewTab("Url", url);
 
-    // console.log(title);
+    var tagsLinks  =  json["tags"].map(row =>  htmlLinkNewTab(row[1], makeTagURL(row[0], row[1])));
+
+    var collsLinks =  json["colls"].map(row =>  htmlLinkNewTab(row[1], makeCollectionURL(row[0], row[1])));
+
+    var authorLinks = json["authors"].map(author =>  { var name =  author.first + " " + author.last
+                                                       var url  = makeAuthorURL(author.id, name) 
+                                                       return htmlLinkNewTab(name, url)
+                                                     });
     
-    var head = $h("h3").set({
-        "child":        title,
-        "data-words":   "" //title.split()
-    })
-
-    var tagLinks = json["tags"].map(function (row) {
-        return $h("a").set({
-              href:     makeTagURL(row[0], row[1])
-            , target:  "_blank"
-            , child:   row[1]
-        });
-    });
-
-    var authorLinks = json["authors"].map(function(author){
-        var name = author.first + " " + author.last ;
-        return $h("a").set({
-             href:    makeAuthorURL(author.id, name)
-            ,target:  "_blank"
-            ,child:  name 
-
-        });
-
-    });
-
-    
-    var collsLinks = json["colls"].map(function (row) {
-        return $h("a").set({
-              href:     makeCollectionURL(row[0], row[1])
-            , target:  "_blank"
-            , child:   row[1]
-        });
-    });
-
-
-    var itemIdUrl = $h("a").set({
-         href:  ("/#!item?id=" + itemID.toString())
-        ,target: "_blank"
-        ,child:  itemID.toString()
-    });
-
     if (data["DOI"]){
-        var doiUrl = $h("a").set({
-            href:  "https://doi.org/" + data["DOI"]
-           ,target:  "_blank"
-           ,child: data["DOI"]
-        });
+        var doiUrl = makeDoiUrl(data["DOI"]);        
     } else {
         var doiUrl = "";
-
-        }
+    }
     
-   var table =  htmlTable().setRows(
+    var table =  makeHtmlTable(
         [
-            ["Id",            itemIdUrl],
-            ["Type",          itemType],
-            ["Url",           urlLink],
-            ["DOI",           doiUrl],
-            ["ISBN",          data["ISBN"]],
-            ["ISSN",          data["ISSN"]],
-            ["Access Date",   data["accessDate"]],
-            ["Download",      downloadLink],            
-            ["Authors",       bulletList(authorLinks).set({"class": "itemAttribRow"}) ],            
-            ["Collections",   bulletList(collsLinks).set({"class": "itemAttribRow"}) ],            
-            ["Tags",          bulletList(tagLinks).set({"class": "itemAttribRow"}) ]
+             ["Item Id",       itemIdUrl]
+            ,["Url",           urlLink]            
+            ,["Download",      downloadLink]                   
+            ,["Type",          itemType]
+            ,["DOI",           doiUrl]
+            ,["ISBN",          data["ISBN"]]
+            ,["ISSN",          data["ISSN"]]
+            ,["Access Date",   data["accessDate"]]
+            ,["Authors",       htmlMakeBulletList(authorLinks, "itemAttribRow")]
+            ,["Collections",   htmlMakeBulletList(collsLinks, "itemAttribRow")]
+            ,["Tags",          htmlMakeBulletList(tagsLinks,  "itemAttribRow")]
             // ["Abstract",      data["abstractNote"]]
 
-        ]
-   )
+        ]);
 
-    table.table.set({"class": "itemTable"});
 
-    var tagswords = json["tags"].map(function (e) {return e[1];});
-
-    var datawords = title.toLowerCase().split(" ");
+    insertTemplateFromDOM("#itemDisplay", "#content")(
+        {
+              words:    ""
+            , dataTags: ""
+            , title:    data["title"]
+            , table:    table
+            , summary:   data["abstractNote"]
+            
+        });
     
-    
-    var div = $h("div").set({
-        //"child"    : [ head.node, table.node],
-        "data-words"  :  datawords,
-        "data-tags"   :  tagswords,
-        "class"       : "filterItem zoteroItem",
-    });
-
-    div.append(head.node);
-    div.append(table.table.node);
-    div.append($h("h4").set({child: "Abstract"}));
-    div.append($h("p").set({child:  data["abstractNote"]}));
-
-    return div ;
-
 } // End of funtion jsonToZoteroItemDOM
 
 
@@ -306,14 +255,11 @@ function showZoteroItemsFromUrl(url){
 
               var anchor = $d("#content");
               var json = parseJson(data);
-              var docFragment = document.createDocumentFragment();
+              // var docFragment = document.createDocumentFragment();
               
-              json.forEach(function (itemjson){
-                  zotItem = jsonToZoteroItemDOM(itemjson);
-                  docFragment.appendChild(zotItem.node);
-              });
+              json.forEach(jsonToZoteroItemDOM);                                
               
-              anchor.append(docFragment)
+              // anchor.append(docFragment)
           },
           
           reportConnectioError
