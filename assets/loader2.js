@@ -38,12 +38,11 @@ function formatText(text, keyValues){
 //  - keyValues - json element that will fill the template.
 //  
 //
-function appendTemplate(templateId, anchorId){
+function insertTemplateFromDOM(templateId, anchorId){
     return function (keyValues){
-        var text = document.querySelector(templateId).text;
-        var text2 = Object.keys(keyValues).reduce((acc, key) => acc.replace("{" + key + "}", keyValues[key]), text);
+        var text = formatText(document.querySelector(templateId).text, keyValues);
         var anchor = document.querySelector(anchorId);
-        anchor.insertAdjacentHTML('beforeend', text2);
+        anchor.insertAdjacentHTML('beforeend', text);
     }
 }
 
@@ -103,7 +102,7 @@ function reportConnectioError (input){
 
 function insertItemTypes (urlFunction, idLabel, valLabel){
 
-    var templateRender = appendTemplate("#itemRowTemplate", "#content");
+    var templateRender = insertTemplateFromDOM("#itemRowTemplate", "#content");
     
     return function (jsonList) {
 
