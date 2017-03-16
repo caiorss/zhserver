@@ -6,6 +6,28 @@ function liftMap (fn){
     }
 }
 
+/** formatText(text, keyValues)
+
+Format text. It is useful to create templates and for string interpolation.
+
+Example:
+
+   >> formatText("<a href='{{url}}' class=''>{{name}}</a>",
+                {name: "Download", url: "/Download/item/100", class: null})
+
+    "<a href='/Download/item/100' class=''>Download</a>"
+
+*/
+function formatText(text, keyValues){
+    return Object.keys(keyValues).reduce(function (acc, key){
+        var value = keyValues[key];
+        if (value == null){
+            var value = "";
+        }
+        return acc.replace("{{" + key + "}}", value);
+    }
+                                         ,text)
+}
 
 
 //  Render template in DOM.
