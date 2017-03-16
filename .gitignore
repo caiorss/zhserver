@@ -16,3 +16,4 @@ Server
 dist/*
 docs/*
 .stack-work/*
+.idea/*
