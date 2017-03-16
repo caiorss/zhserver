@@ -169,6 +169,14 @@ function makeDoiUrl(doi){
     }
 }
 
+
+function htmlMakeBulletList(itemsHtml, className){
+    var text = itemsHtml.reduce((acc, item) => acc + "<il>" + item + "</il>", "");
+    return "<ul class='" + className + "' >" + text + "\n</ul>";
+}
+
+
+
 /// Display a single Zotero Item given its json data
 ///
 function jsonToZoteroItemDOM(json){
