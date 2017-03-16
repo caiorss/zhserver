@@ -7,6 +7,20 @@ function liftMap (fn){
 }
 
 
+
+///
+///
+///
+function appendTemplate(templateId, anchorId){
+    return function (keyValues){
+        var text = document.querySelector(templateId).text;
+        var text2 = Object.keys(keyValues).reduce((acc, key) => acc.replace("{" + key + "}", keyValues[key]), text);
+        var anchor = document.querySelector(anchorId);
+        anchor.insertAdjacentHTML('beforeend', text2);
+    }
+}
+
+
 // function parseJSRouter (){
 //     var hashPath = location.hash.replace(/^#!?/, "");
 //     var path = 
