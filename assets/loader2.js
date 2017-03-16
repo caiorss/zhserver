@@ -8,9 +8,14 @@ function liftMap (fn){
 
 
 
-///
-///
-///
+//  Render template in DOM.
+// 
+//  - templateID: Id of DOM element containing the html template such as: "#itemRowTemplate"
+//  - anchorID:   Id of DOM anchor element where the template will be inserted.
+//
+//  - keyValues - json element that will fill the template.
+//  
+//
 function appendTemplate(templateId, anchorId){
     return function (keyValues){
         var text = document.querySelector(templateId).text;
