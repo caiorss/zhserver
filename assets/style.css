@@ -170,17 +170,28 @@ th {
 }
 
 
+
+
+
 .itemAttribRow {
     list-style-type: none;  /* Hide points */
+    display: inline-table;
+    margin: 10px 0px;
+    padding: 0px;
+    
 }
 
 .itemAttribRow li {
-    float: left;            /* Bullet list horizontal */
-    padding-left: 0px;
-    diplay: block;
-    padding-right: 10px;
+    display: inline;
+    letter-spacing: normal; 
     
 }
+
+
+.itemAttribRow a {    
+    margin-right: 15px;
+}
+
 
 .fiterItem {
 
