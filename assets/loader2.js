@@ -21,11 +21,6 @@ function appendTemplate(templateId, anchorId){
 }
 
 
-// function parseJSRouter (){
-//     var hashPath = location.hash.replace(/^#!?/, "");
-//     var path = 
-// }
-
 
 function setPageTitle (title){
 
