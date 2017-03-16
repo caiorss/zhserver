@@ -161,10 +161,11 @@ function htmlLinkNewTab(label, url, rest){
 
 
 function makeDoiUrl(doi){
-    if (doi) {
-        return  htmlLinkNewTab("DOI", "https://doi.org/" + doi) }
+    if (doi == null) {
+        return "";
+    }
     else {
-        return ""
+        return  htmlLinkNewTab("DOI", "https://doi.org/" + doi) ;
     }
 }
 
