@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
   <head>
-  
-
+    <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+    
     <title>ZhServer - Document Repository Server</title> 
     
     <link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
@@ -14,6 +14,19 @@
     <link rel="stylesheet" type="text/css" href="style.css">
     <script type="text/javascript" src="fpjs2.js"></script>
     <script type="text/javascript" src="loader2.js"></script>
+
+    <script id="itemRowTemplate" type="text/html">
+      <li class="filterItem" data-words="{{words}}" data-id="{{id}}"><a href="{{uri}}">{{name}}</a></li>
+    </script>
+
+    <script id="itemDisplay" type="text/html">      
+      <div data-wors="{{words}}" data-tags="{{dataTags}}" class="filterItem zoteroItem">
+        <h3>{{title}}</h3>
+        {{table}}
+        <h4>Summary</h4>
+        <p>{{summary}}</p>
+      </div>      
+    </script>
     
   </head>
   
