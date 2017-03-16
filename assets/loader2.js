@@ -146,6 +146,28 @@ function bulletList(alist){
     return lu;
 }
 
+
+function makeHtmlTable (rowList){
+    var text = rowList.reduce((acc, row) => acc +  formatText("\n<tr><td>{{label}}</td><td>{{value}}</td></tr>"
+                                                             ,{label: row[0], value: row[1]}
+                                                             ), "");
+    return "<table class='itemTable'>\n" + text + "</table>";
+}
+
+function htmlLinkNewTab(label, url, rest){
+    return formatText("<a href='{{url}}' target='_blank'>{{label}}</a>",
+                      {label: label, url: url});
+}
+
+
+function makeDoiUrl(doi){
+    if (doi) {
+        return  htmlLinkNewTab("DOI", "https://doi.org/" + doi) }
+    else {
+        return ""
+    }
+}
+
 /// Display a single Zotero Item given its json data
 ///
 function jsonToZoteroItemDOM(json){
