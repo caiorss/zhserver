@@ -48,6 +48,10 @@ function appendTemplate(templateId, anchorId){
 }
 
 
+function insertTemplate(anchorId, html){
+    document.querySelector(anchorId).insertAdjacentHTML(html)
+}
+
 
 function setPageTitle (title){
 
