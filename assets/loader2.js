@@ -77,50 +77,25 @@ function reportConnectioError (input){
 
 function insertItemTypes (urlFunction, idLabel, valLabel){
 
-    return function (json) {
-
-        var docFragment = document.createDocumentFragment();   
-
-
-        
-        json.forEach (function (e){
-
-            var name = e[valLabel];
-            var id   = e[idLabel];
-            
-  //          console.log(e)
-
-            var words = name
-                .split(/\s,?\.?/)
-                .map(function (e){ return e.toLowerCase ()})
-            
-            var a = $h("a").set(
-                {
-                    "href": urlFunction(id, name),
-                    "child": name 
-                });
-            
-            var li = $h("li").set({"class"      : "filterItem",
-                                   "child"      : a.node,
-                                   "data-words" : words,
-                                   "data-id"    : id.toString(),
-                                   
-                                  })
-
-            docFragment.appendChild(li.node)
-        });
-
-        var ul = $h("ul").set({
-            "class" : "rowItems",
-            "child" :  docFragment
-        });
-
-        $d("#content").append(ul.node);
-
-
-    }
+    var templateRender = appendTemplate("#itemRowTemplate", "#content");
     
-} // End of insertItemtypes -------------------------//
+    return function (jsonList) {
+
+        // var docFragment = document.createDocumentFragment();                    
+
+        jsonList.forEach(function(e){
+            var id   = e[idLabel];
+            var name = e[valLabel];
+            templateRender({   words:  name.split(/\s,?\.?/).map(e => e.toLowerCase())
+                               ,id:    id
+                               ,name:  name
+                               ,uri:   urlFunction(id, name)
+
+                           })})}}
+        
+  
+    
+// End of insertItemtypes -------------------------//
 
 
 
