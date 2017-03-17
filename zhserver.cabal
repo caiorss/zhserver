@@ -53,6 +53,7 @@ executable zhserver-exe
                      , HDBC-sqlite3
                      , HDBC-postgresql             
                      , happstack-server
+                     , pretty-show
 
                      
                      
