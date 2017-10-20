@@ -13,18 +13,31 @@ config = src/zhserver.conf
 # Needed dependencies to build the project 
 packages := HDBC HDBC-sqlite3 HDBC-postgresql happstack-server pretty-show HUnit
 
-LTS=lts-7.9
+LTS=lts-9.9
 
 packages-p = $(addprefix --package ,$(packages))
 
-BUILD := stack --resolver $(LTS) --install-ghc exec $(packages-p) -- ghc 
+COMMAND := stack --resolver $(LTS) --install-ghc exec $(packages-p) -- 
 
+repl: $(server_src)
+	$(COMMAND) ghci
 
 server: $(server_src)
-	$(BUILD) --make -o $(app) $(server_src)
+	$(COMMAND) ghc --make -o $(app) $(server_src)
 
 zhclient: $(zhclient_src)
 	stack exec -- ghc --make -o zhclient.bin $(zhclient_src)
+
+# Run $ make aeson to solve this problem: 
+#
+# src/Zotero.hs:162:1: error:
+#     Failed to load interface for ‘Data.Aeson’
+#     Perhaps you meant Data.Version (from base-4.9.1.0)
+#     Use -v to see a list of the files searched for.
+#
+#
+aeson:
+	stack --resolver $(LTS) --install-ghc install aeson
 
 
 ## Linux Centos specific dependencies
@@ -105,7 +118,7 @@ app-run: dbtest
 # Copy Sqlite database from system to top level project directory
 
 sample-db     := testdb/zotero-db.sqlite
-sample-db-src := /home/arch/.mozilla/firefox/dic34vce.default/zotero/zotero.sqlite
+sample-db-src := /home/archbox/.mozilla/firefox/mwad0hks.zotero/zotero/zotero.sqlite
 
 update: $(sample-db)
 
