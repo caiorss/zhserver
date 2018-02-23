@@ -588,8 +588,8 @@ getItemAttachmentData itemID = do
         "FROM    items, itemAttachments, itemTypes",
         "WHERE   itemAttachments.itemID = items.itemID",
         "AND     itemTypes.itemTypeID = items.itemTypeID",
-        "AND     (itemAttachments.sourceItemID = ? OR items.itemID = ?)"
---        "AND     itemAttachments.sourceItemID = ?"
+        "AND     (itemAttachments.parentItemID = ? OR items.itemID = ?)"
+--        "AND     itemAttachments.parentItemID = ?"
         ]
 
     projection = map fromSqlToString
@@ -814,7 +814,7 @@ searchByTitleWordLike  searchWord = do
        ,"FROM   itemData, itemDataValues, itemAttachments"
        ,"WHERE  fieldID = 110" 
        ,"AND    itemData.valueID = itemDataValues.valueID"
-       ,"AND    itemAttachments.sourceItemID = itemData.itemID"
+       ,"AND    itemAttachments.parentItemID = itemData.itemID"
        ,"AND    itemDataValues.value LIKE ?"      
        ]
 
@@ -862,7 +862,7 @@ searchByTitleTagsAndInWords words = do
                    "FROM   itemData, itemDataValues, itemAttachments, tags, itemTags",
                    "WHERE  fieldID = 110",
                    "AND    itemData.valueID = itemDataValues.valueID",
-                   "AND    itemAttachments.sourceItemID = itemData.itemID",
+                   "AND    itemAttachments.parentItemID = itemData.itemID",
                    "AND    itemTags.itemID = itemData.itemID",
                    "AND    itemTags.tagID = tags.tagID",
                    "AND    (  %s  )",
@@ -878,7 +878,7 @@ searchByTitleTags word = do
                    "FROM   itemData, itemDataValues, itemAttachments, tags, itemTags",
                    "WHERE  fieldID = 110",
                    "AND    itemData.valueID = itemDataValues.valueID",
-                 --  "AND    itemAttachments.sourceItemID = itemData.itemID",
+                 --  "AND    itemAttachments.parentItemID = itemData.itemID",
                    "AND    itemTags.itemID = itemData.itemID",
                    "AND    itemTags.tagID = tags.tagID",
                    "AND (LOWER(itemDataValues.value) LIKE ? OR LOWER(tags.Name) LIKE ?)",
@@ -900,7 +900,7 @@ searchByTitleTagsOrInWords words = do
                    "FROM   itemData, itemDataValues, itemAttachments, tags, itemTags",
                    "WHERE  fieldID = 110",
                    "AND    itemData.valueID = itemDataValues.valueID",
-                   "AND    itemAttachments.sourceItemID = itemData.itemID",
+                   "AND    itemAttachments.parentItemID = itemData.itemID",
                    "AND    itemTags.itemID = itemData.itemID",
                    "AND    itemTags.tagID = tags.tagID",
                    "AND    (  %s  )",
@@ -1181,7 +1181,7 @@ deleteItem itemID =  do
                        
   sqlRun sqlDeleteWords [fromIntToHDBC itemID]
 
-  sqlDeleteRowsWhereID "sourceItemID" "itemAttachments" itemID
+  sqlDeleteRowsWhereID "parentItemID" "itemAttachments" itemID
   sqlDeleteRowsTablesWhereID "itemID" tables itemID
        where
          tables = [
