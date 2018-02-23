@@ -709,10 +709,9 @@ getAuthors :: DBConn [ZoteroAuthor]
 getAuthors  = do
   sqlQueryAll sql [] projection 
   where
-    sql = "SELECT    creators.creatorID, creatorData.firstName, creatorData.lastName \
-          \FROM      creatorData, creators \
-          \WHERE     creatorData.creatorDataID = creators.creatorDataID \
-          \ORDER BY  creatorData.firstName || ' ' || creatorData.lastName"
+    sql = "SELECT    creators.creatorID, creators.firstName, creators.lastName \
+          \FROM      creators \
+          \ORDER BY  creators.firstName || ' ' || creators.lastName"
     projection row = ZoteroAuthor (fromSqlToInt    (row !! 0))
                                   (fromSqlToString (row !! 1))
                                   (fromSqlToString (row !! 2))
