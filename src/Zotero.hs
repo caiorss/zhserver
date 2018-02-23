@@ -635,31 +635,23 @@ getItemData itemID = do
        "AND     itemData.valueID = itemDataValues.valueID",
        "AND     itemData.itemID = ?"
       ]     
-
     projection = \row ->
       (fromSqlToString $row !! 0, fromSqlToString $ row !! 1)
 
 {-  Query authors given the itemID.-}
 getItemAuthors :: ZoteroItemID -> DBConn [ZoteroAuthor]
 getItemAuthors itemID = do 
-
   let itemID' = fromIntToInt64 itemID
-
   sqlQueryAll sql [HDBC.SqlInt64 itemID'] projection 
-
   where
-
     projection row = ZoteroAuthor (fromSqlToInt    (row !! 0))
                                   (fromSqlToString (row !! 1))
                                   (fromSqlToString (row !! 2))
-
     sql = unlines $ [
-      
-      "SELECT   itemCreators.creatorID, creatorData.firstName, creatorData.lastName",
-      "FROM     creatorData, creatorTypes, creators, itemCreators",
+      "SELECT   itemCreators.creatorID, creators.firstName, creators.lastName",
+      "FROM     creatorTypes, creators, itemCreators",
       "WHERE    itemCreators.creatorID = creators.creatorID",
       "AND      itemCreators.creatorTypeID = creatorTypes.creatorTypeID",
-      "AND      creators.creatorDataID = creatorData.creatorDataID",
       "AND      itemCreators.itemID = ?"
       ]
 
