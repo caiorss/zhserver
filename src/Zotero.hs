@@ -500,7 +500,7 @@ getAllItems :: Int -> Int -> DBConn [ZoteroItemID]
 getAllItems paging offset =
     sqlQueryRow sql [fromIntToHDBC paging, fromIntToHDBC offset] fromSqlToInt
     where
-      sql = "SELECT sourceItemID FROM itemAttachments WHERE sourceItemID NOT NULL LIMIT ? OFFSET ? "
+      sql = "SELECT parentItemID FROM itemAttachments WHERE parentItemID NOT NULL LIMIT ? OFFSET ? "
 
 getAllItemsJSON :: Int -> Int -> DBConn BLI.ByteString
 getAllItemsJSON paging offset = do
