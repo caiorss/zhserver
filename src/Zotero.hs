@@ -574,17 +574,12 @@ getTagsJSON  =  encode <$> getTags
 {- | Get Zotero item attachment file. -}
 getItemAttachmentData :: ZoteroItemID -> DBConn (Maybe [String])
 getItemAttachmentData itemID = do 
-  
   let itemID' = fromIntToInt64 itemID
-
   sqlQuery sql [HDBC.SqlInt64 itemID', HDBC.SqlInt64 itemID'] projection
-
   where 
-
     sql = unlines $
-
       [
-        "SELECT  itemAttachments.path, items.key, itemAttachments.mimeType, itemTypes.typeName",
+        "SELECT  itemAttachments.path, items.key, itemAttachments.contentType, itemTypes.typeName",
         "FROM    items, itemAttachments, itemTypes",
         "WHERE   itemAttachments.itemID = items.itemID",
         "AND     itemTypes.itemTypeID = items.itemTypeID",
