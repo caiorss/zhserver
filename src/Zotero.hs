@@ -457,14 +457,10 @@ getItemTags itemID =
 -}
 getItemCollections :: Int -> DBConn [(Int, String)]
 getItemCollections  itemID = do
-
     let itemID' = fromIntToInt64 itemID    
     sqlQueryAll sql [HDBC.SqlInt64 itemID'] projection
-
-    where
-      
+    where    
       projection xs = (fromSqlToInt (xs !! 0), fromSqlToString (xs !! 1))
-
       sql = unlines $ [ "SELECT collectionItems.collectionID, collections.collectionName"
                        ,"FROM   collectionItems, collections"                        
                        ,"WHERE  itemID = ?"
@@ -474,14 +470,12 @@ getItemCollections  itemID = do
 
 {- | Return all zotero items without collections -}
 itemsWithoutCollections :: Int -> Int -> DBConn [ZoteroItemID]
-itemsWithoutCollections paging offset  =
-  
+itemsWithoutCollections paging offset  = 
   sqlQueryRow sql [HDBC.SqlInt64 $ fromIntToInt64 paging,
                    HDBC.SqlInt64 $ fromIntToInt64 (offset * paging)
                   ]
                   fromSqlToInt  
-  where
-            
+  where            
     sql = "SELECT itemID \
           \FROM   items \
           \WHERE  itemID NOT IN ( SELECT itemID FROM collectionItems ) \
@@ -500,7 +494,7 @@ getAllItems :: Int -> Int -> DBConn [ZoteroItemID]
 getAllItems paging offset =
     sqlQueryRow sql [fromIntToHDBC paging, fromIntToHDBC offset] fromSqlToInt
     where
-      sql = "SELECT sourceItemID FROM itemAttachments WHERE sourceItemID NOT NULL LIMIT ? OFFSET ? "
+      sql = "SELECT parentItemID FROM itemAttachments WHERE parentItemID NOT NULL LIMIT ? OFFSET ? "
 
 getAllItemsJSON :: Int -> Int -> DBConn BLI.ByteString
 getAllItemsJSON paging offset = do
@@ -574,22 +568,17 @@ getTagsJSON  =  encode <$> getTags
 {- | Get Zotero item attachment file. -}
 getItemAttachmentData :: ZoteroItemID -> DBConn (Maybe [String])
 getItemAttachmentData itemID = do 
-  
   let itemID' = fromIntToInt64 itemID
-
   sqlQuery sql [HDBC.SqlInt64 itemID', HDBC.SqlInt64 itemID'] projection
-
   where 
-
     sql = unlines $
-
       [
-        "SELECT  itemAttachments.path, items.key, itemAttachments.mimeType, itemTypes.typeName",
+        "SELECT  itemAttachments.path, items.key, itemAttachments.contentType, itemTypes.typeName",
         "FROM    items, itemAttachments, itemTypes",
         "WHERE   itemAttachments.itemID = items.itemID",
         "AND     itemTypes.itemTypeID = items.itemTypeID",
-        "AND     (itemAttachments.sourceItemID = ? OR items.itemID = ?)"
---        "AND     itemAttachments.sourceItemID = ?"
+        "AND     (itemAttachments.parentItemID = ? OR items.itemID = ?)"
+--        "AND     itemAttachments.parentItemID = ?"
         ]
 
     projection = map fromSqlToString
@@ -635,31 +624,23 @@ getItemData itemID = do
        "AND     itemData.valueID = itemDataValues.valueID",
        "AND     itemData.itemID = ?"
       ]     
-
     projection = \row ->
       (fromSqlToString $row !! 0, fromSqlToString $ row !! 1)
 
 {-  Query authors given the itemID.-}
 getItemAuthors :: ZoteroItemID -> DBConn [ZoteroAuthor]
 getItemAuthors itemID = do 
-
   let itemID' = fromIntToInt64 itemID
-
   sqlQueryAll sql [HDBC.SqlInt64 itemID'] projection 
-
   where
-
     projection row = ZoteroAuthor (fromSqlToInt    (row !! 0))
                                   (fromSqlToString (row !! 1))
                                   (fromSqlToString (row !! 2))
-
-    sql = unlines $ [
-      
-      "SELECT   itemCreators.creatorID, creatorData.firstName, creatorData.lastName",
-      "FROM     creatorData, creatorTypes, creators, itemCreators",
+    sql = unlines $ [      
+      "SELECT   itemCreators.creatorID, creators.firstName, creators.lastName",
+      "FROM     creatorTypes, creators, itemCreators",
       "WHERE    itemCreators.creatorID = creators.creatorID",
       "AND      itemCreators.creatorTypeID = creatorTypes.creatorTypeID",
-      "AND      creators.creatorDataID = creatorData.creatorDataID",
       "AND      itemCreators.itemID = ?"
       ]
 
@@ -728,10 +709,9 @@ getAuthors :: DBConn [ZoteroAuthor]
 getAuthors  = do
   sqlQueryAll sql [] projection 
   where
-    sql = "SELECT    creators.creatorID, creatorData.firstName, creatorData.lastName \
-          \FROM      creatorData, creators \
-          \WHERE     creatorData.creatorDataID = creators.creatorDataID \
-          \ORDER BY  creatorData.firstName || ' ' || creatorData.lastName"
+    sql = "SELECT    creators.creatorID, creators.firstName, creators.lastName \
+          \FROM      creators \
+          \ORDER BY  creators.firstName || ' ' || creators.lastName"
     projection row = ZoteroAuthor (fromSqlToInt    (row !! 0))
                                   (fromSqlToString (row !! 1))
                                   (fromSqlToString (row !! 2))
@@ -822,7 +802,7 @@ searchByTitleWordLike  searchWord = do
        ,"FROM   itemData, itemDataValues, itemAttachments"
        ,"WHERE  fieldID = 110" 
        ,"AND    itemData.valueID = itemDataValues.valueID"
-       ,"AND    itemAttachments.sourceItemID = itemData.itemID"
+       ,"AND    itemAttachments.parentItemID = itemData.itemID"
        ,"AND    itemDataValues.value LIKE ?"      
        ]
 
@@ -870,7 +850,7 @@ searchByTitleTagsAndInWords words = do
                    "FROM   itemData, itemDataValues, itemAttachments, tags, itemTags",
                    "WHERE  fieldID = 110",
                    "AND    itemData.valueID = itemDataValues.valueID",
-                   "AND    itemAttachments.sourceItemID = itemData.itemID",
+                   "AND    itemAttachments.parentItemID = itemData.itemID",
                    "AND    itemTags.itemID = itemData.itemID",
                    "AND    itemTags.tagID = tags.tagID",
                    "AND    (  %s  )",
@@ -886,7 +866,7 @@ searchByTitleTags word = do
                    "FROM   itemData, itemDataValues, itemAttachments, tags, itemTags",
                    "WHERE  fieldID = 110",
                    "AND    itemData.valueID = itemDataValues.valueID",
-                 --  "AND    itemAttachments.sourceItemID = itemData.itemID",
+                 --  "AND    itemAttachments.parentItemID = itemData.itemID",
                    "AND    itemTags.itemID = itemData.itemID",
                    "AND    itemTags.tagID = tags.tagID",
                    "AND (LOWER(itemDataValues.value) LIKE ? OR LOWER(tags.Name) LIKE ?)",
@@ -908,7 +888,7 @@ searchByTitleTagsOrInWords words = do
                    "FROM   itemData, itemDataValues, itemAttachments, tags, itemTags",
                    "WHERE  fieldID = 110",
                    "AND    itemData.valueID = itemDataValues.valueID",
-                   "AND    itemAttachments.sourceItemID = itemData.itemID",
+                   "AND    itemAttachments.parentItemID = itemData.itemID",
                    "AND    itemTags.itemID = itemData.itemID",
                    "AND    itemTags.tagID = tags.tagID",
                    "AND    (  %s  )",
@@ -1189,7 +1169,7 @@ deleteItem itemID =  do
                        
   sqlRun sqlDeleteWords [fromIntToHDBC itemID]
 
-  sqlDeleteRowsWhereID "sourceItemID" "itemAttachments" itemID
+  sqlDeleteRowsWhereID "parentItemID" "itemAttachments" itemID
   sqlDeleteRowsTablesWhereID "itemID" tables itemID
        where
          tables = [
