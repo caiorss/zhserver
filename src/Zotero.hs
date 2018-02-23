@@ -457,14 +457,10 @@ getItemTags itemID =
 -}
 getItemCollections :: Int -> DBConn [(Int, String)]
 getItemCollections  itemID = do
-
     let itemID' = fromIntToInt64 itemID    
     sqlQueryAll sql [HDBC.SqlInt64 itemID'] projection
-
-    where
-      
+    where    
       projection xs = (fromSqlToInt (xs !! 0), fromSqlToString (xs !! 1))
-
       sql = unlines $ [ "SELECT collectionItems.collectionID, collections.collectionName"
                        ,"FROM   collectionItems, collections"                        
                        ,"WHERE  itemID = ?"
@@ -474,14 +470,12 @@ getItemCollections  itemID = do
 
 {- | Return all zotero items without collections -}
 itemsWithoutCollections :: Int -> Int -> DBConn [ZoteroItemID]
-itemsWithoutCollections paging offset  =
-  
+itemsWithoutCollections paging offset  = 
   sqlQueryRow sql [HDBC.SqlInt64 $ fromIntToInt64 paging,
                    HDBC.SqlInt64 $ fromIntToInt64 (offset * paging)
                   ]
                   fromSqlToInt  
-  where
-            
+  where            
     sql = "SELECT itemID \
           \FROM   items \
           \WHERE  itemID NOT IN ( SELECT itemID FROM collectionItems ) \
@@ -642,7 +636,7 @@ getItemAuthors itemID = do
     projection row = ZoteroAuthor (fromSqlToInt    (row !! 0))
                                   (fromSqlToString (row !! 1))
                                   (fromSqlToString (row !! 2))
-    sql = unlines $ [
+    sql = unlines $ [      
       "SELECT   itemCreators.creatorID, creators.firstName, creators.lastName",
       "FROM     creatorTypes, creators, itemCreators",
       "WHERE    itemCreators.creatorID = creators.creatorID",
